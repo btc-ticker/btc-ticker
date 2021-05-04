@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v1.7   *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.1   *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -48,7 +48,7 @@ echo "2) will use GITHUB-USERNAME --> '${githubUser}'"
 # could be any valid branch of the given GITHUB-USERNAME forked btc-ticker repo - 'dev' is default
 githubBranch="$3"
 if [ ${#githubBranch} -eq 0 ]; then
-  githubBranch="master"
+  githubBranch="main"
 fi
 echo "3) will use GITHUB-BRANCH --> '${githubBranch}'"
 
@@ -140,12 +140,12 @@ echo "X) will use OPERATINGSYSTEM ---> '${baseimage}'"
 # USER-CONFIRMATION
 if [ "${noInteraction}" != "true" ]; then
   echo -n "Do you agree with all parameters above? (yes/no) "
-  read installRaspiblitzAnswer
-  if [ "$installRaspiblitzAnswer" != "yes" ] ; then
+  read installBtcTickerAnswer
+  if [ "$installBtcTickerAnswer" != "yes" ] ; then
     exit 1
   fi
 fi
-echo "Building RaspiBlitz ..."
+echo "Building btc-ticker ..."
 echo ""
 sleep 3
 
@@ -293,6 +293,7 @@ echo "root:btcticker" | sudo chpasswd
 echo "pi:btcticker" | sudo chpasswd
 
 
+
 # change log rotates
 echo "/var/log/syslog" >> ./rsyslog
 echo "{" >> ./rsyslog
@@ -389,7 +390,7 @@ if [ "${baseimage}" = "armbian" ]; then
 fi
 
 # dependencies for python
-sudo apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil libatlas-base-dev
+sudo apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev
 
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
 sudo update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
@@ -439,6 +440,9 @@ echo "admin:btcticker" | sudo chpasswd
 sudo adduser admin sudo
 sudo chsh admin -s /bin/bash
 
+sudo usermod -a -G gpio admin
+sudo usermod -a -G spi admin
+
 # configure sudo for usage without password entry
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
@@ -454,14 +458,9 @@ sudo -H python3 -m pip install requests[socks]==2.21.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy
+sudo -H python3 -m pip install numpy --upgrade
 sudo -H python3 -m pip install matplotlib
 
-cd /home/pi/
-sudo git clone https://github.com/waveshare/e-Paper
-cd /home/pi/e-PaperRaspberryPi_JetsonNano/python
-sudo python3 setup.py install
-cd /home/pi/
 
 echo ""
 echo "*** SHELL SCRIPTS AND ASSETS ***"
@@ -481,6 +480,11 @@ sudo -u admin chmod +x /home/admin/config.scripts/*.sh
 
 cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
+cd /home/admin/
+
+sudo -u admin git clone https://github.com/waveshare/e-Paper
+cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
+sudo python3 setup.py install
 cd /home/admin/
 
 # add /sbin to path for all
@@ -592,6 +596,8 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
 
   # I2C fix (make sure dtparam=i2c_arm is not on)
   sudo sed -i "s/^dtparam=i2c_arm=.*//g" /boot/config.txt 
+  #enable SPI
+   sudo sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
 fi
 
 sudo timedatectl set-timezone Europe/Berlin
@@ -610,6 +616,8 @@ sudo chmod +x /home/admin/run.sh
 sudo cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
 sudo systemctl enable btcticker
 
+# Enable firewwall
+sudo /home/admin/90finishSetup.sh
 
 # *** BTCTICKER IMAGE READY INFO ***
 echo ""

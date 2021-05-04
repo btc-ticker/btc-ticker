@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 btcticker.py
+python3 tickerEink.py

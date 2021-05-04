@@ -83,7 +83,7 @@ class Ticker():
             draw.text((5,25),'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]),font =font_date,fill = 0)
             draw.text((5,45),'$%.0f' % current_price["usd"],font =font_price,fill = 0)
             #draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
-            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"], symbolstring),font =font_price,fill = 0)
+            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"]),font =font_price,fill = 0)
             draw.text((5,89),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
             draw.text((5,110),symbolstring+pricenowstring,font =fontHorizontal,fill = 0)
         elif mode == "height":
@@ -91,7 +91,7 @@ class Ticker():
             draw.text((5,25),'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]),font =font_date,fill = 0)
             draw.text((5,45),'$%.0f' % current_price["usd"],font =font_price,fill = 0)
             #draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
-            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"], symbolstring),font =font_price,fill = 0)
+            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"]),font =font_price,fill = 0)
             draw.text((5,89),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
             draw.text((5,110), str(mempool["height"]), font =fontHorizontal,fill = 0)            
         elif mode == "satfiat":
@@ -99,7 +99,7 @@ class Ticker():
             draw.text((5,25),'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]),font =font_date,fill = 0)
             draw.text((5,45),'$%.0f' % current_price["usd"],font =font_price,fill = 0)
             # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
-            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"], symbolstring),font =font_price,fill = 0)
+            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"]),font =font_price,fill = 0)
             draw.text((5,89),symbolstring+pricenowstring, font =font_price,fill = 0)
             draw.text((5,110), '%.0f' % (current_price["sat_fiat"]), font =fontHorizontal,fill = 0)
         elif mode == "usd":
@@ -107,7 +107,7 @@ class Ticker():
             draw.text((5,25),'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]),font =font_date,fill = 0)
             draw.text((5,45), symbolstring+pricenowstring,font =font_price,fill = 0)
             # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
-            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"], symbolstring),font =font_price,fill = 0)
+            draw.text((5,67),'%.0f sat/$' % (current_price["sat_usd"]),font =font_price,fill = 0)
             draw.text((5,89),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
             draw.text((5,110),'$%.0f' % current_price["usd"],font =fontHorizontal,fill = 0)            
         elif mode == "newblock":

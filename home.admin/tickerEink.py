@@ -16,7 +16,7 @@ from PIL import Image, ImageOps
 from PIL import ImageFont
 from PIL import ImageDraw
 shutting_down = False
-picdir = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources'), 'images')
+picdir = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets'), 'images')
 
 def internet(host="8.8.8.8", port=53, timeout=3):
     """
@@ -44,14 +44,18 @@ def draw_shutdown():
     image = ImageOps.mirror(image)
     epd.display_4Gray(epd.getbuffer_4Gray(image))
     epd.sleep()
+    GPIO.setmode(GPIO.BCM)
     epd2in7.epdconfig.module_exit()
 
 
-def draw_image(image):
+def draw_image(image=None):
 #   A visual cue that the wheels have fallen off
     GPIO.setmode(GPIO.BCM)
     epd = epd2in7.EPD()
     epd.Init_4Gray()
+    if image is None:
+        image = Image.new('L', (epd.height, epd.width), 255)
+    logging.info("draw")
     epd.display_4Gray(epd.getbuffer_4Gray(image))
     epd.sleep()
     epd2in7.epdconfig.module_exit()
@@ -95,7 +99,8 @@ def main():
             ticker.update(mode=mode)
             draw_image(ticker.image)
             lastgrab=time.time()
-        except:
+        except Exception as e:
+            print(e)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab

@@ -28,6 +28,8 @@ if __name__ == '__main__':
         keywords=['btc', 'ticker'],
         packages=[
             "btcticker",
+            "btcticker.fonts",
+            "btcticker.fonts.googlefonts"
         ],
         classifiers=[
             'License :: OSI Approved :: MIT License',
@@ -44,6 +46,7 @@ if __name__ == '__main__':
             'Topic :: Office/Business :: Financial',
         ],
         install_requires=requires,
+        package_data={'btcticker.fonts': ['*.ttf'], 'btcticker.fonts.googlefonts': ['*.ttf', '*.txt'], },
         setup_requires=['pytest-runner'],
         tests_require=tests_require,
         include_package_data=True,
