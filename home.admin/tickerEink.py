@@ -245,6 +245,7 @@ def main():
                 elif newblock_displayed and (time.time() - lastcoinfetch > 150):
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
+                    newblock_displayed = False
                     setup_GPIO()
                 else:
                     time.sleep(0.5)

@@ -118,7 +118,7 @@ class Ticker():
             # draw.text((5,67),'retarget in %d blks' % remaining_blocks,font =font_price,fill = 0)
             #draw.text((5,67),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
             draw.text((5,67),'%d blk %.1f%% %s' % (remaining_blocks, (retarget_mult * 100 - 100), retarget_date.strftime("%d.%b%H:%M")),font =font_price,fill = 0)
-            draw.text((5,90), str(mempool["height"]), font =fontHorizontalBlock,fill = 0)            
+            draw.text((3,90), str(mempool["height"]), font =fontHorizontalBlock,fill = 0)            
         
         if mode != "newblock":
             draw.text((130,95),str(self.sparklinedays)+"day : "+pricechange,font =font_date,fill = 0)
