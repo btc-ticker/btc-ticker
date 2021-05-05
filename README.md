@@ -8,6 +8,29 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 * Power supply Micro USB 5V
 * micro SD card with 16 GB or more
 
+## Usage
+### Ticker view
+The Tickers the following information:
+* Block height, Mean block intervall in minutes, Time
+* Minimal Block fee for the first 7 blocks in mempool
+* Dollar price of a bitcoin
+* Satoshi per Dollar (also know as moskow time)
+* Sotoshi per Euro
+* Euro price of a bitcoin
+
+Whenever a new block is ariving the following information is shown:
+* Euro price of a bitcoin, mean block intervall in minutes, Time
+* Minimal Block fee for the first 7 blocks in mempool
+* Blocks in mempook, Number of transaction in mempool
+* Blocks until next difficulty retargeting, est. difficulty multiplier, est. retarget time
+* Block height
+### Buttons
+There are four buttons which the following behaviour (Please be patient after pressing, the e-ink is quite slow):
+1. Switch through different ticker views
+2. Switch BTC/fiat graph through 1, 7 and 30 days
+3. Show new block screen (is also shown everytime a new block is created)
+4. Force an update
+
 ## Flash SDcard
 
 * Downlad version 0.1 from [btc-ticker-0_1.img.gz](https://btc-ticker.com/btc-ticker-0_1.img.gz)
@@ -27,7 +50,7 @@ network={
 
 ## Build SDcard from scratch
 
-The sdcard build processed is inspired by the great [raspiblitz](https://github.com/rootzoll/raspiblitz).
+The SDcard build process is inspired by the great [raspiblitz](https://github.com/rootzoll/raspiblitz).
 
 * Download lastest [raspios image](https://downloads.raspberrypi.org/raspios_armhf/images/)
 * Write the Image to a SD card [Tutorial](https://www.raspberrypi.org/documentation/installation/installing-images/README.md)
