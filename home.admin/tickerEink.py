@@ -245,8 +245,10 @@ def main():
                         setup_GPIO()
                     height = new_height
                     lastheightfetch = time.time()
-                    
-                if (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
+                
+                if mode_list[last_mode_ind] == "newblock" and datapulled:
+                    time.sleep(10)
+                elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
                     logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
