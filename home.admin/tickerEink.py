@@ -34,7 +34,8 @@ def internet(host="8.8.8.8", port=53, timeout=3):
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
     except socket.error as ex:
-        logging.info("No internet")
+        logging.warn("No internet")
+        logging.warn(ex)
         return False
 
 
@@ -83,7 +84,8 @@ def shutdown_hook():
 
 def init_logging():
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    # logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.WARN)
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
 
@@ -107,7 +109,7 @@ def setup_GPIO(cleanup=True):
         GPIO.add_event_detect(BUTTON_GPIO_4, GPIO.FALLING, 
                               callback=button_pressed_callback4, bouncetime=100)
     except Exception as e:
-        print(e)
+        logging.warn(e)
         
 
 def signal_handler(sig, frame):
@@ -160,7 +162,7 @@ def main():
             draw_image(ticker.image)
             lastgrab=time.time()
         except Exception as e:
-            print(e)
+            logging.warn(e)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab
