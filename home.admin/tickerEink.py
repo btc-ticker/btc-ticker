@@ -218,7 +218,7 @@ def main():
                     logging.info('Key2 after %.2f s' % (time.time() - lastcoinfetch))
                     days_ind += 1
                     if days_ind >= len(days_list):
-                        days_ind = len(days_list) - 1
+                        days_ind = 0
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     display_update = True  
                     clear_state()
