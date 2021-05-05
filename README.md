@@ -1,6 +1,13 @@
 # bitcoin-ticker
 bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. Due to the limited refresh lifetime, new information is currently shown every 5 minutes and whenever a new block arrives.
 
+## Hardware
+
+* waveshare 2.7 e-Paper HAT (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi))
+* rasberry pi zero WH (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
+* Power supply Micro USB 5V
+* micro SD card with 16 GB or more
+
 ## Build SDcard
 
 The sdcard build processed is inspired by the great [raspiblitz](https://github.com/rootzoll/raspiblitz).
