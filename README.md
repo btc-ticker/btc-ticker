@@ -1,6 +1,12 @@
 # bitcoin-ticker
 bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. Due to the limited refresh lifetime, new information is currently shown every 5 minutes and whenever a new block arrives.
 
+![](pictures/view1.jpg)
+![](pictures/view2.jpg)
+![](pictures/view3.jpg)
+![](pictures/view4.jpg)
+![](pictures/view5.jpg)
+
 ## Hardware
 
 * waveshare 2.7 e-Paper HAT (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi))
@@ -18,12 +24,14 @@ The Tickers the following information:
 * Sotoshi per Euro
 * Euro price of a bitcoin
 
-Whenever a new block is ariving the following information is shown:
+Whenever a new block has arrived on the blockchain, the following information is shown for 120 seconds:
 * Euro price of a bitcoin, mean block intervall in minutes, Time
 * Minimal Block fee for the first 7 blocks in mempool
 * Blocks in mempook, Number of transaction in mempool
 * Blocks until next difficulty retargeting, est. difficulty multiplier, est. retarget time
 * Block height
+
+Due to the limited lifetime of 1000000 refreshes and an expected lifetime of 5 years, the refresh period has been set to 216 seconds.
 ### Buttons
 There are four buttons which the following behaviour (Please be patient after pressing, the e-ink is quite slow):
 1. Switch through different ticker views
