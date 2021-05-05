@@ -62,9 +62,7 @@ def draw_image(image=None):
         image = Image.new('L', (epd.height, epd.width), 255)
     logging.info("draw")
     epd.display_4Gray(epd.getbuffer_4Gray(image))
-    epd.sleep()
-    epd2in7.epdconfig.module_exit()
-    
+    epd.sleep()    
     
 
 def signal_hook(*args):
@@ -202,7 +200,7 @@ def main():
             notifier.notify("WATCHDOG=1")
             if internet():
                 if key1state == False:
-                    logging.info('Key1')
+                    logging.info('Key1 after %.2f s' % (time.time() - lastcoinfetch))
                     last_mode_ind += 1
                     if last_mode_ind >= len(mode_list):
                         last_mode_ind = 0
@@ -211,7 +209,7 @@ def main():
                     clear_state()
                     setup_GPIO()
                 elif key2state == False:
-                    logging.info('Key2')
+                    logging.info('Key2 after %.2f s' % (time.time() - lastcoinfetch))
                     days_ind += 1
                     if days_ind >= len(days_list):
                         days_ind = len(days_list) - 1
@@ -220,14 +218,14 @@ def main():
                     clear_state()
                     setup_GPIO()
                 elif key3state == False:
-                    logging.info('Key3')
+                    logging.info('Key3 after %.2f s' % (time.time() - lastcoinfetch))
                     lastcoinfetch = fullupdate("newblock", days_list[days_ind])
                     display_update = True
                     newblock_displayed = True
                     clear_state()
                     setup_GPIO()
                 elif key4state == False:
-                    logging.info('Key4')
+                    logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
                     lastcoinfetch = fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     display_update = True
                     clear_state()
@@ -235,6 +233,7 @@ def main():
                 if (time.time() - lastheightfetch > 10):
                     new_height = ticker.mempool.getBlockHeight()
                     if new_height > height and not display_update:
+                        logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
                         lastcoinfetch = fullupdate("newblock", days_list[days_ind])
                         newblock_displayed = True
                         setup_GPIO()
@@ -242,10 +241,12 @@ def main():
                     lastheightfetch = time.time()
                     
                 if (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
+                    logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
                     setup_GPIO()
                 elif newblock_displayed and (time.time() - lastcoinfetch > 150):
+                    logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
                     newblock_displayed = False
