@@ -144,7 +144,11 @@ def clear_state():
 def main():
     ticker = Ticker()
     height = ticker.mempool.getBlockHeight()
-    updatefrequency = 300
+    # lifetime of 2.7 panel is 5 years and 1000000 refresh
+    # 5*365*(24*60/3.6 + 144) / 1000000
+    # Update every 3.6 min + 144 block updates per day
+    updatefrequency = 216
+    updatefrequency_after_newblock = 120
     mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
     days_list = [1, 7, 30]
     last_mode_ind = 0
@@ -245,14 +249,14 @@ def main():
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
                     setup_GPIO()
-                elif newblock_displayed and (time.time() - lastcoinfetch > 150):
+                elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                     logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
                     datapulled = True
                     newblock_displayed = False
                     setup_GPIO()
                 else:
-                    time.sleep(0.5)
+                    time.sleep(1)
 
 
 if __name__ == '__main__':
