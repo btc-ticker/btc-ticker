@@ -8,14 +8,31 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 * Power supply Micro USB 5V
 * micro SD card with 16 GB or more
 
-## Build SDcard
+## Flash SDcard
+
+* Downlad version 0.1 from [btc-ticker-0_1.img.gz](https://btc-ticker.com/btc-ticker-0_1.img.gz)
+* Verify SHA256 checksum. It should be: `9C7465131DE4AB10C5969228CDEFDB747D34F53D378E48E18CA4FDC5342D106F`
+* add `wpa_supplicant.conf` to the boot partition when mounted on PC
+```
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=[COUNTRY_CODE]
+network={
+  ssid="[WIFI_SSID]"
+  psk="[WIFI_PASSWORD]"
+}
+```
+* replace `COUNTRY_CODE` with the ISO2 code (e.g. DE)
+* Set `WIFI_SSID` and `WIFI_PASSWORD`
+
+## Build SDcard from scratch
 
 The sdcard build processed is inspired by the great [raspiblitz](https://github.com/rootzoll/raspiblitz).
 
 * Download lastest [raspios image](https://downloads.raspberrypi.org/raspios_armhf/images/)
 * Write the Image to a SD card [Tutorial](https://www.raspberrypi.org/documentation/installation/installing-images/README.md)
-* Add a `ssh` file to the root when mounted on PC
-* Add a `wpa_supplicant.conf` file, more information [here](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
+* Add a `ssh` file to the boot partition when mounted on PC
+* Add a `wpa_supplicant.conf` file, as shown in the section before. More information are also available [here](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
 * Login via SSH to `ssh pi@[IP-OF-YOUR-RASPI]` using password `raspberry`
 
 
@@ -26,3 +43,14 @@ wget https://raw.githubusercontent.com/btc-ticker/btc-ticker/main/build_sdcard.s
 
 After everything run through, it is possible to login with the password `btcticker`
 In order to prepare everyting for release, run `/home/admin/XXprepareRelease.sh`
+
+## Changing the ssh password
+In order to secure your btc-ticker in your local network, you should change the SSH password after setting up everything.
+* Login via SSH to `ssh admin@[IP-OF-YOUR-RASPI]` using the password `btcticker`
+* Change the password (this will be improved in the next release)
+```
+echo "pi:NEWPASSWORD" | sudo chpasswd
+echo "root:NEWPASSWORD" | sudo chpasswd
+echo "admin:NEWPASSWORD" | sudo chpasswd
+```
+Replace `NEWPASSWORD` with the new password.
