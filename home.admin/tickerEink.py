@@ -98,15 +98,18 @@ def setup_GPIO(cleanup=True):
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    GPIO.add_event_detect(BUTTON_GPIO_1, GPIO.FALLING, 
-                          callback=button_pressed_callback1, bouncetime=100)
-    GPIO.add_event_detect(BUTTON_GPIO_2, GPIO.FALLING, 
-                          callback=button_pressed_callback2, bouncetime=100)
-    GPIO.add_event_detect(BUTTON_GPIO_3, GPIO.FALLING, 
-                          callback=button_pressed_callback3, bouncetime=100)
-    GPIO.add_event_detect(BUTTON_GPIO_4, GPIO.FALLING, 
-                          callback=button_pressed_callback4, bouncetime=100)
+    try:
+        
+        GPIO.add_event_detect(BUTTON_GPIO_1, GPIO.FALLING, 
+                              callback=button_pressed_callback1, bouncetime=100)
+        GPIO.add_event_detect(BUTTON_GPIO_2, GPIO.FALLING, 
+                              callback=button_pressed_callback2, bouncetime=100)
+        GPIO.add_event_detect(BUTTON_GPIO_3, GPIO.FALLING, 
+                              callback=button_pressed_callback3, bouncetime=100)
+        GPIO.add_event_detect(BUTTON_GPIO_4, GPIO.FALLING, 
+                              callback=button_pressed_callback4, bouncetime=100)
+    except Exception as e:
+        print(e)
         
 
 def signal_handler(sig, frame):
