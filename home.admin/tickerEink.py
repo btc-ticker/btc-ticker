@@ -89,9 +89,11 @@ def init_logging():
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
 
-def setup_GPIO():
+def setup_GPIO(cleanup=True):
+    if cleanup:
+        GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
-
+    
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -173,7 +175,7 @@ def main():
     if True:
         logging.info("epd2in7 BTC ticker")
 
-        setup_GPIO()
+        setup_GPIO(False)
         signal.signal(signal.SIGINT, signal_handler)
    
 
