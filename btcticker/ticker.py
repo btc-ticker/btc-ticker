@@ -22,18 +22,19 @@ font_date = ImageFont.truetype(os.path.join(fontdir,'PixelSplitter-Bold.ttf'),15
 
 
 class Ticker():
-    def __init__(self, width=264, height=176, fiat="eur", sparklinedays=1, orientation=90, inverted=False):
+    def __init__(self, width=264, height=176, fiat="eur", days_ago=1, orientation=90, inverted=False):
         self.height = height
         self.width = width
         self.fiat = fiat
-        self.sparklinedays = sparklinedays
         self.orientation = orientation
         self.inverted = inverted
         self.mempool = Mempool()
-        self.price = Price(fiat=fiat, days_ago=sparklinedays)
+        self.price = Price(fiat=fiat, days_ago=days_ago)
         
         self.image = Image.new('L', (width, height), 255)
-        
+
+    def setDaysAgo(self, days_ago):
+        self.price.setDaysAgo(days_ago)
 
     def update(self, mode="fiat", mirror=True):
         self.mempool.refresh()
@@ -121,7 +122,7 @@ class Ticker():
             draw.text((3,90), str(mempool["height"]), font =fontHorizontalBlock,fill = 0)            
         
         if mode != "newblock":
-            draw.text((130,95),str(self.sparklinedays)+"day : "+pricechange,font =font_date,fill = 0)
+            draw.text((130,95),str(self.price.days_ago)+"day : "+pricechange,font =font_date,fill = 0)
             # Print price to 5 significant figures
          #       draw.text((20,120),symbolstring,font =fonthiddenprice,fill = 0)
             self.image.paste(sparkbitmap,(100,45))

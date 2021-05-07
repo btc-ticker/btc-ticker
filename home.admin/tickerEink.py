@@ -157,7 +157,7 @@ def main():
     days_ind = 0
     def fullupdate(mode, days):
         try:
-            ticker.sparklinedays = days
+            ticker.setDaysAgo(days)
             ticker.update(mode=mode)
             draw_image(ticker.image)
             lastgrab=time.time()

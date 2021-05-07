@@ -20,7 +20,14 @@ class Price():
         self.price["sat_fiat"] = 1e8 / self.price["fiat"]
         
         self.timeseriesstack = self.coingecko.getHistoryPrice(self.fiat)
-        
+
+    def setDaysAgo(self, days_ago):
+        self.coingecko.days_ago = days_ago
+
+    @property
+    def days_ago(self):
+        return self.coingecko.days_ago
+
     def getPriceChange(self):
         if len(self.timeseriesstack) == 0:
             return ""
