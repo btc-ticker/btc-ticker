@@ -16,7 +16,8 @@ requires = [
     "blockchain",
     "Pillow",
     "matplotlib",
-    "numpy"
+    "numpy",
+    "pydantic"
 ]
 
 if __name__ == '__main__':

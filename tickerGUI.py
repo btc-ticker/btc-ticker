@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 from btcticker.ticker import Ticker
+from btcticker.config import Config
 import os
 from PIL import Image, ImageTk
 import io
@@ -14,8 +15,9 @@ def get_img_data(img):
     del img
     return bio.getvalue()
 
-ticker = Ticker()
-ticker_mode = "newblock"
+config = Config("home.admin/config.ini")
+ticker = Ticker(config)
+ticker_mode = "fiat"
 ticker.update(mirror=False, mode=ticker_mode)
 
 

@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 from btcticker.ticker import Ticker
+from btcticker.config import Config
 import os
 import sys
 import math
 import socket
 import logging
 import logging.handlers
+import argparse
 import signal
 import atexit
 import sdnotify
@@ -34,8 +36,8 @@ def internet(host="8.8.8.8", port=53, timeout=3):
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
     except socket.error as ex:
-        logging.warn("No internet")
-        logging.warn(ex)
+        logging.warning("No internet")
+        logging.warning(ex)
         return False
 
 
@@ -82,10 +84,10 @@ def shutdown_hook():
     return True
 
 
-def init_logging():
+def init_logging(warnlevel=logging.WARNING):
     logger = logging.getLogger()
     # logger.setLevel(logging.DEBUG)
-    logger.setLevel(logging.WARN)
+    logger.setLevel(warnlevel)
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
 
@@ -109,7 +111,7 @@ def setup_GPIO(cleanup=True):
         GPIO.add_event_detect(BUTTON_GPIO_4, GPIO.FALLING, 
                               callback=button_pressed_callback4, bouncetime=100)
     except Exception as e:
-        logging.warn(e)
+        logging.warning(e)
         
 
 def signal_handler(sig, frame):
@@ -143,8 +145,10 @@ def clear_state():
     key4state = True
 
 
-def main():
-    ticker = Ticker()
+def main(Config: config):
+
+
+    ticker = Ticker(config)
     height = ticker.mempool.getBlockHeight()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     # 5*365*(24*60/3.6 + 144) / 1000000
@@ -162,7 +166,7 @@ def main():
             draw_image(ticker.image)
             lastgrab=time.time()
         except Exception as e:
-            logging.warn(e)
+            logging.warning(e)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab
@@ -236,11 +240,11 @@ def main():
                     display_update = True
                     clear_state()
                     setup_GPIO()
-                if (time.time() - lastheightfetch > 30):
+                if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                     try:
                         new_height = ticker.mempool.getBlockHeight()
                     except Exception as e:
-                        logging.warn(e)
+                        logging.warning(e)
                     if new_height > height and not display_update:
                         logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
                         lastcoinfetch = fullupdate("newblock", days_list[days_ind])
@@ -267,9 +271,14 @@ def main():
 
 
 if __name__ == '__main__':
-    init_logging()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="config.ini")
+    args = parser.parse_args()
+
+    config = Config(path=args.config)    
+    init_logging(config.main.loglevel)
     try:
-        main()
+        main(config)
     except Exception as e:
         logging.exception(e)
         raise
