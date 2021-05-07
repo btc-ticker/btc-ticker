@@ -236,8 +236,11 @@ def main():
                     display_update = True
                     clear_state()
                     setup_GPIO()
-                if (time.time() - lastheightfetch > 10):
-                    new_height = ticker.mempool.getBlockHeight()
+                if (time.time() - lastheightfetch > 30):
+                    try:
+                        new_height = ticker.mempool.getBlockHeight()
+                    except Exception as e:
+                        logging.warn(e)
                     if new_height > height and not display_update:
                         logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
                         lastcoinfetch = fullupdate("newblock", days_list[days_ind])
