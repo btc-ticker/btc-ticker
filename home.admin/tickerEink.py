@@ -145,7 +145,7 @@ def clear_state():
     key4state = True
 
 
-def main(Config: config):
+def main(config):
 
 
     ticker = Ticker(config)
