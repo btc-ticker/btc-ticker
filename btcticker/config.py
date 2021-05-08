@@ -10,12 +10,14 @@ class ConfigurationException(ValueError):
 
 class MainConfig(BaseModel):
     fiat: str = "eur"
+    show_usd: bool = True
     loglevel: str = "WARNING"
     display_width_pixels: int = 264
     display_height_pixels: int = 176
     orientation: int = 90
     inverted: bool = False
     show_block_height: bool = True
+    big_number: bool = False
 
 class FontsConfig(BaseModel):
     
@@ -23,10 +25,10 @@ class FontsConfig(BaseModel):
     fonthiddenpricesize: int = 30
     font: str = 'googlefonts/Roboto-Medium.ttf'
     font_size: int = 40
-    fontHorizontal: str = 'googlefonts/Roboto-Medium.ttf'
-    fontHorizontal_size: int = 65
     fontHorizontalBlock: str = 'googlefonts/Roboto-Medium.ttf'
     fontHorizontalBlock_size: int = 75
+    fontHorizontalBig: str = 'googlefonts/Roboto-Medium.ttf'
+    fontHorizontalBig_size: int = 100
     font_price: str = 'googlefonts/Roboto-Medium.ttf'
     font_price_size: int = 20
     font_height: str = 'PixelSplitter-Bold.ttf'

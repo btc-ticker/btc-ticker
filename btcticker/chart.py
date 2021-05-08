@@ -4,14 +4,14 @@ import numpy as np
 from PIL import Image
 
 
-def makeSpark(pricestack):
+def makeSpark(pricestack, figsize=(10, 3), dpi=17):
     # Draw and save the sparkline that represents historical data
 
     # Subtract the mean from the sparkline to make the mean appear on the plot (it's really the x axis)    
     x = pricestack-np.mean(pricestack)
 
 
-    fig = Figure(figsize=(10, 3), dpi=17)
+    fig = Figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot()
     canvas = FigureCanvasAgg(fig)
     ax.plot(x, color='k', linewidth=6)
