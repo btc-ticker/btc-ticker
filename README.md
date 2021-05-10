@@ -11,8 +11,8 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 
 * waveshare 2.7 e-Paper HAT (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi))
 * rasberry pi zero WH (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
-* Power supply Micro USB 5V
-* micro SD card with 16 GB or more
+* Power supply Micro USB 5V (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/stromversorgung/netzteile-fuer-die-steckdose/micro-usb-netzteil/ladeadapter-5v/1a-flache-bauform-schwarz))
+* micro SD card with 16 GB or more (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/speicherkarten/sandisk-ultra-microsdhc-a1-98mb/s-class-10-speicherkarte-43-adapter-16gb))
 
 ## Usage
 ### Ticker view
@@ -24,7 +24,7 @@ The Tickers the following information:
 * Sotoshi per Euro
 * Euro price of a bitcoin
 
-Whenever a new block has arrived on the blockchain, the following information is shown for 120 seconds:
+Whenever a new block has arrived on the blockchain, the following information is shown for 120 seconds (can be disabled in the config.ini):
 * Euro price of a bitcoin, mean block intervall in minutes, Time
 * Minimal Block fee for the first 7 blocks in mempool
 * Blocks in mempook, Number of transaction in mempool
@@ -36,8 +36,14 @@ Due to the limited lifetime of 1000000 refreshes and an expected lifetime of 5 y
 There are four buttons which the following behaviour (Please be patient after pressing, the e-ink is quite slow):
 1. Switch through different ticker views
 2. Switch BTC/fiat graph through 1, 7 and 30 days
-3. Show new block screen (is also shown everytime a new block is created)
-4. Force an update
+3. Switch the layout of the ticker
+4. Show new block screen (is also shown everytime a new block is created)
+
+### Config.ini
+It possible to personalize the ticker to your needs. After changing the ini file, a restart of the btc-ticker service is needed:
+```
+sudo systemctl restart btcticker
+```
 
 ## Flash SDcard
 
@@ -73,7 +79,7 @@ wget https://raw.githubusercontent.com/btc-ticker/btc-ticker/main/build_sdcard.s
 ```
 
 After everything run through, it is possible to login with the password `btcticker`
-In order to prepare everyting for release, run `/home/admin/XXprepareRelease.sh`
+In order to prepare everyting for release, run `/home/admin/XXprepareRelease.sh`. When you just want to use it for yourself, you do not need to run `/home/admin/XXprepareRelease.sh`.
 
 ## Changing the ssh password
 In order to secure your btc-ticker in your local network, you should change the SSH password after setting up everything.

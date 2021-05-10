@@ -24,19 +24,14 @@ class MainConfig(BaseModel):
     show_block_height: bool = True
 
 class FontsConfig(BaseModel):
-    
-    fonthiddenprice: str = 'googlefonts/Roboto-Medium.ttf'
-    fonthiddenpricesize: int = 30
-    font: str = 'googlefonts/Roboto-Medium.ttf'
-    font_size: int = 40
-    font_horizontalblock: str = 'googlefonts/Roboto-Medium.ttf'
-    font_horizontalbig: str = 'googlefonts/Roboto-Medium.ttf'
-    font_price: str = 'googlefonts/Roboto-Medium.ttf'
-    font_price_size: int = 20
-    font_height: str = 'PixelSplitter-Bold.ttf'
-    font_height_size: int = 18
-    font_date: str = 'googlefonts/RobotoMono-Medium.ttf'
-    font_date_size :int = 15
+
+    font_buttom: str = 'googlefonts/Roboto-Medium.ttf'
+    font_side: str = 'googlefonts/Roboto-Medium.ttf'
+    font_side_size: int = 20
+    font_top: str = 'PixelSplitter-Bold.ttf'
+    font_top_size: int = 18
+    font_fee: str = 'googlefonts/RobotoMono-Medium.ttf'
+    font_fee_size :int = 15
 
 
 class Config:
