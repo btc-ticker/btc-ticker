@@ -160,7 +160,7 @@ patch()
       exit 1
       ;;
   esac
-
+}
 
 
 # quick call by parameter
