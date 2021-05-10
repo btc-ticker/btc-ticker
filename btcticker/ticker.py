@@ -194,7 +194,7 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
-                w, h = self.drawText(5, 175, symbolstring, self.font_side, anchor="ls")
+                w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
                 self.drawTextMax(263, 175, 264 - w, 176-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
             elif mode == "height":
                 pos_y = 0
@@ -244,7 +244,7 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
-                w, h = self.drawText(5, 175, '$', self.font_side, anchor="ls")          
+                w, h = self.drawText(5, pos_y, '$', self.font_side)          
                 self.drawTextMax(263, 175, 264 - w, 176-pos_y, format(int(current_price["usd"]), ""), self.config.fonts.font_buttom, anchor="rs")
                 
             elif mode == "newblock":
@@ -281,7 +281,7 @@ class Ticker():
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
-                w, h = self.drawText(5, 175, symbolstring, self.font_side, anchor="ls")
+                w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
                 self.drawTextMax(263, 175, 264 - w, 176-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
             elif mode == "height":
                 pos_y = 0
@@ -320,7 +320,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, '%.0f sat/$' % (current_price["sat_usd"]), self.font_side)
                 pos_y += h
                 # self.drawText(5, 89, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
-                w, h = self.drawText(5, 175, '$', self.font_side, anchor="ls")
+                w, h = self.drawText(5, pos_y, '$', self.font_side)
                 self.drawTextMax(263, 175, 264 - w, 176-pos_y, format(int(current_price["usd"]), ""), self.config.fonts.font_buttom, anchor="rs")
                
             elif mode == "newblock":
