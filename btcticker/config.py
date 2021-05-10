@@ -14,7 +14,7 @@ class MainConfig(BaseModel):
     start_mode_ind: int = 0
     days_list: str = '1,7,30'
     start_days_ind: int = 0
-    layout_list: str = 'all, no_usd, big'
+    layout_list: str = 'all,no_usd,big'
     start_layout_ind: int = 0
     loglevel: str = "WARNING"
     display_width_pixels: int = 264

@@ -164,16 +164,16 @@ def main(config):
     
     layout_list = []
     for l in config.main.layout_list.split(","):
-        layout_list.append(l.replace('"', ""))
+        layout_list.append(l.replace('"', "").replace(" ", ""))
     last_layout_ind = config.main.start_layout_ind    
     
     mode_list = []
     for l in config.main.mode_list.split(","):
-        mode_list.append(l.replace('"', ""))
+        mode_list.append(l.replace('"', "").replace(" ", ""))
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
-        days_list.append(int(d.replace('"', '')))    
+        days_list.append(int(d.replace('"', '').replace(" ", "")))    
     last_mode_ind = config.main.start_mode_ind
     days_ind = config.main.start_days_ind
     def fullupdate(mode, days, layout):
