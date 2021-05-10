@@ -99,7 +99,7 @@ def setup_GPIO(cleanup=True):
         GPIO.remove_event_detect(BUTTON_GPIO_3)
         GPIO.remove_event_detect(BUTTON_GPIO_4)
         GPIO.cleanup()
-    
+    GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
