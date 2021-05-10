@@ -25,10 +25,10 @@ class FontsConfig(BaseModel):
     fonthiddenpricesize: int = 30
     font: str = 'googlefonts/Roboto-Medium.ttf'
     font_size: int = 40
-    fontHorizontalBlock: str = 'googlefonts/Roboto-Medium.ttf'
-    fontHorizontalBlock_size: int = 75
-    fontHorizontalBig: str = 'googlefonts/Roboto-Medium.ttf'
-    fontHorizontalBig_size: int = 100
+    font_horizontalblock: str = 'googlefonts/Roboto-Medium.ttf'
+    font_horizontalblock_size: int = 75
+    font_horizontalbig: str = 'googlefonts/Roboto-Medium.ttf'
+    font_horizontalbig_size: int = 100
     font_price: str = 'googlefonts/Roboto-Medium.ttf'
     font_price_size: int = 20
     font_height: str = 'PixelSplitter-Bold.ttf'

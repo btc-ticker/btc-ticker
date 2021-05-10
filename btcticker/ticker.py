@@ -28,21 +28,21 @@ class Ticker():
         self.image = Image.new('L', (self.width, self.height), 255)
         
         fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts')
-        self.fonthiddenprice = ImageFont.truetype(os.path.join(fontdir,'googlefonts/Roboto-Medium.ttf'), 30)
-        self.font = ImageFont.truetype(os.path.join(fontdir,'googlefonts/Roboto-Medium.ttf'), 40)
-        self.fontHorizontalBlock = ImageFont.truetype(os.path.join(fontdir,'googlefonts/Roboto-Medium.ttf'), 75)
-        self.font_price = ImageFont.truetype(os.path.join(fontdir,'googlefonts/Roboto-Medium.ttf'), 20)
-        self.font_height = ImageFont.truetype(os.path.join(fontdir,'PixelSplitter-Bold.ttf'),18)
-        self.font_date = ImageFont.truetype(os.path.join(fontdir,'PixelSplitter-Bold.ttf'),15)
+        self.fonthiddenprice = ImageFont.truetype(os.path.join(fontdir,config.fonts.fonthiddenprice), config.fonts.fonthiddenpricesize)
+        self.font = ImageFont.truetype(os.path.join(fontdir,config.fonts.font), config.fonts.font_size)
+        self.fontHorizontalBlock = ImageFont.truetype(os.path.join(fontdir,config.fonts.font_horizontalblock), config.fonts.font_horizontalblock_size)
+        self.font_price = ImageFont.truetype(os.path.join(fontdir,config.fonts.font_price), config.fonts.font_price_size)
+        self.font_height = ImageFont.truetype(os.path.join(fontdir,config.fonts.font_height),config.fonts.font_height_size)
+        self.font_date = ImageFont.truetype(os.path.join(fontdir,config.fonts.font_date),config.fonts.font_date_size)
         
-        self.fontHorizontalBig = ImageFont.truetype(os.path.join(fontdir,'googlefonts/Roboto-Medium.ttf'), 100)
+        self.fontHorizontalBig = ImageFont.truetype(os.path.join(fontdir,config.fonts.font_horizontalbig), config.fonts.font_horizontalbig_size)
         
 
     def setDaysAgo(self, days_ago):
         self.price.setDaysAgo(days_ago)
 
-    def drawText(self, x, y, text, font):
-        self.draw.text((x,y),text,font=font,fill = 0)
+    def drawText(self, x, y, text, font, anchor="la"):
+        self.draw.text((x,y),text,font=font,fill = 0, anchor=anchor)
 
     def update(self, mode="fiat", mirror=True):
         self.mempool.refresh()
@@ -71,6 +71,10 @@ class Ticker():
         retarget_timestamp = difficulty_epoch_duration + last_retarget_timestamp
         retarget_date = datetime.fromtimestamp(retarget_timestamp)
         
+        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
+        #fee_str = 'fee %.0f %.0f %.0f %.0f %.0f %.0f %.0f'
+        fee_short_str = '%.1f-%.1f-%.1f'
+        #fee_short_str = 'fee %.0f %.0f %.0f'
     
         self.image = Image.new('L', (self.width, self.height), 255)    # 255: clear the image with white
         self.draw = ImageDraw.Draw(self.image)
@@ -91,21 +95,21 @@ class Ticker():
                 price_parts = pricenowstring.split(",")
                 
                 self.drawText(5, 5, price_parts[0], self.fontHorizontalBig)
-                self.drawText(85, 80, price_parts[1], self.fontHorizontalBig)
+                self.drawText(263, 175, price_parts[1], self.fontHorizontalBig, anchor="rs")
                 self.drawText(5, 100, symbolstring, self.fontHorizontalBlock)
             elif mode == "height" or mode == "newblock":
                 self.drawText(5, 2, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
                 price_parts = pricenowstring.split(",")
                                 
                 self.drawText(5, 5, str(mempool["height"])[:3], self.fontHorizontalBig)
-                self.drawText(85, 80, str(mempool["height"])[3:], self.fontHorizontalBig)
+                self.drawText(263, 175, str(mempool["height"])[3:], self.fontHorizontalBig, anchor="rs")
 
             elif mode == "satfiat":
                 self.drawText(5,2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f' % (minFee[0], minFee[1], minFee[2]), self.font_date)
+                self.drawText(5, 25, fee_short_str % (minFee[0], minFee[1], minFee[2]), self.font_date)
                 price_parts = pricenowstring.split(",")
                 self.drawText(5, 45, symbolstring+pricenowstring, self.font_price)
-                self.drawText(30, 80, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBig)               
+                self.drawText(263, 175, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBig, anchor="rs")               
                 self.drawText(5, 119, "sat", self.font_price)
                 self.drawText(5, 141, "/%s" % symbolstring, self.font_price)                
                 
@@ -114,7 +118,7 @@ class Ticker():
                 price_parts = format(int(current_price["usd"]), ",").split(",")
                 
                 self.drawText(5, 5, price_parts[0], self.fontHorizontalBig)
-                self.drawText(85, 80, price_parts[1], self.fontHorizontalBig)
+                self.drawText(263, 175, price_parts[1], self.fontHorizontalBig, anchor="rs")
                 self.drawText(5, 100, "$", self.fontHorizontalBlock)
                 
                 
@@ -124,52 +128,53 @@ class Ticker():
         elif self.config.main.fiat != "usd" and self.config.main.show_usd:
             if mode == "fiat":
                 self.drawText(5,2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                #self.drawText(5, 25, 'fee %.0f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, '$%.0f' % current_price["usd"], self.font_price)
                 #draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
                 self.drawText(5, 67, '%.0f sat/$' % (current_price["sat_usd"]), self.font_price)
                 self.drawText(5, 89, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
                 self.drawText(5, 130, symbolstring, self.font_price)
-                self.drawText(20, 100, pricenowstring, self.fontHorizontalBlock)
+                self.drawText(263, 175, pricenowstring.replace(",", ""), self.fontHorizontalBlock, anchor="rs")
             elif mode == "height":
                 self.drawText(5, 2, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, '$%.0f' % current_price["usd"], self.font_price)
                 self.drawText(5, 67, '%.0f sat/$' % (current_price["sat_usd"]), self.font_price)
                 self.drawText(5, 89, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
-                self.drawText(5, 100, str(mempool["height"]), self.fontHorizontalBlock)
+                self.drawText(263, 175, str(mempool["height"]), self.fontHorizontalBlock, anchor="rs")
                 #draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)       
             elif mode == "satfiat":
                 self.drawText(5, 2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5,25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5,25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, '$%.0f' % current_price["usd"], self.font_price)
                 self.drawText(5, 67, '%.0f sat/$' % (current_price["sat_usd"]), self.font_price)
                 self.drawText(5, 89, symbolstring+pricenowstring, self.font_price)
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
                 self.drawText(5, 119, "sat", self.font_price)
                 self.drawText(5, 141, "/%s" % symbolstring, self.font_price)
-                self.drawText(50, 100, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBlock)     
+                self.drawText(263, 175, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBlock, anchor="rs") 
                 
                 
             elif mode == "usd":
                 self.drawText(5, 2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, symbolstring+pricenowstring, self.font_price)
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
                 self.drawText(5, 67, '%.0f sat/$' % (current_price["sat_usd"]), self.font_price)
                 self.drawText(5, 89, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
                 self.drawText(5, 130, '$', self.font_price)
-                self.drawText(20, 100, format(int(current_price["usd"]), ","), self.fontHorizontalBlock)                
+                self.drawText(263, 175, format(int(current_price["usd"]), ""), self.fontHorizontalBlock, anchor="rs")                
                 
             elif mode == "newblock":
                 self.drawText(5, 2, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, '%d blks %d txs' % (blocks, count), self.font_price)
                 # draw.text((5,25),'nextfee %.1f - %.1f - %.1f' % (minFee[0], medianFee[0], maxFee[0]),font =font_date,fill = 0)
                 # draw.text((5,67),'retarget in %d blks' % remaining_blocks,font =font_price,fill = 0)
                 #draw.text((5,67),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
                 self.drawText(5, 67, '%d blk %.1f%% %s' % (remaining_blocks, (retarget_mult * 100 - 100), retarget_date.strftime("%d.%b%H:%M")), self.font_price)
-                self.drawText(3, 90, str(mempool["height"]), self.fontHorizontalBlock)
+                self.drawText(263, 175, str(mempool["height"]), self.fontHorizontalBlock, anchor="rs")
                 
             if mode != "newblock":
                 self.drawText(130, 95, str(self.price.days_ago)+"day : "+pricechange, self.font_date) 
@@ -178,43 +183,43 @@ class Ticker():
             
             if mode == "fiat":
                 self.drawText(5,2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 67, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
                 self.drawText(5, 130, symbolstring, self.font_price)
-                self.drawText(20, 100, pricenowstring, self.fontHorizontalBlock)            
+                self.drawText(263, 175, pricenowstring.replace(",", ""), self.fontHorizontalBlock, anchor="rs")    
             elif mode == "height":
                 self.drawText(5, 2, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 67, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
-                self.drawText(5, 100, str(mempool["height"]), self.fontHorizontalBlock)
+                self.drawText(263, 175, str(mempool["height"]), self.fontHorizontalBlock, anchor="rs")
                 #draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)       
             elif mode == "satfiat":
                 self.drawText(5, 2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5,25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5,25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 67, symbolstring+pricenowstring, self.font_price)
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
                 self.drawText(5, 119, "sat", self.font_price)
                 self.drawText(5, 141, "/%s" % symbolstring, self.font_price)
-                self.drawText(50, 100, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBlock)                 
+                self.drawText(263, 175, '%.0f' % (current_price["sat_fiat"]), self.fontHorizontalBlock, anchor="rs")    
             elif mode == "usd":
                 self.drawText(5, 2, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, symbolstring+pricenowstring, self.font_price)
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_price,fill = 0)
                 self.drawText(5, 67, '%.0f sat/$' % (current_price["sat_usd"]), self.font_price)
                 # self.drawText(5, 89, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_price)
                 self.drawText(5, 130, '$', self.font_price)
-                self.drawText(20, 100, format(int(current_price["usd"]), ","), self.fontHorizontalBlock)
+                self.drawText(263, 175, format(int(current_price["usd"]), ""), self.fontHorizontalBlock, anchor="rs")
                
             elif mode == "newblock":
                 self.drawText(5, 2, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
-                self.drawText(5, 25, 'fee %.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%0.f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
+                self.drawText(5, 25, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_date)
                 self.drawText(5, 45, '%d blks %d txs' % (blocks, count), self.font_price)
                 # draw.text((5,25),'nextfee %.1f - %.1f - %.1f' % (minFee[0], medianFee[0], maxFee[0]),font =font_date,fill = 0)
                 # draw.text((5,67),'retarget in %d blks' % remaining_blocks,font =font_price,fill = 0)
                 #draw.text((5,67),'%.0f sat/%s' % (current_price["sat_fiat"], symbolstring),font =font_price,fill = 0)
                 self.drawText(5, 67, '%d blk %.1f%% %s' % (remaining_blocks, (retarget_mult * 100 - 100), retarget_date.strftime("%d.%b%H:%M")), self.font_price)
-                self.drawText(3, 90, str(mempool["height"]), self.fontHorizontalBlock)
+                self.drawText(3, 90, str(mempool["height"]), self.fontHorizontalBlock, anchor="rs")
         
             if mode != "newblock":
                 self.drawText(130, 95, str(self.price.days_ago)+"day : "+pricechange, self.font_date)

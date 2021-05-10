@@ -18,7 +18,7 @@ def get_img_data(img):
 config = Config("home.admin/config.ini")
 ticker = Ticker(config)
 ticker_mode = ["fiat", "height", "satfiat", "usd", "newblock"]
-ticker_ind = 2
+ticker_ind = 0
 ticker.update(mirror=False, mode=ticker_mode[ticker_ind])
 
 

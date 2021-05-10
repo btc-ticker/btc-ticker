@@ -151,9 +151,14 @@ def main(config):
     ticker = Ticker(config)
     height = ticker.mempool.getBlockHeight()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
-    # 5*365*(24*60/3.6 + 144) / 1000000
-    # Update every 3.6 min + 144 block updates per day
-    updatefrequency = 216
+    if config.main.show_block_height:
+        # 5*365*(24*60/3.6 + 144) / 1000000
+        # Update every 3.6 min + 144 block updates per day
+        updatefrequency = 216
+    else:
+        # 5*365*(24*60/3.0) / 1000000
+        # Update every 2.8 min
+        updatefrequency = 168       
     updatefrequency_after_newblock = 120
     mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
     days_list = [1, 7, 30]
