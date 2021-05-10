@@ -33,7 +33,7 @@ class FontsConfig(BaseModel):
     font_price_size: int = 20
     font_height: str = 'PixelSplitter-Bold.ttf'
     font_height_size: int = 18
-    font_date: str = 'PixelSplitter-Bold.ttf'
+    font_date: str = 'googlefonts/RobotoMono-Medium'
     font_date_size :int = 15
 
 
