@@ -458,8 +458,9 @@ sudo -H python3 -m pip install requests[socks]==2.21.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy --upgrade
+sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib
+
 
 
 echo ""
