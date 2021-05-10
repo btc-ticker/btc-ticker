@@ -343,7 +343,8 @@ class Ticker():
                 spark_image = makeSpark(pricestack)
                 w, h = spark_image.size
                 self.image.paste(spark_image ,(100, image_y))
-                self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_fee)
+                if mode != "satfiat":
+                    self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_fee)
                 
         #draw.text((145,2),str(time.strftime("%H:%M %d %b")),font =font_fee,fill = 0)
         if self.orientation == 270 :

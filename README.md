@@ -51,8 +51,8 @@ sudo systemctl restart btcticker
 
 ## Flash SDcard
 
-* Downlad version 0.1 from [btc-ticker-0_1.img.gz](https://btc-ticker.com/btc-ticker-0_1.img.gz)
-* Verify SHA256 checksum. It should be: `9C7465131DE4AB10C5969228CDEFDB747D34F53D378E48E18CA4FDC5342D106F`
+* Downlad version 0.1 from [btc-ticker-0_2.img.gz](https://btc-ticker.com/btc-ticker-0_2.img.gz)
+* Verify SHA256 checksum. It should be: `129B1D8C86019D2D3AF640C978843768957AB839CCCEB5E83C23A3876D51D158`
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
