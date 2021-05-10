@@ -205,7 +205,7 @@ fi
 echo ""
 echo "*** UPDATE ***"
 sudo apt update -y
-sudo apt upgrade -f -y
+# sudo apt upgrade -f -y
 
 echo ""
 echo "*** PREPARE ${baseimage} ***"
