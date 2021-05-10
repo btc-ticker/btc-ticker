@@ -40,7 +40,11 @@ There are four buttons which the following behaviour (Please be patient after pr
 4. Show new block screen (is also shown everytime a new block is created)
 
 ### Config.ini
-It possible to personalize the ticker to your needs. After changing the ini file, a restart of the btc-ticker service is needed:
+It possible to personalize the ticker to your needs. After logging into your raspi with SSH, the config can be edited with
+```
+nano config.ini
+```
+After writing the change to the ini file, a restart of the btc-ticker service is needed:
 ```
 sudo systemctl restart btcticker
 ```
@@ -59,8 +63,8 @@ network={
   psk="[WIFI_PASSWORD]"
 }
 ```
-* replace `COUNTRY_CODE` with the ISO2 code (e.g. DE)
-* Set `WIFI_SSID` and `WIFI_PASSWORD`
+* replace `[COUNTRY_CODE]` with the ISO2 code (e.g. DE)
+* Set `[WIFI_SSID]` and `[WIFI_PASSWORD]`
 
 ## Build SDcard from scratch
 
