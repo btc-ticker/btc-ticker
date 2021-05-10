@@ -10,11 +10,11 @@ class ConfigurationException(ValueError):
 
 class MainConfig(BaseModel):
     fiat: str = 'eur'
-    mode_list: str ='fiat,height,satfiat,usd,newblock'
+    mode_list: str ='fiat,height,satfiat,usd'
     start_mode_ind: int = 0
     days_list: str = '1,7,30'
     start_days_ind: int = 0
-    layout_list: str = 'all,no_usd,big'
+    layout_list: str = 'all,fiat,fiatheight,big'
     start_layout_ind: int = 0
     loglevel: str = "WARNING"
     display_width_pixels: int = 264
@@ -26,6 +26,7 @@ class MainConfig(BaseModel):
 class FontsConfig(BaseModel):
 
     font_buttom: str = 'googlefonts/Roboto-Medium.ttf'
+    font_console: str = 'googlefonts/ZenDots-Regular.ttf'
     font_side: str = 'googlefonts/Roboto-Medium.ttf'
     font_side_size: int = 20
     font_top: str = 'PixelSplitter-Bold.ttf'

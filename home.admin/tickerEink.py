@@ -156,7 +156,7 @@ def clear_state():
     key4state = True
 
 
-def main(config):
+def main(config, config_file):
 
 
     ticker = Ticker(config)
@@ -306,10 +306,10 @@ if __name__ == '__main__':
     parser.add_argument("--config", default="config.ini")
     args = parser.parse_args()
 
-    config = Config(path=args.config)    
+    config = Config(path=args.config)
     init_logging(config.main.loglevel)
     try:
-        main(config)
+        main(config, args.config)
     except Exception as e:
         logging.exception(e)
         raise
