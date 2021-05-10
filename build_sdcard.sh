@@ -461,7 +461,10 @@ sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib
 
-
+echo ""
+echo "Build matplot cache"
+cd /home/admin/
+sudo -u admin python3 -c "from pylab import *; set_loglevel('debug'); plot(); show()"
 
 echo ""
 echo "*** SHELL SCRIPTS AND ASSETS ***"
