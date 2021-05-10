@@ -160,14 +160,26 @@ def main(config):
         # Update every 2.8 min
         updatefrequency = 168       
     updatefrequency_after_newblock = 120
-    mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
-    days_list = [1, 7, 30]
-    last_mode_ind = 0
-    days_ind = 0
-    def fullupdate(mode, days):
+    # mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
+    
+    layout_list = []
+    for l in config.main.layout_list.split(","):
+        layout_list.append(l.replace('"', ""))
+    last_layout_ind = config.main.start_layout_ind    
+    
+    mode_list = []
+    for l in config.main.mode_list.split(","):
+        mode_list.append(l.replace('"', ""))
+    # days_list = [1, 7, 30]
+    days_list = []
+    for d in config.main.days_list.split(","):
+        days_list.append(int(d.replace('"', '')))    
+    last_mode_ind = config.main.start_mode_ind
+    days_ind = config.main.start_days_ind
+    def fullupdate(mode, days, layout):
         try:
             ticker.setDaysAgo(days)
-            ticker.update(mode=mode)
+            ticker.update(mode=mode, layout=layout)
             draw_image(ticker.image)
             lastgrab=time.time()
         except Exception as e:
@@ -219,7 +231,7 @@ def main(config):
                     last_mode_ind += 1
                     if last_mode_ind >= len(mode_list):
                         last_mode_ind = 0
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                     display_update = True     
                     clear_state()
                     setup_GPIO()
@@ -228,21 +240,24 @@ def main(config):
                     days_ind += 1
                     if days_ind >= len(days_list):
                         days_ind = 0
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                     display_update = True  
                     clear_state()
                     setup_GPIO()
                 elif key3state == False:
                     logging.info('Key3 after %.2f s' % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate("newblock", days_list[days_ind])
-                    display_update = True
-                    newblock_displayed = True
+                    last_layout_ind += 1
+                    if last_layout_ind >= len(layout_list):
+                        last_layout_ind = 0
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                    display_update = True  
                     clear_state()
                     setup_GPIO()
                 elif key4state == False:
                     logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate(mode_list[last_mode_ind], days_list[days_ind])
+                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind])
                     display_update = True
+                    newblock_displayed = True
                     clear_state()
                     setup_GPIO()
                 if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
@@ -252,7 +267,7 @@ def main(config):
                         logging.warning(e)
                     if new_height > height and not display_update:
                         logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
-                        lastcoinfetch = fullupdate("newblock", days_list[days_ind])
+                        lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind])
                         newblock_displayed = True
                         setup_GPIO()
                     height = new_height
@@ -262,12 +277,12 @@ def main(config):
                     time.sleep(10)
                 elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
                     logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                     datapulled = True
                     setup_GPIO()
                 elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                     logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                     datapulled = True
                     newblock_displayed = False
                     setup_GPIO()

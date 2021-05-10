@@ -69,7 +69,7 @@ class Ticker():
         self.draw.text((x,y), text, font=font,fill = 0, anchor=anchor)
         return w, h, font_size
 
-    def update(self, mode="fiat", mirror=True):
+    def update(self, mode="fiat", layout="all", mirror=True):
         self.mempool.refresh()
         self.price.refresh()
 
@@ -114,7 +114,7 @@ class Ticker():
         blocks = math.ceil(mempool["vsize"] / 1e6)
         count = mempool["count"]
         #draw.text((5,2),'%d - %d - %s' % (mempool["height"], blocks, str(time.strftime("%H:%M"))),font =font_height,fill = 0
-        if self.config.main.big_number:
+        if layout == "big":
             if mode == "fiat":
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
@@ -170,7 +170,7 @@ class Ticker():
                 self.image.paste(spark_image ,(150, image_y))                
                 
                 self.drawText(170, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_date)                
-        elif self.config.main.fiat != "usd" and self.config.main.show_usd:
+        elif self.config.main.fiat != "usd" and layout == "no_usd":
             if mode == "fiat":
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
@@ -259,8 +259,8 @@ class Ticker():
                 spark_image = makeSpark(pricestack)
                 w, h = spark_image.size
                 self.image.paste(spark_image ,(100, image_y))                
-                
-                self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_date)
+                if mode != "satfiat":
+                    self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_date)
                              
         else:
             

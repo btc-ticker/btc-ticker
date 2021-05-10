@@ -9,15 +9,19 @@ class ConfigurationException(ValueError):
 
 
 class MainConfig(BaseModel):
-    fiat: str = "eur"
-    show_usd: bool = True
+    fiat: str = 'eur'
+    mode_list: str ='fiat,height,satfiat,usd,newblock'
+    start_mode_ind: int = 0
+    days_list: str = '1,7,30'
+    start_days_ind: int = 0
+    layout_list: str = 'all, no_usd, big'
+    start_layout_ind: int = 0
     loglevel: str = "WARNING"
     display_width_pixels: int = 264
     display_height_pixels: int = 176
     orientation: int = 90
     inverted: bool = False
     show_block_height: bool = True
-    big_number: bool = False
 
 class FontsConfig(BaseModel):
     

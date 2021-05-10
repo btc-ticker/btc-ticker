@@ -17,9 +17,21 @@ def get_img_data(img):
 
 config = Config("home.admin/config.ini")
 ticker = Ticker(config)
-ticker_mode = ["fiat", "height", "satfiat", "usd", "newblock"]
-ticker_ind = 0
-ticker.update(mirror=False, mode=ticker_mode[ticker_ind])
+# ticker_mode = ["fiat", "height", "satfiat", "usd", "newblock"]
+mode_list = []
+for l in config.main.mode_list.split(","):
+    mode_list.append(l.replace('"', ""))
+ticker_ind = config.main.start_mode_ind
+
+days_list = []
+for d in config.main.days_list.split(","):
+    days_list.append(int(d.replace('"', '')))
+layout_list = []
+for l in config.main.layout_list.split(","):
+    layout_list.append(l.replace('"', ""))
+layout_ind = config.main.start_layout_ind
+
+ticker.update(mirror=False, mode=mode_list[ticker_ind], layout=layout_list[layout_ind])
 
 
 
@@ -43,9 +55,9 @@ while True:
         break
     elif event == sg.TIMEOUT_EVENT:
         ticker_ind += 1
-        if ticker_ind >= len(ticker_mode):
+        if ticker_ind >= len(mode_list):
             ticker_ind = 0        
-        ticker.update(mirror=False, mode=ticker_mode[ticker_ind])
+        ticker.update(mirror=False, mode=mode_list[ticker_ind])
 
         # update window with new image
         image_elem.update(data=get_img_data(ticker.image))
