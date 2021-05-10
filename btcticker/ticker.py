@@ -43,7 +43,9 @@ class Ticker():
         elif os.path.exists(os.path.join(google_fontdir, font_name)):
             return ImageFont.truetype(os.path.join(google_fontdir, font_name), font_size)
         elif os.path.exists(os.path.join(google_fontdir, font_name+".ttf")):
-            return ImageFont.truetype(os.path.join(google_fontdir, font_name+ ".ttf"), font_size)        
+            return ImageFont.truetype(os.path.join(google_fontdir, font_name+ ".ttf"), font_size)
+        else:
+            raise Exception("Could not find %s in %s" % (font_name, self.fontdir))
 
     def setDaysAgo(self, days_ago):
         self.price.setDaysAgo(days_ago)
