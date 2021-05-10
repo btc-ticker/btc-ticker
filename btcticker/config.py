@@ -26,14 +26,12 @@ class FontsConfig(BaseModel):
     font: str = 'googlefonts/Roboto-Medium.ttf'
     font_size: int = 40
     font_horizontalblock: str = 'googlefonts/Roboto-Medium.ttf'
-    font_horizontalblock_size: int = 75
     font_horizontalbig: str = 'googlefonts/Roboto-Medium.ttf'
-    font_horizontalbig_size: int = 100
     font_price: str = 'googlefonts/Roboto-Medium.ttf'
     font_price_size: int = 20
     font_height: str = 'PixelSplitter-Bold.ttf'
     font_height_size: int = 18
-    font_date: str = 'googlefonts/RobotoMono-Medium'
+    font_date: str = 'googlefonts/RobotoMono-Medium.ttf'
     font_date_size :int = 15
 
 
