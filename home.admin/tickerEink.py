@@ -92,9 +92,13 @@ def init_logging(warnlevel=logging.WARNING):
     logger.addHandler(handler)
 
 def setup_GPIO(cleanup=True):
-    if cleanup:
-        GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
+    if cleanup:
+        GPIO.remove_event_detect(BUTTON_GPIO_1)
+        GPIO.remove_event_detect(BUTTON_GPIO_2)
+        GPIO.remove_event_detect(BUTTON_GPIO_3)
+        GPIO.remove_event_detect(BUTTON_GPIO_4)
+        GPIO.cleanup()
     
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
