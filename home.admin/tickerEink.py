@@ -25,12 +25,13 @@ BUTTON_GPIO_2 = 6
 BUTTON_GPIO_3 = 13
 BUTTON_GPIO_4 = 19
 
-def internet(host="8.8.8.8", port=53, timeout=3):
+def internet(host="8.8.8.8", port=53, timeout=6):
     """
     Host: 8.8.8.8 (google-public-dns-a.google.com)
     OpenPort: 53/tcp
     Service: domain (DNS/TCP)
     """
+    
     try:
         socket.setdefaulttimeout(timeout)
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
@@ -43,6 +44,7 @@ def internet(host="8.8.8.8", port=53, timeout=3):
 
 def draw_shutdown():
 #   A visual cue that the wheels have fallen off
+    cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
     epd = epd2in7.EPD()
@@ -58,6 +60,7 @@ def draw_shutdown():
 
 def draw_image(image=None):
 #   A visual cue that the wheels have fallen off
+    cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     epd = epd2in7.EPD()
     epd.Init_4Gray()
@@ -65,7 +68,8 @@ def draw_image(image=None):
         image = Image.new('L', (epd.height, epd.width), 255)
     logging.info("draw")
     epd.display_4Gray(epd.getbuffer_4Gray(image))
-    epd.sleep()    
+    epd.sleep()
+    setup_GPIO(False)
     
 
 def signal_hook(*args):
@@ -91,14 +95,17 @@ def init_logging(warnlevel=logging.WARNING):
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
 
-def setup_GPIO(cleanup=True):
+def cleanup_GPIO():
     GPIO.setmode(GPIO.BCM)
+    GPIO.remove_event_detect(BUTTON_GPIO_1)
+    GPIO.remove_event_detect(BUTTON_GPIO_2)
+    GPIO.remove_event_detect(BUTTON_GPIO_3)
+    GPIO.remove_event_detect(BUTTON_GPIO_4)
+    GPIO.cleanup()    
+
+def setup_GPIO(cleanup=True):
     if cleanup:
-        GPIO.remove_event_detect(BUTTON_GPIO_1)
-        GPIO.remove_event_detect(BUTTON_GPIO_2)
-        GPIO.remove_event_detect(BUTTON_GPIO_3)
-        GPIO.remove_event_detect(BUTTON_GPIO_4)
-        GPIO.cleanup()
+        cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
