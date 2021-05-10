@@ -170,7 +170,7 @@ class Ticker():
                 self.image.paste(spark_image ,(150, image_y))                
                 
                 self.drawText(170, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_date)                
-        elif self.config.main.fiat != "usd" and layout == "no_usd":
+        elif self.config.main.fiat != "usd" and layout != "no_usd":
             if mode == "fiat":
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_height)
