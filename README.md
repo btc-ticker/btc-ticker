@@ -96,3 +96,9 @@ echo "root:NEWPASSWORD" | sudo chpasswd
 echo "admin:NEWPASSWORD" | sudo chpasswd
 ```
 Replace `NEWPASSWORD` with the new password.
+
+## Used APIs
+btc-ticker is using the following APIs:
+* [mempool.space/api](https://mempool.space/api), which can also be run locally in e.g. raspiblitz
+* [coingecko api](https://www.coingecko.com/en/api)
+* [blockchain API v1](https://github.com/blockchain/api-v1-client-python)
