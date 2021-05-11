@@ -1,11 +1,12 @@
 # bitcoin-ticker
 bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. Due to the limited refresh lifetime, new information is currently shown every 5 minutes and whenever a new block arrives.
 
+![](pictures/view6.jpg)
 ![](pictures/view1.jpg)
 ![](pictures/view2.jpg)
 ![](pictures/view3.jpg)
 ![](pictures/view4.jpg)
-![](pictures/view5.jpg)
+
 
 ## Hardware
 
