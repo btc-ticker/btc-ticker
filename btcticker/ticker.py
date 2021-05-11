@@ -22,7 +22,7 @@ class Ticker():
         self.fiat = config.main.fiat
         self.orientation = config.main.orientation
         self.inverted = config.main.inverted
-        self.mempool = Mempool()
+        self.mempool = Mempool(api_url=config.main.mempool_api_url)
         self.price = Price(fiat=self.fiat, days_ago=1)
         
         self.image = Image.new('L', (self.width, self.height), 255)
@@ -114,7 +114,6 @@ class Ticker():
         minFee = mempool["minFee"]
         medianFee = mempool["medianFee"]
         maxFee = mempool["maxFee"]
-        purgingFee = mempool["purgingFee"]
         # meanTimeDiff = mempool["meanTimeDiff"]
         meanTimeDiff = stats.minutes_between_blocks * 60
         t_min = meanTimeDiff // 60

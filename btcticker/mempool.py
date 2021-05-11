@@ -1,19 +1,28 @@
 import logging
 import requests
+import urllib3
 import math
 import numpy as np
 
 
 class Mempool():
-    def __init__(self, n_fee_blocks=7):
-        self.mempoolApiUrl = "https://mempool.space/api/"
+    def __init__(self, api_url="https://mempool.space/api/", n_fee_blocks=7):
+        self.mempoolApiUrl = api_url
+        if "https://192" in api_url:
+            urllib3.disable_warnings()
+            self.url_verify = False
+        else:
+            self.url_verify = True
         self.n_fee_blocks = n_fee_blocks
         self.data = {}
         self.refresh()
 
+    def get_json(self, url):
+        return requests.get(url, verify=self.url_verify).json()
+
     def getMempoolBlocks(self):
         mempoolurl = self.mempoolApiUrl + "v1/fees/mempool-blocks"
-        rawmempoolblocks = requests.get(mempoolurl).json()
+        rawmempoolblocks = self.get_json(mempoolurl)
         return rawmempoolblocks
 
     def getBlocks(self, n=1, start_height=None):
@@ -26,7 +35,7 @@ class Mempool():
                 mempoolurl = self.mempoolApiUrl + "blocks/%d" % start_height
             else:
                 mempoolurl = self.mempoolApiUrl + "blocks/%d" % (last_height - 1)
-            rawblocks += requests.get(mempoolurl).json()
+            rawblocks += self.get_json(mempoolurl)
             last_height = rawblocks[-1]["height"]
         return rawblocks
 
@@ -55,12 +64,12 @@ class Mempool():
 
     def getMempool(self):
         mempoolurl = self.mempoolApiUrl + "mempool"
-        rawmempool = requests.get(mempoolurl).json()
+        rawmempool = self.get_json(mempoolurl)
         return rawmempool
 
     def getBlockHeight(self):
         mempoolurl = self.mempoolApiUrl + "blocks/tip/height"
-        lastblocknum = int(requests.get(mempoolurl).json())
+        lastblocknum = int(self.get_json(mempoolurl))
         return lastblocknum
         
     def refresh(self):
@@ -68,28 +77,28 @@ class Mempool():
         rawmempoolblocks = self.getMempoolBlocks()
         rawblocks = self.getBlocks(n=1)
         mean_time_diff = self.calcMeanTimeDiff(rawblocks)
-        rawmempool = self.getMempool()
+        
         vsize = 0
-        th_fee = 0
-        for fee in rawmempool["fee_histogram"]:
-            vsize += fee[1]
-            if vsize / 1024 / 1024 * 3.99 < 300:
-                th_fee = fee[0]
+        count = 0
+        for block in rawmempoolblocks:
+            vsize += block["blockVSize"]
+            count += block["nTx"]
+            #if vsize / 1024 / 1024 * 3.99 < 300:
+            #    th_fee = fee[0]
         
         lastblocknum = self.getBlockHeight()
         minFee, medianFee, maxFee = self.buildFeeArray(rawmempoolblocks)
     
         self.data = {}
         self.data["rawblocks"] = rawblocks
-        self.data["count"] = rawmempool["count"]
-        self.data["vsize"] = rawmempool["vsize"]
+        self.data["count"] = count
+        self.data["vsize"] = vsize
         self.data["blocks"] = math.ceil(self.data["vsize"] / 1e6)
         self.data["height"] = lastblocknum
         self.data["minFee"] = minFee
         self.data["maxFee"] = maxFee
         self.data["medianFee"] = medianFee
         self.data["meanTimeDiff"] = mean_time_diff
-        self.data["purgingFee"] = th_fee
 
     def getData(self):
         return self.data

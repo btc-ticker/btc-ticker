@@ -22,6 +22,7 @@ class MainConfig(BaseModel):
     orientation: int = 90
     inverted: bool = False
     show_block_height: bool = True
+    mempool_api_url: str = "https://mempool.space/api/"
 
 class FontsConfig(BaseModel):
 
