@@ -47,7 +47,7 @@ def get_display_size():
         epd = epd2in7.EPD()
     else:
         epd = epd7in5_HD.EPD()
-    return epd.width, epd.height
+    return epd.height, epd.width
 
 def draw_shutdown():
     global epd_type
@@ -67,7 +67,6 @@ def draw_shutdown():
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         image.paste(shutdown_icon, (0,0))
-        image = ImageOps.mirror(image)
         epd.display(epd.getbuffer(image))        
 
     epd.sleep()
@@ -186,6 +185,9 @@ def main(config, config_file):
     
     global epd_type
     epd_type = config.main.epd_type
+    mirror = True
+    if epd_type != "2in7":
+        mirror = False
 
     w, h = get_display_size()
     
@@ -223,7 +225,7 @@ def main(config, config_file):
             ticker.setDaysAgo(days)
             if refresh:
                 ticker.refresh()
-            ticker.build(mode=mode, layout=layout)
+            ticker.build(mode=mode, layout=layout, mirror=mirror)
             draw_image(ticker.image)
             lastgrab=time.time()
         except Exception as e:
