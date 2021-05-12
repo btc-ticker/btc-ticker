@@ -185,9 +185,10 @@ def clear_state():
 def main(config, config_file):
     
     global epd_type
-
-    w, h = get_display_size(epd_type=config.main.epd_type)
     epd_type = config.main.epd_type
+
+    w, h = get_display_size()
+    
     ticker = Ticker(config, w, h)
 
     height = ticker.mempool.getBlockHeight()
