@@ -59,14 +59,14 @@ def draw_shutdown():
         epd = epd2in7.EPD()
         epd.Init_4Gray()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        image.paste(shutdown_icon, (0,0))
+        # image.paste(shutdown_icon, (0,0))
         image = ImageOps.mirror(image)
         epd.display_4Gray(epd.getbuffer_4Gray(image))        
     else:
         epd = epd7in5_HD.EPD()
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        image.paste(shutdown_icon, (0,0))
+        # image.paste(shutdown_icon, (0,0))
         epd.display(epd.getbuffer(image))        
 
     epd.sleep()

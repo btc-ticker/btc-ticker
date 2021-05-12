@@ -9,9 +9,9 @@ import time
 
 def get_display_size(epd_type="2in7"):
     if epd_type == "2in7":
-        return 264, 176
+        return 176, 264
     else:
-        return 880, 528
+        return 528, 880
 
 
 def get_img_data(img):
