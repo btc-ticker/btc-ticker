@@ -17,12 +17,11 @@ class MainConfig(BaseModel):
     layout_list: str = 'all,fiat,fiatheight,big'
     start_layout_ind: int = 0
     loglevel: str = "WARNING"
-    display_width_pixels: int = 264
-    display_height_pixels: int = 176
     orientation: int = 90
     inverted: bool = False
     show_block_height: bool = True
     mempool_api_url: str = "https://mempool.space/api/"
+    epd_type: str = "2in7"
 
 class FontsConfig(BaseModel):
 

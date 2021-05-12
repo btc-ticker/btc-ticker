@@ -12,7 +12,7 @@ import signal
 import atexit
 import sdnotify
 import RPi.GPIO as GPIO
-from waveshare_epd import epd2in7
+from waveshare_epd import epd2in7, epd7in5_HD
 import time
 from PIL import Image, ImageOps
 from PIL import ImageFont
@@ -41,13 +41,22 @@ def internet(host="8.8.8.8", port=53, timeout=6):
         logging.warning(ex)
         return False
 
+def get_display_size(epd_type="2in7"):
+    if epd_type == "2in7":
+        epd = epd2in7.EPD()
+    else:
+        epd = epd7in5_HD.EPD()
+    return epd.width, epd.height
 
-def draw_shutdown():
+def draw_shutdown(epd_type="2in7"):
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
-    epd = epd2in7.EPD()
+    if epd_type == "2in7":
+        epd = epd2in7.EPD()
+    else:
+        epd = epd7in5_HD.EPD()
     epd.Init_4Gray()
     image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
     image.paste(shutdown_icon, (0,0))
@@ -58,11 +67,14 @@ def draw_shutdown():
     epd2in7.epdconfig.module_exit()
 
 
-def draw_image(image=None):
+def draw_image(image=None, epd_type="2in7"):
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
-    epd = epd2in7.EPD()
+    if epd_type == "2in7":
+        epd = epd2in7.EPD()
+    else:
+        epd = epd7in5_HD.EPD()    
     epd.Init_4Gray()
     if image is None:
         image = Image.new('L', (epd.height, epd.width), 255)
@@ -83,7 +95,7 @@ def shutdown_hook():
     if shutting_down:
         return False
     shutting_down = True
-    draw_shutdown()
+    draw_shutdown(epd_type=epd_type)
     logging.info("...finally going down")
     return True
 
@@ -158,8 +170,10 @@ def clear_state():
 
 def main(config, config_file):
 
+    w, h = get_display_size(epd_type=config.main.epd_type)
+    epd_type = config.main.epd_type
+    ticker = Ticker(config, w, h)
 
-    ticker = Ticker(config)
     height = ticker.mempool.getBlockHeight()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     if config.main.show_block_height:
@@ -187,11 +201,13 @@ def main(config, config_file):
         days_list.append(int(d.replace('"', '').replace(" ", "")))    
     last_mode_ind = config.main.start_mode_ind
     days_ind = config.main.start_days_ind
-    def fullupdate(mode, days, layout):
+    def fullupdate(mode, days, layout, refresh=True):
         try:
             ticker.setDaysAgo(days)
-            ticker.update(mode=mode, layout=layout)
-            draw_image(ticker.image)
+            if refresh:
+                ticker.refresh()
+            ticker.build(mode=mode, layout=layout)
+            draw_image(ticker.image, epd_type=epd_type)
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
@@ -242,7 +258,7 @@ def main(config, config_file):
                     last_mode_ind += 1
                     if last_mode_ind >= len(mode_list):
                         last_mode_ind = 0
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
                     display_update = True     
                     clear_state()
                     setup_GPIO()
@@ -251,7 +267,7 @@ def main(config, config_file):
                     days_ind += 1
                     if days_ind >= len(days_list):
                         days_ind = 0
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
                     display_update = True  
                     clear_state()
                     setup_GPIO()
@@ -260,13 +276,13 @@ def main(config, config_file):
                     last_layout_ind += 1
                     if last_layout_ind >= len(layout_list):
                         last_layout_ind = 0
-                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                    lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
                     display_update = True  
                     clear_state()
                     setup_GPIO()
                 elif key4state == False:
                     logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind])
+                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], refresh=False)
                     display_update = True
                     newblock_displayed = True
                     clear_state()
