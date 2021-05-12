@@ -224,7 +224,7 @@ def main(config, config_file):
             if refresh:
                 ticker.refresh()
             ticker.build(mode=mode, layout=layout)
-            draw_image(ticker.image, epd_type=epd_type)
+            draw_image(ticker.image)
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
