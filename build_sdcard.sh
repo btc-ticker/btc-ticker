@@ -460,6 +460,8 @@ sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib
+sudo -H python3 -m pip install pandas
+sudo -H python3 -m pip install mplfinance
 
 echo ""
 echo "Build matplot cache"
