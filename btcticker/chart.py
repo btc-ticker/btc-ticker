@@ -1,5 +1,6 @@
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 from PIL import Image
@@ -39,13 +40,16 @@ def makeCandle(ohlc, figsize=(10, 3), dpi=17):
     
     fig = mpf.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot(1,1,1)
+    ax.set_facecolor("white")
     canvas = FigureCanvasAgg(fig)
 
     mpf.plot(ohlc,type='candle',ax=ax)
+    ax.grid(True, linewidth=0.5, color='#000000', linestyle='-')
     canvas.draw()
     buf = canvas.buffer_rgba()
     X = np.asarray(buf)
     im = Image.fromarray(X)
+    plt.close('all')
     
     return im
 

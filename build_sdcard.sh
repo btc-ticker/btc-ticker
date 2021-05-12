@@ -461,7 +461,7 @@ sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib
 sudo -H python3 -m pip install pandas
-sudo -H python3 -m pip install mplfinance
+sudo -H python3 -m pip install mplfinance==0.12.7a17
 
 echo ""
 echo "Build matplot cache"

@@ -299,7 +299,11 @@ class Ticker():
                 pos_y += h  
                 self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, "$"+format(int(current_price["usd"]), ""), self.config.fonts.font_buttom, anchor="rs")
         elif layout == "ohlc":
-            ohlc_image = makeCandle(self.price.ohlc, figsize=(6,4), dpi=100)
+            
+            w = 6
+            dpi = int(self.width / w)
+            h = w / self.width * self.height
+            ohlc_image = makeCandle(self.price.ohlc, figsize=(w, h), dpi=dpi)
             w, h = ohlc_image.size
             self.image.paste(ohlc_image ,(0, 0))             
         else:

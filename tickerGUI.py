@@ -37,10 +37,12 @@ ticker_ind = config.main.start_mode_ind
 days_list = []
 for d in config.main.days_list.split(","):
     days_list.append(int(d.replace('"', '').replace(" ", "")))
+days_ind = config.main.start_days_ind
 layout_list = []
 for l in config.main.layout_list.split(","):
     layout_list.append(l.replace('"', "").replace(" ", ""))
 layout_ind = config.main.start_layout_ind
+ticker.setDaysAgo(days_list[days_ind])
 ticker.refresh()
 ticker.build(mirror=False, mode=mode_list[ticker_ind], layout=layout_list[layout_ind])
 
