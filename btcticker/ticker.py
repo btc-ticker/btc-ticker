@@ -241,6 +241,7 @@ class Ticker():
                 if mode != "satfiat":
                     self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_fee)
         elif layout == "fiatheight":
+            
             if mode == "fiat":
                 pos_y = 0
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
@@ -297,7 +298,10 @@ class Ticker():
                     w, h = self.drawText(5, pos_y, '%.0f /%s - %s - %.0f /$' % (current_price["sat_fiat"], symbolstring, symbolstring + pricenowstring.replace(",", ""), current_price["sat_usd"]), self.font_side)
                 pos_y += h  
                 self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, "$"+format(int(current_price["usd"]), ""), self.config.fonts.font_buttom, anchor="rs")
-               
+        elif layout == "ohlc":
+            ohlc_image = makeCandle(self.price.ohlc, figsize=(6,4), dpi=100)
+            w, h = ohlc_image.size
+            self.image.paste(ohlc_image ,(0, 0))             
         else:
             if mode == "fiat":
                 pos_y = 0
