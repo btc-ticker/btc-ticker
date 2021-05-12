@@ -41,45 +41,59 @@ def internet(host="8.8.8.8", port=53, timeout=6):
         logging.warning(ex)
         return False
 
-def get_display_size(epd_type="2in7"):
+def get_display_size():
+    global epd_type
     if epd_type == "2in7":
         epd = epd2in7.EPD()
     else:
         epd = epd7in5_HD.EPD()
     return epd.width, epd.height
 
-def draw_shutdown(epd_type="2in7"):
+def draw_shutdown():
+    global epd_type
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
     if epd_type == "2in7":
         epd = epd2in7.EPD()
+        epd.Init_4Gray()
+        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
+        image.paste(shutdown_icon, (0,0))
+        image = ImageOps.mirror(image)
+        epd.display_4Gray(epd.getbuffer_4Gray(image))        
     else:
         epd = epd7in5_HD.EPD()
-    epd.Init_4Gray()
-    image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-    image.paste(shutdown_icon, (0,0))
-    image = ImageOps.mirror(image)
-    epd.display_4Gray(epd.getbuffer_4Gray(image))
+        epd.init()
+        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
+        image.paste(shutdown_icon, (0,0))
+        image = ImageOps.mirror(image)
+        epd.display(epd.getbuffer(image))        
+
     epd.sleep()
     GPIO.setmode(GPIO.BCM)
     epd2in7.epdconfig.module_exit()
 
 
-def draw_image(image=None, epd_type="2in7"):
+def draw_image(image=None):
+    global epd_type
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     if epd_type == "2in7":
         epd = epd2in7.EPD()
+        epd.Init_4Gray()
+        if image is None:
+            image = Image.new('L', (epd.height, epd.width), 255)
+        logging.info("draw")
+        epd.display_4Gray(epd.getbuffer_4Gray(image))        
     else:
         epd = epd7in5_HD.EPD()    
-    epd.Init_4Gray()
-    if image is None:
-        image = Image.new('L', (epd.height, epd.width), 255)
-    logging.info("draw")
-    epd.display_4Gray(epd.getbuffer_4Gray(image))
+        epd.init()
+        if image is None:
+            image = Image.new('L', (epd.height, epd.width), 255)
+        logging.info("draw")
+        epd.display(epd.getbuffer(image))
     epd.sleep()
     setup_GPIO(False)
     
@@ -95,7 +109,7 @@ def shutdown_hook():
     if shutting_down:
         return False
     shutting_down = True
-    draw_shutdown(epd_type=epd_type)
+    draw_shutdown()
     logging.info("...finally going down")
     return True
 
@@ -169,6 +183,8 @@ def clear_state():
 
 
 def main(config, config_file):
+    
+    global epd_type
 
     w, h = get_display_size(epd_type=config.main.epd_type)
     epd_type = config.main.epd_type
