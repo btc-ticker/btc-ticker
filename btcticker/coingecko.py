@@ -46,9 +46,9 @@ class CoinGecko():
           timeseriesstack.append(pricenow)
           return timeseriesstack                  
 
-     def getOHLC(self, currency, days_ago):
+     def getOHLC(self, currency):
           
-          rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, days_ago)
+          rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, self.days_ago)
           timeseriesstack = []
           timeseriesdate = []
           length=len (rawohlc)

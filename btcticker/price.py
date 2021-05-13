@@ -20,9 +20,7 @@ class Price():
         self.price["fiat"] = self.coingecko.getCurrentPrice(self.fiat)
         self.price["sat_fiat"] = 1e8 / self.price["fiat"]
         
-        self.ohlc1 = self.coingecko.getOHLC(self.fiat, 1)
-        self.ohlc2 = self.coingecko.getOHLC(self.fiat, 7)
-        self.ohlc3 = self.coingecko.getOHLC(self.fiat, 30)
+        self.ohlc = self.coingecko.getOHLC(self.fiat)
         self.timeseriesstack = self.coingecko.getHistoryPrice(self.fiat)
 
     def setDaysAgo(self, days_ago):
