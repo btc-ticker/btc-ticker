@@ -198,7 +198,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
                 image_y = pos_y
-                w, h = self.drawText(5, pos_y, 'lb %s' % (str(datetime.fromtimestamp(last_timestamp).strftime("%H:%M"))), self.font_side)
+                w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h                
@@ -213,7 +213,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
                 image_y = pos_y
-                w, h = self.drawText(5, pos_y, 'lb %s' % (str(datetime.fromtimestamp(last_timestamp).strftime("%H:%M"))), self.font_side)
+                w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
                 pos_y += h                
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h                
@@ -228,7 +228,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
                 image_y = pos_y
-                w, h = self.drawText(5, pos_y, 'lb %s' % (str(datetime.fromtimestamp(last_timestamp).strftime("%H:%M"))), self.font_side)
+                w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
                 pos_y += h                
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h
@@ -245,7 +245,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
                 image_y = pos_y
-                w, h = self.drawText(5, pos_y, 'lb %s' % (str(datetime.fromtimestamp(last_timestamp).strftime("%H:%M"))), self.font_side)
+                w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
                 pos_y += h                
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h
