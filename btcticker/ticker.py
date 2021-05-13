@@ -196,6 +196,8 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
+                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
+                pos_y += h                
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
@@ -207,6 +209,8 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
+                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
+                pos_y += h                
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
@@ -218,6 +222,8 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
+                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
+                pos_y += h                
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, symbolstring+pricenowstring, self.font_side)
                 pos_y += h
@@ -231,6 +237,8 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
+                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
+                pos_y += h                
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, symbolstring+pricenowstring, self.font_side)
                 pos_y += h
