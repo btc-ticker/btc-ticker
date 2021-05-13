@@ -48,7 +48,7 @@ def get_display_size(epd_type):
     else:
         epd = epd7in5_HD.EPD()
         mirror = False
-    return epd.height, epd.width, mirror
+    return epd.width, epd.height, mirror
 
 def draw_shutdown():
     global epd_type
