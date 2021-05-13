@@ -98,6 +98,7 @@ class Ticker():
         last_retarget = self.stats.next_retarget - 2016
         
         last_timestamp = mempool["rawblocks"][0]["timestamp"]
+        last_block_sec_ago = (datetime.now() - datetime.fromtimestamp(last_timestamp)).seconds
         last_height = mempool["rawblocks"][0]["height"]
         last_retarget_blocks = self.mempool.getBlocks(start_height=last_retarget)
         last_retarget_timestamp = last_retarget_blocks[0]["timestamp"]
@@ -196,9 +197,11 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
-                pos_y += h                
                 image_y = pos_y
+                w, h = self.drawText(5, pos_y, '-%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                pos_y += h
+                w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
+                pos_y += h                
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
                 w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
@@ -209,9 +212,11 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
-                pos_y += h                
                 image_y = pos_y
+                w, h = self.drawText(5, pos_y, '-%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                pos_y += h                
+                w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
+                pos_y += h                
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
                 self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, str(mempool["height"]), self.config.fonts.font_buttom, anchor="rs")
@@ -222,9 +227,11 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
-                pos_y += h                
                 image_y = pos_y
+                w, h = self.drawText(5, pos_y, '-%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                pos_y += h                
+                w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
+                pos_y += h
                 w, h = self.drawText(5, pos_y, symbolstring+pricenowstring, self.font_side)
                 pos_y += h
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_side,fill = 0)
@@ -237,9 +244,11 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%d blk %.0f %%' % (remaining_blocks, (retarget_mult * 100 - 100)), self.font_side)
-                pos_y += h                
                 image_y = pos_y
+                w, h = self.drawText(5, pos_y, '-%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                pos_y += h                
+                w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
+                pos_y += h
                 w, h = self.drawText(5, pos_y, symbolstring+pricenowstring, self.font_side)
                 pos_y += h
                 # draw.text((5,67),'%.1f oz' % current_price["gold"],font =font_side,fill = 0)
@@ -266,7 +275,7 @@ class Ticker():
                 self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, str(mempool["height"]), self.config.fonts.font_buttom, anchor="rs")
         
             if mode != "newblock":
-                spark_image = makeSpark(pricestack)
+                spark_image = makeSpark(pricestack, figsize=(10,4))
                 w, h = spark_image.size
                 self.image.paste(spark_image ,(100, image_y))
                 if mode != "satfiat":
