@@ -14,7 +14,7 @@ class MainConfig(BaseModel):
     start_mode_ind: int = 0
     days_list: str = '1,7,30'
     start_days_ind: int = 0
-    layout_list: str = 'all,fiat,fiatheight,big'
+    layout_list: str = 'all,fiat,fiatheight,big_one_row,big_two_rows,ohlc'
     start_layout_ind: int = 0
     loglevel: str = "WARNING"
     orientation: int = 90
@@ -25,14 +25,15 @@ class MainConfig(BaseModel):
 
 class FontsConfig(BaseModel):
 
-    font_buttom: str = 'googlefonts/Roboto-Medium.ttf'
+    font_buttom: str = 'googlefonts/Audiowide-Regular.ttf'
     font_console: str = 'googlefonts/ZenDots-Regular.ttf'
+    font_big: str = 'googlefonts/SixCaps-Regular.ttf'
     font_side: str = 'googlefonts/Roboto-Medium.ttf'
     font_side_size: int = 20
     font_top: str = 'PixelSplitter-Bold.ttf'
     font_top_size: int = 18
-    font_fee: str = 'googlefonts/RobotoMono-Medium.ttf'
-    font_fee_size :int = 15
+    font_fee: str = 'googlefonts/Audiowide-Regular.ttf'
+    font_fee_size :int = 14
 
 
 class Config:

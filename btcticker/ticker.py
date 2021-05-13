@@ -124,7 +124,7 @@ class Ticker():
         blocks = math.ceil(mempool["vsize"] / 1e6)
         count = mempool["count"]
         #draw.text((5,2),'%d - %d - %s' % (mempool["height"], blocks, str(time.strftime("%H:%M"))),font =font_top,fill = 0
-        if layout == "big":
+        if layout == "big_two_rows":
             if mode == "fiat":
                 pos_y = 0
                 #w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
@@ -164,7 +164,30 @@ class Ticker():
                 w, h = self.drawText(5, pos_y - 10, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_fee)
                 pos_y += h                
                 self.drawText(self.width - 1, self.height - 1, price_parts[1], self.buildFont(self.config.fonts.font_console, font_size), anchor="rs")
+        elif layout == "big_one_row":
+            if mode == "fiat":
+                pos_y = 0
+                w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_fee)
+                pos_y += h
+                self.drawTextMax(self.width - 1, self.height - 1, self.width, (self.height-pos_y), symbolstring+pricenowstring, self.config.fonts.font_big, anchor="rs")
+                #self.drawText(5, 100, symbolstring, self.buildFont(self.config.fonts.font_console, font_size - 25))
+            elif mode == "height" or mode == "newblock":
+                pos_y = 0
+                w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_fee)
+                pos_y += h
+                self.drawTextMax(self.width - 1, self.height - 1, self.width, (self.height-pos_y), str(mempool["height"]), self.config.fonts.font_big, anchor="rs")
+            elif mode == "satfiat":
+                pos_y = 0
+                w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_fee)
+                pos_y += h
+                self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, '%.0f' % (current_price["sat_fiat"]), self.config.fonts.font_big, anchor="rs")              
                 
+            elif mode == "usd":
+                pos_y = 0
+                w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_fee)
+                pos_y += h
+                self.drawTextMax(self.width - 1, self.height - 1, self.width, (self.height-pos_y), "$"+format(int(current_price["usd"]), ","), self.config.fonts.font_big, anchor="rs")
+
         elif layout == "fiat" or (layout == "all" and self.config.main.fiat == "usd"):
             
             if mode == "fiat":
