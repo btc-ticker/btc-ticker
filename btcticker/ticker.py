@@ -301,11 +301,15 @@ class Ticker():
         elif layout == "ohlc":
             
             w = 6
-            dpi = int(self.width / w)
-            h = w / self.width * self.height
-            ohlc_image = makeCandle(self.price.ohlc, figsize=(w, h), dpi=dpi)
-            w, h = ohlc_image.size
-            self.image.paste(ohlc_image ,(0, 0))             
+            dpi = int(self.width / w)  / 3
+            h = w / self.width * self.height 
+            ohlc_image1 = makeCandle(self.price.ohlc1, figsize=(w, h), dpi=dpi)
+            ohlc_image2 = makeCandle(self.price.ohlc2, figsize=(w, h), dpi=dpi)
+            ohlc_image3 = makeCandle(self.price.ohlc3, figsize=(w, h), dpi=dpi, plot_type='line')
+            w, h = ohlc_image1.size
+            self.image.paste(ohlc_image1 ,(0, 0))
+            self.image.paste(ohlc_image2 ,(w, 0))     
+            self.image.paste(ohlc_image3 ,(2*w, 0))
         else:
             if mode == "fiat":
                 pos_y = 0

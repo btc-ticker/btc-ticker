@@ -1,8 +1,10 @@
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
+import matplotlib.units as munits
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+import datetime
 from PIL import Image
 import mplfinance as mpf
 
@@ -35,16 +37,21 @@ def makeSpark(pricestack, figsize=(10, 3), dpi=17):
 
 
 
-def makeCandle(ohlc, figsize=(10, 3), dpi=17):
-    # Draw and save the sparkline that represents historical data
+def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle'):
+    converter = mdates.ConciseDateConverter()
+    munits.registry[np.datetime64] = converter
+    munits.registry[datetime.date] = converter
+    munits.registry[datetime.datetime] = converter
     
-    fig = mpf.figure(figsize=figsize, dpi=dpi)
+    fig = mpf.figure(figsize=figsize, dpi=dpi, constrained_layout=True)
     ax = fig.add_subplot(1,1,1)
     ax.set_facecolor("white")
     canvas = FigureCanvasAgg(fig)
 
-    mpf.plot(ohlc,type='candle',ax=ax)
+    mpf.plot(ohlc,type=plot_type,ax=ax, ylabel='')
     ax.grid(True, linewidth=0.5, color='#000000', linestyle='-')
+
+    
     canvas.draw()
     buf = canvas.buffer_rgba()
     X = np.asarray(buf)
