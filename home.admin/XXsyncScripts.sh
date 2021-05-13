@@ -160,6 +160,9 @@ sudo -u admin chmod +x /home/admin/config.scripts/*.sh
 sudo -u admin chmod +x /home/admin/config.scripts/*.py
 echo "# ******************************************"
 
+sudo -u admin cp -f /home/admin/config.ini /home/admin/config.ini.new
+sudo -u admin cp -f /home/admin/config.ini.backup /home/admin/config.ini
+
 cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
 

@@ -101,7 +101,7 @@ class Ticker():
         last_height = mempool["rawblocks"][0]["height"]
         last_retarget_blocks = self.mempool.getBlocks(start_height=last_retarget)
         last_retarget_timestamp = last_retarget_blocks[0]["timestamp"]
-        remaining_blocks = 2016 - (last_height - last_retarget_blocks[0]["height"])
+        remaining_blocks = 2016 - (last_height - last_retarget_blocks[0]["height"]) + 1
         difficulty_epoch_duration = self.stats.minutes_between_blocks * 60 * remaining_blocks + (last_timestamp - last_retarget_timestamp)
         retarget_mult = 14*24*60*60 / difficulty_epoch_duration
         retarget_timestamp = difficulty_epoch_duration + last_retarget_timestamp
