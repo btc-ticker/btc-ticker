@@ -41,13 +41,14 @@ def internet(host="8.8.8.8", port=53, timeout=6):
         logging.warning(ex)
         return False
 
-def get_display_size():
-    global epd_type
+def get_display_size(epd_type):
     if epd_type == "2in7":
         epd = epd2in7.EPD()
+        mirror = True
     else:
         epd = epd7in5_HD.EPD()
-    return epd.height, epd.width
+        mirror = False
+    return epd.height, epd.width, mirror
 
 def draw_shutdown():
     global epd_type
@@ -74,8 +75,7 @@ def draw_shutdown():
     epd2in7.epdconfig.module_exit()
 
 
-def draw_image(image=None):
-    global epd_type
+def draw_image(epd_type, image=None):
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
@@ -185,12 +185,9 @@ def main(config, config_file):
     
     global epd_type
     epd_type = config.main.epd_type
-    mirror = True
-    if epd_type != "2in7":
-        mirror = False
 
-    w, h = get_display_size()
-    
+    w, h, mirror = get_display_size(epd_type)
+    logging.info("%s: set display size to %d x %d", (epd_type, w, h))
     ticker = Ticker(config, w, h)
 
     height = ticker.mempool.getBlockHeight()
@@ -226,7 +223,7 @@ def main(config, config_file):
             if refresh:
                 ticker.refresh()
             ticker.build(mode=mode, layout=layout, mirror=mirror)
-            draw_image(ticker.image)
+            draw_image(epd_type, ticker.image)
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
