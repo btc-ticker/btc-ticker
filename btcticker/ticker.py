@@ -301,7 +301,7 @@ class Ticker():
         elif layout == "ohlc":
             
             w = 6
-            dpi = int(self.width / w)  / 3
+            dpi = int(self.width / w)
             h = w / self.width * self.height 
             ohlc_image = makeCandle(self.price.ohlc, figsize=(w, h), dpi=dpi)
             w, h = ohlc_image.size
