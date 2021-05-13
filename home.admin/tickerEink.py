@@ -187,7 +187,7 @@ def main(config, config_file):
     epd_type = config.main.epd_type
 
     w, h, mirror = get_display_size(epd_type)
-    logging.info("%s: set display size to %d x %d", (epd_type, w, h))
+    
     ticker = Ticker(config, w, h)
 
     height = ticker.mempool.getBlockHeight()
@@ -244,7 +244,7 @@ def main(config, config_file):
     signal.signal(signal.SIGTERM, signal_hook)
 
     if True:
-        logging.info("epd2in7 BTC ticker")
+        logging.info("BTC ticker %s: set display size to %d x %d" % (epd_type, ticker.width, ticker.height))
 
         setup_GPIO(False)
         signal.signal(signal.SIGINT, signal_handler)
