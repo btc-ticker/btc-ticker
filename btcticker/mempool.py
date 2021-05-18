@@ -8,11 +8,12 @@ import numpy as np
 class Mempool():
     def __init__(self, api_url="https://mempool.space/api/", n_fee_blocks=7):
         self.mempoolApiUrl = api_url
-        if "https://192" in api_url:
+        if "mempool.space" in api_url:
+            self.url_verify = True
+        else:
             urllib3.disable_warnings()
             self.url_verify = False
-        else:
-            self.url_verify = True
+
         self.n_fee_blocks = n_fee_blocks
         self.data = {}
         self.refresh()

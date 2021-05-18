@@ -58,13 +58,20 @@ def draw_shutdown():
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
-    if epd_type == "2in7":
+    if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
         epd.Init_4Gray()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         # image.paste(shutdown_icon, (0,0))
         image = ImageOps.mirror(image)
-        epd.display_4Gray(epd.getbuffer_4Gray(image))        
+        epd.display_4Gray(epd.getbuffer_4Gray(image))
+    elif epd_type == "2in7":
+        epd = epd2in7.EPD()
+        epd.init()
+        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
+        # image.paste(shutdown_icon, (0,0))
+        image = ImageOps.mirror(image)
+        epd.display(epd.getbuffer(image))          
     else:
         epd = epd7in5_HD.EPD()
         epd.init()
@@ -81,13 +88,20 @@ def draw_image(epd_type, image=None):
 #   A visual cue that the wheels have fallen off
     cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
-    if epd_type == "2in7":
+    if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
         epd.Init_4Gray()
         if image is None:
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
-        epd.display_4Gray(epd.getbuffer_4Gray(image))        
+        epd.display_4Gray(epd.getbuffer_4Gray(image))
+    elif epd_type == "2in7":
+        epd = epd2in7.EPD()
+        epd.init()
+        if image is None:
+            image = Image.new('L', (epd.height, epd.width), 255)
+        logging.info("draw")
+        epd.display(epd.getbuffer(image))          
     else:
         epd = epd7in5_HD.EPD()    
         epd.init()
