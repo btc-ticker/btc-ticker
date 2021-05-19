@@ -42,7 +42,7 @@ def internet(host="8.8.8.8", port=53, timeout=6):
         return False
 
 def get_display_size(epd_type):
-    if epd_type == "2in7_gray4":
+    if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
         mirror = True
         return epd.width, epd.height, mirror
@@ -205,7 +205,7 @@ def main(config, config_file):
     global epd_type
     epd_type = config.main.epd_type
 
-    w, h, mirror = get_display_size(config.main.epd_type)
+    w, h, mirror = get_display_size(epd_type)
     
     ticker = Ticker(config, w, h)
 
