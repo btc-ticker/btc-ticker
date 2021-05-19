@@ -22,7 +22,7 @@ class MainConfig(BaseModel):
     inverted: bool = False
     show_block_height: bool = True
     mempool_api_url: str = "https://mempool.space/api/"
-    epd_type: str = "2in7"
+    epd_type: str = "2in7_4gray"
 
 class FontsConfig(BaseModel):
 
