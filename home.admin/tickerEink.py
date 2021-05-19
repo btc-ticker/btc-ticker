@@ -205,7 +205,7 @@ def main(config, config_file):
     global epd_type
     epd_type = config.main.epd_type
 
-    w, h, mirror = get_display_size(epd_type)
+    w, h, mirror = get_display_size(config.main.epd_type)
     
     ticker = Ticker(config, w, h)
 
