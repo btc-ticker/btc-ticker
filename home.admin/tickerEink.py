@@ -236,6 +236,8 @@ def main(config, config_file):
         days_list.append(int(d.replace('"', '').replace(" ", "")))    
     last_mode_ind = config.main.start_mode_ind
     days_ind = config.main.start_days_ind
+    days_switching = config.main.days_switching
+    
     def fullupdate(mode, days, layout, refresh=True):
         try:
             ticker.setDaysAgo(days)
@@ -341,6 +343,10 @@ def main(config, config_file):
                     logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                     datapulled = True
+                    if days_switching:
+                        days_ind += 1
+                        if days_ind >= len(days_list):
+                            days_ind = 0                        
                     setup_GPIO()
                 elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                     logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
