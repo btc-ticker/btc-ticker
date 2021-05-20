@@ -227,18 +227,23 @@ def main(config, config_file):
     layout_list = []
     for l in config.main.layout_list.split(","):
         layout_list.append(l.replace('"', "").replace(" ", ""))
-    last_layout_ind = config.main.start_layout_ind    
-    
+    last_layout_ind = config.main.start_layout_ind
+    layout_shifting = config.main.layout_shifting
+    logging.info("Layout: %s - shifting is set to %d" % (layout_list[last_layout_ind], int(layout_shifting)))
     mode_list = []
     for l in config.main.mode_list.split(","):
         mode_list.append(l.replace('"', "").replace(" ", ""))
+    last_mode_ind = config.main.start_mode_ind
+    mode_shifting = config.main.mode_shifting
+    logging.info("Mode: %s - shifting is set to %d" % (mode_list[last_mode_ind], int(mode_shifting)))
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
         days_list.append(int(d.replace('"', '').replace(" ", "")))    
-    last_mode_ind = config.main.start_mode_ind
+    
     days_ind = config.main.start_days_ind
-    days_switching = config.main.days_switching
+    days_shifting = config.main.days_shifting
+    logging.info("Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting)))
     
     def fullupdate(mode, days, layout, refresh=True):
         try:
@@ -350,10 +355,18 @@ def main(config, config_file):
                 logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
                 lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
                 datapulled = True
-                if days_switching:
+                if days_shifting:
                     days_ind += 1
                     if days_ind >= len(days_list):
-                        days_ind = 0                        
+                        days_ind = 0
+                if mode_shifting:
+                    last_mode_ind += 1
+                    if last_mode_ind >= len(mode_list):
+                        last_mode_ind = 0
+                if layout_shifting:
+                    last_layout_ind += 1
+                    if last_layout_ind >= len(layout_list):
+                        last_layout_ind = 0                    
                 setup_gpio = True
             elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                 logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
