@@ -63,7 +63,7 @@ to update the ticker to the newest updates from git.
 
 ## Flash SDcard
 
-* Downlad version 0.1 from [btc-ticker-0_2.img.gz](https://btc-ticker.com/btc-ticker-0_2.img.gz)
+* Downlad version 0.2 from [btc-ticker-0_2.img.gz](https://btc-ticker.com/btc-ticker-0_2.img.gz)
 * Verify SHA256 checksum. It should be: `129B1D8C86019D2D3AF640C978843768957AB839CCCEB5E83C23A3876D51D158`
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
