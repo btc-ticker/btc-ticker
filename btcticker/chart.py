@@ -37,7 +37,7 @@ def makeSpark(pricestack, figsize=(10, 3), dpi=17):
 
 
 
-def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle'):
+def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle', x_axis=True):
     converter = mdates.ConciseDateConverter()
     munits.registry[np.datetime64] = converter
     munits.registry[datetime.date] = converter
@@ -50,7 +50,8 @@ def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle'):
 
     mpf.plot(ohlc,type=plot_type,ax=ax, ylabel='')
     ax.grid(True, linewidth=0.5, color='#000000', linestyle='-')
-
+    if not x_axis:
+        ax.set_xticklabels([])
     
     canvas.draw()
     buf = canvas.buffer_rgba()

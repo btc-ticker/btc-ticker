@@ -32,6 +32,7 @@ elif config.main.orientation == 270:
     ticker = Ticker(config, h, w)    
 else:
     ticker = Ticker(config, w, h)
+ticker.orientation = 0
 
 # ticker_mode = ["fiat", "height", "satfiat", "usd", "newblock"]
 mode_list = []
