@@ -208,8 +208,12 @@ def main(config, config_file):
     epd_type = config.main.epd_type
 
     w, h, mirror = get_display_size(epd_type)
-    
-    ticker = Ticker(config, w, h)
+    if config.main.orientation == 90:
+        ticker = Ticker(config, h, w)
+    elif config.main.orientation == 270:
+        ticker = Ticker(config, h, w)    
+    else:
+        ticker = Ticker(config, w, h)
 
     height = ticker.mempool.getBlockHeight()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh

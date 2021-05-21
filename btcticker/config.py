@@ -20,7 +20,7 @@ class MainConfig(BaseModel):
     start_layout_ind: int = 0
     layout_shifting : bool = False
     loglevel: str = "WARNING"
-    orientation: int = 90
+    orientation: int = 0
     inverted: bool = False
     show_block_height: bool = True
     mempool_api_url: str = "https://mempool.space/api/"

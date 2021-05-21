@@ -441,8 +441,8 @@ class Ticker():
 
                 
         #draw.text((145,2),str(time.strftime("%H:%M %d %b")),font =font_fee,fill = 0)
-        if self.orientation == 270 :
-            self.image=self.image.rotate(180, expand=True)
+        if self.orientation != 0 :
+            self.image=self.image.rotate(self.orientation, expand=True)
         if mirror:
             self.image = ImageOps.mirror(self.image)    
     

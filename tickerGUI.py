@@ -26,7 +26,12 @@ config = Config("home.admin/config.ini")
 
 w, h = get_display_size(epd_type=config.main.epd_type)
 
-ticker = Ticker(config, w, h)
+if config.main.orientation == 90:
+    ticker = Ticker(config, h, w)
+elif config.main.orientation == 270:
+    ticker = Ticker(config, h, w)    
+else:
+    ticker = Ticker(config, w, h)
 
 # ticker_mode = ["fiat", "height", "satfiat", "usd", "newblock"]
 mode_list = []
