@@ -11,14 +11,14 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User=admin
-TimeoutStartSec=20s
-TimeoutStopSec=20s
+TimeoutStartSec=60s
+TimeoutStopSec=60s
 StartLimitInterval=5min
 StartLimitBurst=20
 # Turn it on only when you are absolutely and positively sure that this service works tip-top, otherwise you may experience reboot loop
 #StartLimitAction=reboot
 # Watchdog unleashed. The value must not be lower than 60s + some time to eventually get data
-WatchdogSec=120s
+WatchdogSec=180s
 Type=notify
 NotifyAccess=all
 

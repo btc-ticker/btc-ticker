@@ -19,12 +19,12 @@ class MainConfig(BaseModel):
     layout_list: str = 'all,fiat,fiatheight,big_one_row,big_two_rows,ohlc'
     start_layout_ind: int = 0
     layout_shifting : bool = False
-    loglevel: str = "WARNING"
+    loglevel: str = 'WARNING'
     orientation: int = 0
     inverted: bool = False
     show_block_height: bool = False
-    mempool_api_url: str = "https://mempool.space/api/"
-    epd_type: str = "2in7_4gray"
+    mempool_api_url: str = 'https://mempool.space/api/'
+    epd_type: str = '2in7_4gray'
 
 class FontsConfig(BaseModel):
 

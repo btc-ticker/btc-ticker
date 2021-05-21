@@ -44,7 +44,7 @@ def internet(host="8.8.8.8", port=53, timeout=6):
 def get_display_size(epd_type):
     if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
-        mirror = True
+        mirror = False
         return epd.width, epd.height, mirror
     elif epd_type == "2in7":
         epd = epd2in7.EPD()
