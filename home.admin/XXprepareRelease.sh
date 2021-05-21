@@ -19,6 +19,7 @@ echo "OK"
 echo ""
 echo "deleting local WIFI conf ..."
 sudo rm /boot/wpa_supplicant.conf 2>/dev/null
+sudo rm /etc/wpa_supplicant/wpa_supplicant.conf 2>/dev/null
 echo "OK"
 
 echo " "
