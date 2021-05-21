@@ -22,7 +22,7 @@ class MainConfig(BaseModel):
     loglevel: str = "WARNING"
     orientation: int = 0
     inverted: bool = False
-    show_block_height: bool = True
+    show_block_height: bool = False
     mempool_api_url: str = "https://mempool.space/api/"
     epd_type: str = "2in7_4gray"
 

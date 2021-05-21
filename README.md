@@ -50,6 +50,17 @@ After writing the change to the ini file, a restart of the btc-ticker service is
 sudo systemctl restart btcticker
 ```
 
+### Update btc-ticker without reflashing the sdcard
+After logging into the btc-ticker with SSH, the update can be started with
+```
+./99updateMenu.sh
+```
+Select now:
+* PATCH
+* Patch menu
+* PATCH
+to update the ticker to the newest updates from git.
+
 ## Flash SDcard
 
 * Downlad version 0.1 from [btc-ticker-0_2.img.gz](https://btc-ticker.com/btc-ticker-0_2.img.gz)

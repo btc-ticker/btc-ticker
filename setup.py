@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 
-VERSION = '0.2.1'
+VERSION = '0.3.0'
 
 tests_require = ['pytest']
 
