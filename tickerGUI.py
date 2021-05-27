@@ -7,9 +7,11 @@ import io
 import time
 
 
-def get_display_size(epd_type="2in7"):
+def get_display_size(epd_type="2in7_4gray"):
     if epd_type == "2in7":
         return 176, 264
+    elif epd_type == "2in7_4gray":
+        return 176, 264    
     else:
         return 528, 880
 

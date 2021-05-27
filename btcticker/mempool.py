@@ -72,10 +72,16 @@ class Mempool():
         mempoolurl = self.mempoolApiUrl + "blocks/tip/height"
         lastblocknum = int(self.get_json(mempoolurl))
         return lastblocknum
-        
+
+    def getRecommendedFees(self):
+        mempoolurl = self.mempoolApiUrl + "v1/fees/recommended"
+        fees = self.get_json(mempoolurl)
+        return fees
+
     def refresh(self):
         logging.info("Getting Data")
         rawmempoolblocks = self.getMempoolBlocks()
+        bestFees = self.getRecommendedFees()
         rawblocks = self.getBlocks(n=1)
         mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         
@@ -98,6 +104,7 @@ class Mempool():
         self.data["height"] = lastblocknum
         self.data["minFee"] = minFee
         self.data["maxFee"] = maxFee
+        self.data["bestFees"] = bestFees
         self.data["medianFee"] = medianFee
         self.data["meanTimeDiff"] = mean_time_diff
 
