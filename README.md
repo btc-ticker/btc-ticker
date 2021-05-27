@@ -1,6 +1,7 @@
 # bitcoin-ticker
 bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. Due to the limited refresh lifetime, new information is currently shown every 5 minutes and whenever a new block arrives.
 
+![](pictures/view7.jpg)
 ![](pictures/view6.jpg)
 ![](pictures/view1.jpg)
 ![](pictures/view2.jpg)
@@ -14,6 +15,7 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 * rasberry pi zero WH (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
 * Power supply Micro USB 5V (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/stromversorgung/netzteile-fuer-die-steckdose/micro-usb-netzteil/ladeadapter-5v/1a-flache-bauform-schwarz))
 * micro SD card with 16 GB or more (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/speicherkarten/sandisk-ultra-microsdhc-a1-98mb/s-class-10-speicherkarte-43-adapter-16gb))
+* Printed Case (e.g. Typ B from [ebay](https://www.ebay.de/itm/GEHAUSE-fur-2-7-264-176-ePaper-e-Ink-Display-HAT-und-Raspberry-Pi-Zero/384176908149))
 
 ## Usage
 ### Ticker view
