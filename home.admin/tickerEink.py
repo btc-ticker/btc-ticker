@@ -140,11 +140,11 @@ def init_logging(warnlevel=logging.WARNING):
     logger.addHandler(handler)
 
 def cleanup_GPIO():
-    GPIO.setmode(GPIO.BCM)
-    GPIO.remove_event_detect(BUTTON_GPIO_1)
-    GPIO.remove_event_detect(BUTTON_GPIO_2)
-    GPIO.remove_event_detect(BUTTON_GPIO_3)
-    GPIO.remove_event_detect(BUTTON_GPIO_4)
+    # GPIO.setmode(GPIO.BCM)
+    # GPIO.remove_event_detect(BUTTON_GPIO_1)
+    # GPIO.remove_event_detect(BUTTON_GPIO_2)
+    # GPIO.remove_event_detect(BUTTON_GPIO_3)
+    # GPIO.remove_event_detect(BUTTON_GPIO_4)
     GPIO.cleanup()    
 
 def setup_GPIO(cleanup=True):
@@ -383,6 +383,7 @@ def main(config, config_file):
             if setup_gpio:
                 cnt = 0
                 while (not setup_GPIO() and cnt < 10):
+                    time.sleep(1)
                     cnt += 1                    
 
 if __name__ == '__main__':
