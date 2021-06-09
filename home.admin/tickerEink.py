@@ -140,11 +140,6 @@ def init_logging(warnlevel=logging.WARNING):
     logger.addHandler(handler)
 
 def cleanup_GPIO():
-    # GPIO.setmode(GPIO.BCM)
-    # GPIO.remove_event_detect(BUTTON_GPIO_1)
-    # GPIO.remove_event_detect(BUTTON_GPIO_2)
-    # GPIO.remove_event_detect(BUTTON_GPIO_3)
-    # GPIO.remove_event_detect(BUTTON_GPIO_4)
     GPIO.cleanup()    
 
 def setup_GPIO(cleanup=True):

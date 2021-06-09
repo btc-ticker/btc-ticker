@@ -81,7 +81,17 @@ class Ticker():
         self.mempool.refresh()
         self.price.refresh()
         self.stats = statistics.get()
-        
+
+    def drawFees(self, x, y, mempool, anchor="la"):
+        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
+        best_fee_str = "low: %.1f med: %.1f high: %.1f"
+        minFee = mempool["minFee"]
+        bestFees = mempool["bestFees"]
+        if self.config.main.show_best_fees:
+            w, h = self.drawText(x, y, best_fee_str % (bestFees["hourFee"], bestFees["halfHourFee"], bestFees["fastestFee"]), self.font_fee, anchor=anchor)
+        else:
+            w, h = self.drawText(x, y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor=anchor)
+        return w, h
 
     def build(self, mode="fiat", layout="all", mirror=True):
 
@@ -107,16 +117,10 @@ class Ticker():
         retarget_timestamp = difficulty_epoch_duration + last_retarget_timestamp
         retarget_date = datetime.fromtimestamp(retarget_timestamp)
         
-        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
-        #fee_str = 'fee %.0f %.0f %.0f %.0f %.0f %.0f %.0f'
-        fee_short_str = '%.1f-%.1f-%.1f'
-        #fee_short_str = 'fee %.0f %.0f %.0f'
     
         self.image = Image.new('L', (self.width, self.height), 255)    # 255: clear the image with white
         self.draw = ImageDraw.Draw(self.image)
-        minFee = mempool["minFee"]
-        medianFee = mempool["medianFee"]
-        maxFee = mempool["maxFee"]
+
         # meanTimeDiff = mempool["meanTimeDiff"]
         meanTimeDiff = self.stats.minutes_between_blocks * 60
         t_min = meanTimeDiff // 60
@@ -199,7 +203,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
@@ -214,7 +218,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
@@ -229,7 +233,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
@@ -246,7 +250,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
@@ -266,7 +270,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '%d blks %d txs' % (blocks, count), self.font_side)
@@ -290,7 +294,7 @@ class Ticker():
                 pos_y = 0
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor="lt")
+                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), self.font_side)
                 pos_y += h
@@ -304,7 +308,7 @@ class Ticker():
                 pos_y = 0
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, symbolstring + pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor="lt")
+                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), self.font_side)
                 pos_y += h
@@ -318,7 +322,7 @@ class Ticker():
                 pos_y = 0
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor="lt")
+                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), self.font_side)
                 pos_y += h
@@ -332,7 +336,7 @@ class Ticker():
                 pos_y = 0
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor="lt")
+                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), self.font_side)
                 pos_y += h
@@ -358,7 +362,7 @@ class Ticker():
                 pos_y = h
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor="lt")      
+                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")      
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d:%d - %s' % (t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
@@ -370,14 +374,33 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
                 self.drawTextMax(self.width - 1, self.height - 1, self.width - w, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")            
-                
+        elif layout == "mempool":
+            pos_y = 0
+            w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
+            pos_y += h
+            w, h = self.drawText(5, pos_y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), self.font_side)
+            pos_y += h
+            if self.config.main.fiat == "usd":
+                w, h = self.drawText(5, pos_y, '%s - %.0f /%s' % (symbolstring + pricenowstring.replace(",", ""), current_price["sat_fiat"], symbolstring), self.font_side)
+            else:
+                w, h = self.drawText(5, pos_y, '%s - %.0f /%s - $%.0f' % (symbolstring + pricenowstring.replace(",", ""), current_price["sat_fiat"], symbolstring, current_price["usd"]), self.font_side)
+            pos_y += h            
+            font = self.buildFont(self.config.fonts.font_buttom, 25)
+            
+            w,h = self.drawText(5, pos_y, "low  %.0f sat/vB" % mempool["bestFees"]["fastestFee"], font)
+            pos_y += h
+       
+            w,h = self.drawText(5, pos_y, "med  %.0f sat/vB" % mempool["bestFees"]["halfHourFee"], font)  
+            pos_y += h
+       
+            w,h = self.drawText(5, pos_y, "high %.0f sat/vB" % mempool["bestFees"]["hourFee"], font)              
         else:
             if mode == "fiat":
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
                 #self.drawText(5, 25, 'fee %.0f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f' % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '$%.0f' % current_price["usd"], self.font_side)
@@ -393,7 +416,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '$%.0f' % current_price["usd"], self.font_side)
@@ -408,7 +431,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '$%.0f' % current_price["usd"], self.font_side)
@@ -427,7 +450,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%d - %d:%d - %s' % (mempool["height"], t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, symbolstring+pricenowstring, self.font_side)
@@ -444,7 +467,7 @@ class Ticker():
                 pos_y = 0
                 w, h = self.drawText(5, pos_y, '%s - %d:%d - %s' % (symbolstring+pricenowstring, t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee)
+                w, h = self.drawFees(5, pos_y, mempool)
                 pos_y += h
                 image_y = pos_y
                 w, h = self.drawText(5, pos_y, '%d blks %d txs' % (blocks, count), self.font_side)

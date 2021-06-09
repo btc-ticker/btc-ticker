@@ -75,6 +75,7 @@ country=[COUNTRY_CODE]
 network={
   ssid="[WIFI_SSID]"
   psk="[WIFI_PASSWORD]"
+  key_mgmt=WPA-PSK
 }
 ```
 * replace `[COUNTRY_CODE]` with the ISO2 code (e.g. DE)

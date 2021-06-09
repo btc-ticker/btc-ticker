@@ -25,6 +25,7 @@ class MainConfig(BaseModel):
     show_block_height: bool = False
     mempool_api_url: str = 'https://mempool.space/api/'
     epd_type: str = '2in7_4gray'
+    show_best_fees: bool = False
 
 class FontsConfig(BaseModel):
 
