@@ -387,13 +387,13 @@ class Ticker():
             pos_y += h            
             font = self.buildFont(self.config.fonts.font_buttom, 25)
             
-            w,h = self.drawText(5, pos_y, "low  %.0f sat/vB" % mempool["bestFees"]["fastestFee"], font)
+            w,h = self.drawText(5, pos_y, "low  %.0f sat/vB" % mempool["bestFees"]["hourFee"], font)
             pos_y += h
        
             w,h = self.drawText(5, pos_y, "med  %.0f sat/vB" % mempool["bestFees"]["halfHourFee"], font)  
             pos_y += h
        
-            w,h = self.drawText(5, pos_y, "high %.0f sat/vB" % mempool["bestFees"]["hourFee"], font)              
+            w,h = self.drawText(5, pos_y, "high %.0f sat/vB" % mempool["bestFees"]["fastestFee"], font)              
         else:
             if mode == "fiat":
                 pos_y = 0
