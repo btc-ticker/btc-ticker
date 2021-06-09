@@ -16,7 +16,7 @@ class MainConfig(BaseModel):
     days_list: str = '1,7,30'
     start_days_ind: int = 0
     days_shifting: bool = False
-    layout_list: str = 'all,fiat,fiatheight,big_one_row'
+    layout_list: str = 'all,fiat,fiatheight,big_one_row,mempool'
     start_layout_ind: int = 0
     layout_shifting : bool = False
     loglevel: str = 'WARNING'
