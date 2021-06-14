@@ -244,11 +244,14 @@ def main(config, config_file):
     days_shifting = config.main.days_shifting
     logging.info("Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting)))
     
-    def fullupdate(mode, days, layout, refresh=True):
+    inverted = config.main.inverted
+    
+    def fullupdate(mode, days, layout, inverted, refresh=True):
         try:
             ticker.setDaysAgo(days)
             if refresh:
                 ticker.refresh()
+            ticker.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
             draw_image(epd_type, ticker.image)
             lastgrab=time.time()
@@ -304,7 +307,7 @@ def main(config, config_file):
                 last_mode_ind += 1
                 if last_mode_ind >= len(mode_list):
                     last_mode_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
+                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
                 display_update = True     
                 clear_state()
                 setup_gpio = True
@@ -313,7 +316,7 @@ def main(config, config_file):
                 days_ind += 1
                 if days_ind >= len(days_list):
                     days_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
+                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
                 display_update = True  
                 clear_state()
                 setup_gpio = True
@@ -324,15 +327,15 @@ def main(config, config_file):
                 last_layout_ind += 1
                 if last_layout_ind >= len(layout_list):
                     last_layout_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], refresh=False)
+                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
                 display_update = True  
                 clear_state()
                 setup_gpio = True
             elif key4state == False:
                 logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
-                lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], refresh=False)
+                inverted = not inverted
+                lastcoinfetch = fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
                 display_update = True
-                newblock_displayed = True
                 clear_state()
                 setup_gpio = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
@@ -342,7 +345,7 @@ def main(config, config_file):
                     logging.warning(e)
                 if new_height > height and not display_update:
                     logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind])
+                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], inverted)
                     newblock_displayed = True
                     setup_gpio = True
                 height = new_height
@@ -352,7 +355,7 @@ def main(config, config_file):
                 time.sleep(10)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
                 logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
                 datapulled = True
                 if days_shifting:
                     days_ind += 1
@@ -369,7 +372,7 @@ def main(config, config_file):
                 setup_gpio = True
             elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                 logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind])
+                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
                 datapulled = True
                 newblock_displayed = False
                 setup_gpio = True

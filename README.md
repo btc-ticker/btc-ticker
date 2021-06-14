@@ -40,7 +40,7 @@ There are four buttons which the following behaviour (Please be patient after pr
 1. Switch through different ticker views
 2. Switch BTC/fiat graph through 1, 7 and 30 days
 3. Switch the layout of the ticker
-4. Show new block screen (is also shown everytime a new block is created)
+4. Switch inverted mode
 
 ### Config.ini
 It possible to personalize the ticker to your needs. After logging into your raspi with SSH, the config can be edited with

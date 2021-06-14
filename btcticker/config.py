@@ -23,6 +23,7 @@ class MainConfig(BaseModel):
     orientation: int = 0
     inverted: bool = False
     show_block_height: bool = False
+    update_on_new_block: bool = True
     mempool_api_url: str = 'https://mempool.space/api/'
     epd_type: str = '2in7_4gray'
     show_best_fees: bool = False

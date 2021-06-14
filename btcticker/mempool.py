@@ -78,12 +78,47 @@ class Mempool():
         fees = self.get_json(mempoolurl)
         return fees
 
+    def optimizeMedianFee(self, pBlock, nextBlock=None, previousFee=None):
+        if previousFee is not None:
+            useFee = (pBlock["medianFee"] + previousFee) / 2
+        else:
+            useFee = pBlock["medianFee"]
+        if pBlock["blockVSize"] <= 500000:
+            return 1.0
+        elif pBlock["blockVSize"] <= 950000 and nextBlock is None:
+            multiplier = (pBlock["blockVSize"] - 500000) / 500000
+            return max(useFee * multiplier, 1.0)
+        return useFee
+            
     def refresh(self):
         logging.info("Getting Data")
         rawmempoolblocks = self.getMempoolBlocks()
         bestFees = self.getRecommendedFees()
         rawblocks = self.getBlocks(n=1)
         mean_time_diff = self.calcMeanTimeDiff(rawblocks)
+        
+        if len(rawmempoolblocks) == 1:
+            firstMedianFee = self.optimizeMedianFee(rawmempoolblocks[0])
+            secondMedianFee = 1
+            thirdMedianFee = 1
+        else:
+            firstMedianFee = self.optimizeMedianFee(rawmempoolblocks[0], rawmempoolblocks[1])
+            if len(rawmempoolblocks) <= 2:
+                secondMedianFee = self.optimizeMedianFee(rawmempoolblocks[1], previousFee=firstMedianFee)
+            else:
+                secondMedianFee = self.optimizeMedianFee(rawmempoolblocks[1], rawmempoolblocks[2], firstMedianFee)
+            if len(rawmempoolblocks) <= 2:
+                thirdMedianFee = 1.0
+            elif len(rawmempoolblocks) <= 3:
+                thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], previousFee=secondMedianFee)
+            else:
+                thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], rawmempoolblocks[3], secondMedianFee)
+        
+        bestFees["fastestFee"] = firstMedianFee
+        bestFees["halfHourFee"] = secondMedianFee
+        bestFees["hourFee"] = thirdMedianFee
+        
+        
         
         vsize = 0
         count = 0
