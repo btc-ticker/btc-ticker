@@ -26,7 +26,7 @@ class MainConfig(BaseModel):
     update_on_new_block: bool = True
     mempool_api_url: str = 'https://mempool.space/api/'
     epd_type: str = '2in7_4gray'
-    show_best_fees: bool = False
+    show_best_fees: bool = True
 
 class FontsConfig(BaseModel):
 

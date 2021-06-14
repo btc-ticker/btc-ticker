@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.3.1   *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.3.2   *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -462,6 +462,7 @@ sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib
 sudo -H python3 -m pip install pandas
 sudo -H python3 -m pip install mplfinance==0.12.7a17
+
 
 echo ""
 echo "Build matplot cache"
