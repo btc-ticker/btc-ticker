@@ -459,8 +459,8 @@ sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install numpy==1.20.2
-sudo -H python3 -m pip install matplotlib
-sudo -H python3 -m pip install pandas
+sudo -H python3 -m pip install matplotlib==3.4.2
+sudo -H python3 -m pip install pandas==1.2.4
 sudo -H python3 -m pip install mplfinance==0.12.7a17
 
 
