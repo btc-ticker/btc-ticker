@@ -6,6 +6,7 @@ import sys
 import math
 import socket
 import logging
+import http.client as httplib
 import logging.handlers
 import argparse
 import signal
@@ -25,21 +26,18 @@ BUTTON_GPIO_2 = 6
 BUTTON_GPIO_3 = 13
 BUTTON_GPIO_4 = 19
 
-def internet(host="8.8.8.8", port=53, timeout=6):
-    """
-    Host: 8.8.8.8 (google-public-dns-a.google.com)
-    OpenPort: 53/tcp
-    Service: domain (DNS/TCP)
-    """
-    
+def internet():
+    conn = httplib.HTTPConnection("www.google.com", timeout=5)
     try:
-        socket.setdefaulttimeout(timeout)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        conn.request("HEAD", "/")
+        conn.close()
         return True
-    except socket.error as ex:
+    except Exception as ex:
         logging.warning("No internet")
-        logging.warning(ex)
+        logging.warning(ex)        
+        conn.close()
         return False
+    
 
 def get_display_size(epd_type):
     if epd_type == "2in7_4gray":
@@ -59,7 +57,6 @@ def get_display_size(epd_type):
 def draw_shutdown():
     global epd_type
 #   A visual cue that the wheels have fallen off
-    cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
     if epd_type == "2in7_4gray":
@@ -89,7 +86,6 @@ def draw_shutdown():
 
 def draw_image(epd_type, image=None):
 #   A visual cue that the wheels have fallen off
-    cleanup_GPIO()
     GPIO.setmode(GPIO.BCM)
     if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
@@ -113,12 +109,13 @@ def draw_image(epd_type, image=None):
         logging.info("draw")
         epd.display(epd.getbuffer(image))
     epd.sleep()
-    setup_GPIO(False)
+    setup_GPIO()
     
 
 def signal_hook(*args):
     if shutdown_hook():
         logging.info("calling exit 0")
+        GPIO.cleanup()
         sys.exit(0)
 
 
@@ -138,64 +135,18 @@ def init_logging(warnlevel=logging.WARNING):
     logger.setLevel(warnlevel)
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
-
-def cleanup_GPIO():
-    GPIO.cleanup()    
-
-def setup_GPIO(cleanup=True):
-    if cleanup:
-        cleanup_GPIO()
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    try:
-        
-        GPIO.add_event_detect(BUTTON_GPIO_1, GPIO.FALLING, 
-                              callback=button_pressed_callback1, bouncetime=100)
-        GPIO.add_event_detect(BUTTON_GPIO_2, GPIO.FALLING, 
-                              callback=button_pressed_callback2, bouncetime=100)
-        GPIO.add_event_detect(BUTTON_GPIO_3, GPIO.FALLING, 
-                              callback=button_pressed_callback3, bouncetime=100)
-        GPIO.add_event_detect(BUTTON_GPIO_4, GPIO.FALLING, 
-                              callback=button_pressed_callback4, bouncetime=100)
-        return True
-    except Exception as e:
-        logging.warning(e)
-        return False
         
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
-def button_pressed_callback1(channel):
-    global key1state
-    key1state = False
-
-def button_pressed_callback2(channel):
-    global key2state
-    key2state = False
-
-def button_pressed_callback3(channel):
-    global key3state
-    key3state = False
-
-def button_pressed_callback4(channel):
-    global key4state
-    key4state = False
-
-def clear_state():
-    global key1state
-    global key2state
-    global key3state
-    global key4state
-    key1state = True
-    key2state = True
-    key3state = True
-    key4state = True
-
+def setup_GPIO():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
 
 def main(config, config_file):
     
@@ -263,13 +214,7 @@ def main(config, config_file):
 
 
     global shutting_down
-    global key1state
-    global key2state
-    global key3state
-    global key4state    
-
-    clear_state()
-
+    setup_GPIO()
     atexit.register(shutdown_hook)
     signal.signal(signal.SIGTERM, signal_hook)
 
@@ -296,48 +241,30 @@ def main(config, config_file):
                 logging.info("App is shutting down.....")
                 break
             display_update = False
-            setup_gpio = False
             notifier.notify("WATCHDOG=1")
-            if not internet():
-                time.sleep(10)
-                continue
             
-            if key1state == False:
+            if GPIO.input(BUTTON_GPIO_1) == GPIO.LOW:
                 logging.info('Key1 after %.2f s' % (time.time() - lastcoinfetch))
                 last_mode_ind += 1
                 if last_mode_ind >= len(mode_list):
                     last_mode_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
-                display_update = True     
-                clear_state()
-                setup_gpio = True
-            elif key2state == False:
+                display_update = True
+            elif GPIO.input(BUTTON_GPIO_2) == GPIO.LOW:
                 logging.info('Key2 after %.2f s' % (time.time() - lastcoinfetch))
                 days_ind += 1
                 if days_ind >= len(days_list):
                     days_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
-                display_update = True  
-                clear_state()
-                setup_gpio = True
-
-                    
-            elif key3state == False:
+                display_update = True
+            elif GPIO.input(BUTTON_GPIO_3) == GPIO.LOW:
                 logging.info('Key3 after %.2f s' % (time.time() - lastcoinfetch))
                 last_layout_ind += 1
                 if last_layout_ind >= len(layout_list):
                     last_layout_ind = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
-                display_update = True  
-                clear_state()
-                setup_gpio = True
-            elif key4state == False:
+                display_update = True
+            elif GPIO.input(BUTTON_GPIO_4) == GPIO.LOW:
                 logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
                 inverted = not inverted
-                lastcoinfetch = fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
                 display_update = True
-                clear_state()
-                setup_gpio = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                 try:
                     new_height = ticker.mempool.getBlockHeight()
@@ -347,12 +274,15 @@ def main(config, config_file):
                     logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
                     lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], inverted)
                     newblock_displayed = True
-                    setup_gpio = True
                 height = new_height
                 lastheightfetch = time.time()
             
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
+            elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
+                time.sleep(10)
+            elif display_update:
+                fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
                 logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
                 lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
@@ -368,21 +298,14 @@ def main(config, config_file):
                 if layout_shifting:
                     last_layout_ind += 1
                     if last_layout_ind >= len(layout_list):
-                        last_layout_ind = 0                    
-                setup_gpio = True
+                        last_layout_ind = 0
             elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
                 logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
                 lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
                 datapulled = True
                 newblock_displayed = False
-                setup_gpio = True
             else:
-                time.sleep(1)
-            if setup_gpio:
-                cnt = 0
-                while (not setup_GPIO() and cnt < 10):
-                    time.sleep(1)
-                    cnt += 1                    
+                time.sleep(0.05)  
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
