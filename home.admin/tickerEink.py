@@ -220,10 +220,7 @@ def main(config, config_file):
 
     if True:
         logging.info("BTC ticker %s: set display size to %d x %d" % (epd_type, ticker.width, ticker.height))
-
-        setup_GPIO(False)
         signal.signal(signal.SIGINT, signal_handler)
-   
 
 #       Note that there has been no data pull yet
         datapulled=False
