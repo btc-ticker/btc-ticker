@@ -199,7 +199,7 @@ def main(config, config_file):
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
-            showmessage(epd_type, ticker, e, inverted)
+            showmessage(epd_type, ticker, e, mirror, inverted)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab
@@ -271,7 +271,7 @@ def main(config, config_file):
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
-                lastcoinfetch=showmessage("Internet is not available! Check your wpa_supplicant.conf", inverted)
+                lastcoinfetch=showmessage("Internet is not available! Check your wpa_supplicant.conf", mirror, inverted)
             elif display_update:
                 fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
