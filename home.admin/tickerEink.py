@@ -220,6 +220,19 @@ def main(config, config_file):
     
     inverted = config.main.inverted
     
+    def showmessage(message, inverted):
+        try:
+            ticker.inverted = inverted
+            ticker.build_message(message, mirror=mirror)
+            draw_image(epd_type, ticker.image)
+            lastgrab=time.time()
+        except Exception as e:
+            logging.warning(e)
+            time.sleep(10)
+            lastgrab=lastcoinfetch
+        return lastgrab
+    
+    
     def fullupdate(mode, days, layout, inverted, refresh=True):
         try:
             ticker.setDaysAgo(days)
@@ -231,9 +244,11 @@ def main(config, config_file):
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
+            showmessage(e, inverted)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab
+
 
 
     global shutting_down
@@ -259,6 +274,7 @@ def main(config, config_file):
             
             if shutting_down:
                 logging.info("App is shutting down.....")
+                showmessage("Shutting down...", inverted)
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
@@ -300,7 +316,7 @@ def main(config, config_file):
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
-                time.sleep(10)
+                lastcoinfetch=showmessage("Internet is not available! Check your wpa_supplicant.conf", inverted)
             elif display_update:
                 fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):

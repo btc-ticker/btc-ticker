@@ -126,7 +126,19 @@ class Ticker():
             w, h = self.drawText(x, y, best_fee_str % (int(last_block_sec_ago/60), last_block_sec_ago%60, hourFee, halfHourFee, fastestFee), self.font_fee)
                 
         return w, h
-        
+
+    def build_message(self, message, mirror=True):
+        self.image = Image.new('L', (self.width, self.height), 255)    # 255: clear the image with white
+        self.draw = ImageDraw.Draw(self.image)  
+        w, h, font_size = self.drawTextMax(0, 0, self.width, self.height, message, self.config.fonts.font_buttom, anchor="lt")  
+        if self.orientation != 0 :
+            self.image=self.image.rotate(self.orientation, expand=True)
+        if mirror:
+            self.image = ImageOps.mirror(self.image)
+    #   If the display is inverted, invert the image usinng ImageOps        
+        if self.inverted:
+            self.image = ImageOps.invert(self.image)
+    #   Send the image to the screen            
 
     def build(self, mode="fiat", layout="all", mirror=True):
 
