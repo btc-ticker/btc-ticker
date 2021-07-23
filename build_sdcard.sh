@@ -183,6 +183,7 @@ fi
 
 # remove some (big) packages that are not needed
 sudo apt remove -y --purge libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi minecraft-pi plymouth python2 vlc
+sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
 sudo apt clean
 sudo apt -y autoremove
 
