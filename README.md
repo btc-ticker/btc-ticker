@@ -22,7 +22,7 @@ I'm currently working on a 7.5 inch version with the following e-Paper:
 
 The config.ini needs the following settings when using the 7.5 inch:
 ```
-epd_type = epd7in5_V2
+epd_type = 7in5_V2
 orientation = 270
 ```
 

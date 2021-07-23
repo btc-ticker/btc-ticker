@@ -48,11 +48,11 @@ def get_display_size(epd_type):
         epd = epd2in7.EPD()
         mirror = False
         return epd.width, epd.height, mirror    
-    elif epd_type == "epd7in5_V2":
+    elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()
         mirror = False
         return epd.height, epd.width, mirror        
-    elif epd_type == "epd7in5_HD":
+    elif epd_type == "7in5_HD":
         epd = epd7in5_HD.EPD()
         mirror = False
         return epd.height, epd.width, mirror
@@ -78,13 +78,13 @@ def draw_shutdown():
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         # image.paste(shutdown_icon, (0,0))
         epd.display(epd.getbuffer(image))
-    elif epd_type == "epd7in5_V2":
+    elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         # image.paste(shutdown_icon, (0,0))
         epd.display(epd.getbuffer(image))             
-    elif epd_type == "epd7in5_HD":
+    elif epd_type == "7in5_HD":
         epd = epd7in5_HD.EPD()
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
@@ -115,14 +115,14 @@ def draw_image(epd_type, image=None):
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
         epd.display(epd.getbuffer(image))
-    elif epd_type == "epd7in5_V2":
+    elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()    
         epd.init()
         if image is None:
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
         epd.display(epd.getbuffer(image))
-    elif epd_type == "epd7in5_HD":
+    elif epd_type == "7in5_HD":
         epd = epd7in5_HD.EPD()
         epd.init()
         if image is None:
