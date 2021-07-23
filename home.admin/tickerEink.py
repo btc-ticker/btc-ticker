@@ -13,7 +13,7 @@ import signal
 import atexit
 import sdnotify
 import RPi.GPIO as GPIO
-from waveshare_epd import epd2in7, epd7in5_HD, epd7in5_v2
+from waveshare_epd import epd2in7, epd7in5_HD, epd7in5_V2
 import time
 from PIL import Image, ImageOps
 from PIL import ImageFont
@@ -48,8 +48,8 @@ def get_display_size(epd_type):
         epd = epd2in7.EPD()
         mirror = False
         return epd.width, epd.height, mirror    
-    elif epd_type == "epd7in5_v2":
-        epd = epd7in5_v2.EPD()
+    elif epd_type == "epd7in5_V2":
+        epd = epd7in5_V2.EPD()
         mirror = False
         return epd.height, epd.width, mirror        
     elif epd_type == "epd7in5_HD":
@@ -78,8 +78,8 @@ def draw_shutdown():
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         # image.paste(shutdown_icon, (0,0))
         epd.display(epd.getbuffer(image))
-    elif epd_type == "epd7in5_v2":
-        epd = epd7in5_v2.EPD()
+    elif epd_type == "epd7in5_V2":
+        epd = epd7in5_V2.EPD()
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         # image.paste(shutdown_icon, (0,0))
@@ -115,15 +115,15 @@ def draw_image(epd_type, image=None):
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
         epd.display(epd.getbuffer(image))
-    elif epd_type == "epd7in5_v2":
-        epd = epd7in5_v2.EPD()    
+    elif epd_type == "epd7in5_V2":
+        epd = epd7in5_V2.EPD()    
         epd.init()
         if image is None:
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
         epd.display(epd.getbuffer(image))
     elif epd_type == "epd7in5_HD":
-        epd = epd7in5_HD.EPD()    
+        epd = epd7in5_HD.EPD()
         epd.init()
         if image is None:
             image = Image.new('L', (epd.height, epd.width), 255)
