@@ -113,14 +113,9 @@ def signal_hook(*args):
 
 def shutdown_hook():
     global shutting_down
-    global epd_type
     if shutting_down:
         return False
     shutting_down = True
-    w, h, mirror = get_display_size(epd_type)
-    tmpconfig = Config()
-    ticker = Ticker(tmpconfig, w, h)
-    showmessage(epd_type, ticker, "App is shutting down...", mirror, False)
     logging.info("...finally going down")
     return True
 
@@ -233,7 +228,8 @@ def main(config, config_file):
         while True:         
             
             if shutting_down:
-                logging.info("App is shutting down.....")
+                logging.info("Ticker is shutting down.....")
+                showmessage(epd_type, ticker, "Ticker is shutting down...", mirror, inverted)
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
