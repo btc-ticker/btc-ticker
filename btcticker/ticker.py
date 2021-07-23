@@ -396,13 +396,17 @@ class Ticker():
                 h = w * 0.75 # / self.width * self.height 
             else:
                 h = w / self.width * self.height 
-                
+            pos_y = 0
+            if self.width  > 500:
+                w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
+                pos_y += h
             ohlc_image = makeCandle(self.price.ohlc, figsize=(w, h), dpi=dpi, x_axis=False)
             w, h = ohlc_image.size
-            self.image.paste(ohlc_image ,(0, 0))
+            self.image.paste(ohlc_image ,(0, pos_y))
+            pos_y += h
             if self.width  > 500:
-                pos_y = h
-                w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
+                w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
+                self.drawTextMax(self.width - 1, self.height - 1, self.width - w, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")      
                 pos_y += h
                 w, h = self.drawFees(5, pos_y, mempool, anchor="lt")      
                 pos_y += h
@@ -413,9 +417,7 @@ class Ticker():
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h                
                 w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
-                pos_y += h
-                w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
-                self.drawTextMax(self.width - 1, self.height - 1, self.width - w, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")            
+                pos_y += h         
         elif layout == "mempool":
             if mode == "fiat":
                 pos_y = 0

@@ -15,7 +15,17 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 * rasberry pi zero WH (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
 * Power supply Micro USB 5V (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/stromversorgung/netzteile-fuer-die-steckdose/micro-usb-netzteil/ladeadapter-5v/1a-flache-bauform-schwarz))
 * micro SD card with 16 GB or more (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/speicherkarten/sandisk-ultra-microsdhc-a1-98mb/s-class-10-speicherkarte-43-adapter-16gb))
-* Printed Case (e.g. Typ B from [ebay](https://www.ebay.de/itm/GEHAUSE-fur-2-7-264-176-ePaper-e-Ink-Display-HAT-und-Raspberry-Pi-Zero/384176908149))
+* Printed Case (e.g. Typ B from [ebay](https://www.ebay.de/itm/GEHAUSE-fur-2-7-264-176-ePaper-e-Ink-Display-HAT-und-Raspberry-Pi-Zero/384176908149) oder [ebay-kleinanzeigen](https://www.ebay-kleinanzeigen.de/s-anzeige/gehaeuse-fuer-2-7-e-ink-display-hat-rasp-pi-zero-typ-b/1807419003-225-8325))
+
+I'm currently working on a 7.5 inch version with the following e-Paper:
+* waveshare 7.5 v2 (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/7.5-800-215-480-epaper-display-hat-f-252-r-raspberry-pi-v2))
+
+The config.ini needs the following settings when using the 7.5 inch:
+```
+epd_type = epd7in5_v2
+orientation = 270
+```
+
 
 ## Usage
 ### Ticker view
