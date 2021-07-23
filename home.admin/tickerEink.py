@@ -58,44 +58,6 @@ def get_display_size(epd_type):
         return epd.height, epd.width, mirror
     else:
         raise Exception("Wrong epd_type")
-    
-
-def draw_shutdown():
-    global epd_type
-#   A visual cue that the wheels have fallen off
-    GPIO.setmode(GPIO.BCM)
-    shutdown_icon = Image.open(os.path.join(picdir,'shutdown.bmp'))
-    if epd_type == "2in7_4gray":
-        epd = epd2in7.EPD()
-        epd.Init_4Gray()
-        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        # image.paste(shutdown_icon, (0,0))
-        image = ImageOps.mirror(image)
-        epd.display_4Gray(epd.getbuffer_4Gray(image))
-    elif epd_type == "2in7":
-        epd = epd2in7.EPD()
-        epd.init()
-        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        # image.paste(shutdown_icon, (0,0))
-        epd.display(epd.getbuffer(image))
-    elif epd_type == "7in5_V2":
-        epd = epd7in5_V2.EPD()
-        epd.init()
-        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        # image.paste(shutdown_icon, (0,0))
-        epd.display(epd.getbuffer(image))             
-    elif epd_type == "7in5_HD":
-        epd = epd7in5_HD.EPD()
-        epd.init()
-        image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        # image.paste(shutdown_icon, (0,0))
-        epd.display(epd.getbuffer(image))
-    else:
-        raise Exception("Wrong epd_type")    
-
-    epd.sleep()
-    GPIO.setmode(GPIO.BCM)
-    epd2in7.epdconfig.module_exit()
 
 
 def draw_image(epd_type, image=None):
@@ -133,7 +95,14 @@ def draw_image(epd_type, image=None):
         raise Exception("Wrong epd_type")    
     epd.sleep()
     setup_GPIO()
-    
+
+
+def showmessage(epd_type, ticker, message, mirror, inverted):
+    ticker.inverted = inverted
+    ticker.build_message(message, mirror=mirror)
+    draw_image(epd_type, ticker.image)
+    return time.time()
+
 
 def signal_hook(*args):
     if shutdown_hook():
@@ -144,10 +113,14 @@ def signal_hook(*args):
 
 def shutdown_hook():
     global shutting_down
+    global epd_type
     if shutting_down:
         return False
     shutting_down = True
-    draw_shutdown()
+    w, h, mirror = get_display_size(epd_type)
+    tmpconfig = Config()
+    ticker = Ticker(tmpconfig, w, h)
+    showmessage(epd_type, ticker, "App is shutting down...", mirror, False)
     logging.info("...finally going down")
     return True
 
@@ -220,19 +193,6 @@ def main(config, config_file):
     
     inverted = config.main.inverted
     
-    def showmessage(message, inverted):
-        try:
-            ticker.inverted = inverted
-            ticker.build_message(message, mirror=mirror)
-            draw_image(epd_type, ticker.image)
-            lastgrab=time.time()
-        except Exception as e:
-            logging.warning(e)
-            time.sleep(10)
-            lastgrab=lastcoinfetch
-        return lastgrab
-    
-    
     def fullupdate(mode, days, layout, inverted, refresh=True):
         try:
             ticker.setDaysAgo(days)
@@ -244,7 +204,7 @@ def main(config, config_file):
             lastgrab=time.time()
         except Exception as e:
             logging.warning(e)
-            showmessage(e, inverted)
+            showmessage(epd_type, ticker, e, inverted)
             time.sleep(10)
             lastgrab=lastcoinfetch
         return lastgrab
@@ -274,7 +234,7 @@ def main(config, config_file):
             
             if shutting_down:
                 logging.info("App is shutting down.....")
-                showmessage("Shutting down...", inverted)
+                showmessage(epd_type, ticker, "App is shutting down...", mirror, inverted)
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
