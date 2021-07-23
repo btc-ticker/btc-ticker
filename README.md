@@ -11,7 +11,7 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 
 ## Hardware
 
-* waveshare 2.7 e-Paper HAT (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi))
+* waveshare 2.7 e-Paper HAT (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi), [welectron](https://www.welectron.com/Waveshare-13354-27inch-e-Paper-HAT?utm_campaign=id), [reichelt](https://www.reichelt.de/entwicklerboards-display-epaper-2-7-schwarz-weiss-debo-epa-2-7-p224220.html))
 * rasberry pi zero WH (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
 * Power supply Micro USB 5V (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/stromversorgung/netzteile-fuer-die-steckdose/micro-usb-netzteil/ladeadapter-5v/1a-flache-bauform-schwarz))
 * micro SD card with 16 GB or more (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/speicherkarten/sandisk-ultra-microsdhc-a1-98mb/s-class-10-speicherkarte-43-adapter-16gb))
