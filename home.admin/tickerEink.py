@@ -234,7 +234,6 @@ def main(config, config_file):
             
             if shutting_down:
                 logging.info("App is shutting down.....")
-                showmessage(epd_type, ticker, "App is shutting down...", mirror, inverted)
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
