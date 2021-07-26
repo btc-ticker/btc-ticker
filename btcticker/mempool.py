@@ -91,12 +91,17 @@ class Mempool():
         return useFee
             
     def refresh(self):
-        logging.info("Getting Data")
-        rawmempoolblocks = self.getMempoolBlocks()
         bestFees = {}
         bestFees["fastestFee"] = -1
         bestFees["halfHourFee"] = -1
-        bestFees["hourFee"] = -1        
+        bestFees["hourFee"] = -1
+        
+        logging.info("Getting Data")
+        try:
+            rawmempoolblocks = self.getMempoolBlocks()
+        except Exception as e:
+            logging.exception(e)
+   
         rawblocks = self.getBlocks(n=1)
         mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         
