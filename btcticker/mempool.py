@@ -135,7 +135,7 @@ class Mempool():
         
         logging.info("Getting Data")
         rawmempoolblocks = self.getMempoolBlocks()
-        if rawmempoolblocks is None:
+        if rawmempoolblocks is None and self.mempoolApiUrl != self.fall_back_url:
             rawmempoolblocks = self.getMempoolBlocks(use_fall_back=True)
         if rawmempoolblocks is not None:
             if len(rawmempoolblocks) == 1:
@@ -160,7 +160,7 @@ class Mempool():
             bestFees["hourFee"] = thirdMedianFee
         
         rawblocks = self.getBlocks(n=1)
-        if rawblocks is None:
+        if rawblocks is None and self.mempoolApiUrl != self.fall_back_url:
             rawblocks = self.getBlocks(n=1, use_fall_back=True)
         if rawblocks is not None:
             mean_time_diff = self.calcMeanTimeDiff(rawblocks)
@@ -176,7 +176,7 @@ class Mempool():
             #    th_fee = fee[0]
         
         lastblocknum = self.getBlockHeight()
-        if lastblocknum is None:
+        if lastblocknum is None and self.mempoolApiUrl != self.fall_back_url:
             lastblocknum = self.getBlockHeight(use_fall_back=True)
         if lastblocknum is None:
             lastblocknum = -1
