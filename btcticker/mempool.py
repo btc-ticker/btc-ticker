@@ -15,11 +15,12 @@ class Mempool():
             self.url_verify = False
         self.fall_back_url = "https://mempool.space/api/"
         self.n_fee_blocks = n_fee_blocks
+        self.timeout = 5
         self.data = {}
         self.refresh()
 
     def get_json(self, url):
-        return requests.get(url, verify=self.url_verify).json()
+        return requests.get(url, verify=self.url_verify, timeout=self.timeout).json()
 
     def getMempoolBlocks(self, use_fall_back=False):
         try:
