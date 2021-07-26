@@ -93,7 +93,10 @@ class Mempool():
     def refresh(self):
         logging.info("Getting Data")
         rawmempoolblocks = self.getMempoolBlocks()
-        bestFees = self.getRecommendedFees()
+        bestFees = {}
+        bestFees["fastestFee"] = -1
+        bestFees["halfHourFee"] = -1
+        bestFees["hourFee"] = -1        
         rawblocks = self.getBlocks(n=1)
         mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         
