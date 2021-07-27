@@ -8,7 +8,7 @@ class Price():
         self.ohlc = {}
         self.price = {}
         self.timeseriesstack = []
-        
+
     def refresh(self):
 
         logging.info("Getting Data")
@@ -19,7 +19,7 @@ class Price():
         self.price["sat_usd"] = 1e8 / self.price["usd"]
         self.price["fiat"] = self.coingecko.getCurrentPrice(self.fiat)
         self.price["sat_fiat"] = 1e8 / self.price["fiat"]
-        
+
         self.ohlc = self.coingecko.getOHLC(self.fiat)
         self.timeseriesstack = self.coingecko.getHistoryPrice(self.fiat)
 
@@ -33,14 +33,14 @@ class Price():
     def getPriceChange(self):
         if len(self.timeseriesstack) == 0:
             return ""
-        
+
         pricechange = str("%+d" % round((self.timeseriesstack[-1]-self.timeseriesstack[0])/self.timeseriesstack[-1]*100,2))+"%"
         return pricechange
 
     def getPriceNow(self):
         if len(self.timeseriesstack) == 0:
-            return ""        
-        pricenow = self.timeseriesstack[-1]        
+            return ""
+        pricenow = self.timeseriesstack[-1]
         if pricenow > 1000:
             pricenowstring =format(int(pricenow),",")
         else:

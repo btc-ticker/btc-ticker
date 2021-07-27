@@ -12,7 +12,7 @@ import mplfinance as mpf
 def makeSpark(pricestack, figsize=(10, 3), dpi=17):
     # Draw and save the sparkline that represents historical data
 
-    # Subtract the mean from the sparkline to make the mean appear on the plot (it's really the x axis)    
+    # Subtract the mean from the sparkline to make the mean appear on the plot (it's really the x axis)
     x = pricestack-np.mean(pricestack)
 
 
@@ -32,9 +32,8 @@ def makeSpark(pricestack, figsize=(10, 3), dpi=17):
     buf = canvas.buffer_rgba()
     X = np.asarray(buf)
     im = Image.fromarray(X)
-    
-    return im
 
+    return im
 
 
 def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle', x_axis=True):
@@ -42,7 +41,7 @@ def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle', x_axis=True):
     munits.registry[np.datetime64] = converter
     munits.registry[datetime.date] = converter
     munits.registry[datetime.datetime] = converter
-    
+
     fig = mpf.figure(figsize=figsize, dpi=dpi, constrained_layout=True)
     ax = fig.add_subplot(1,1,1)
     ax.set_facecolor("white")
@@ -52,13 +51,13 @@ def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle', x_axis=True):
     ax.grid(True, linewidth=0.5, color='#000000', linestyle='-')
     if not x_axis:
         ax.set_xticklabels([])
-    
+
     canvas.draw()
     buf = canvas.buffer_rgba()
     X = np.asarray(buf)
     im = Image.fromarray(X)
     plt.close('all')
-    
+
     return im
 
 

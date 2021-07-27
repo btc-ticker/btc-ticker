@@ -11,7 +11,7 @@ class CoinGecko():
           self.days_ago = days_ago
 
      #def refresh(self):
-          
+
      def getCurrentPrice(self, currency):
           return float(self.cg.get_coins_markets(currency, ids=self.whichcoin)[0]["current_price"])
 
@@ -24,12 +24,12 @@ class CoinGecko():
           return float(liveprice['last'])
 
 
-     
+
      def getHistoryPrice(self, currency):
-     
+
           logging.info("Getting Data")
-          # Get the price 
-     
+          # Get the price
+
           pricenow = self.getCurrentPrice(currency)
           rawtimeseries = self.cg.get_coin_market_chart_by_id(self.whichcoin, currency, self.days_ago)
           logging.info("Got price for the last "+str(self.days_ago)+" days from CoinGecko")
@@ -42,12 +42,12 @@ class CoinGecko():
                timeseriesdate.append(datetime.utcfromtimestamp(timeseriesarray[i][0]/1000))
                timeseriesstack.append(float (timeseriesarray[i][1]))
                i+=1
-     
+
           timeseriesstack.append(pricenow)
-          return timeseriesstack                  
+          return timeseriesstack
 
      def getOHLC(self, currency):
-          
+
           rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, self.days_ago)
           timeseriesstack = []
           timeseriesdate = []
