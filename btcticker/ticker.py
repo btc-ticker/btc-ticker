@@ -407,20 +407,20 @@ class Ticker():
 
             w = 6
             dpi = int(self.width / w)
-            if self.width > 500:
+            if self.width > 450:
                 h = w * 0.75 # / self.width * self.height
             else:
                 h = w / self.width * self.height
             pos_y = 0
             ohlc_image = makeCandle(self.price.ohlc, figsize=(w, h), dpi=dpi, x_axis=False)
             ohlc_w, ohlc_h = ohlc_image.size
-            if self.width  > 500:
+            if self.width  > 450:
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
 
             self.image.paste(ohlc_image ,(0, pos_y))
             pos_y += ohlc_h
-            if self.width  > 500:
+            if self.width  > 450:
                 w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
                 self.drawTextMax(self.width - 1, self.height - 1, self.width - w, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
                 pos_y += h
