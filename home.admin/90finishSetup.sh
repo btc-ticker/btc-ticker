@@ -37,15 +37,22 @@ echo "OK - System is now up to date"
 
 
 # Make system readonly
-sudo apt-get remove --purge -y cron logrotate triggerhappy dphys-swapfile samba-common
+sudo apt-get remove --purge -y logrotate triggerhappy dphys-swapfile
 sudo apt-get autoremove --purge -y
+sudo apt-get install -y busybox-syslogd
+sudo dpkg --purge -y rsyslog
 
-sudo rm -rf /var/lib/dhcp/ /var/spool /var/lock
+sudo rm -rf /var/lib/dhcp/ /var/lib/dhcpcd5 /var/run /var/spool /var/lock /etc/resolv.conf
 sudo ln -s /tmp /var/lib/dhcp
+sudo ln -s /tmp /var/lib/dhcpcd5
+sudo ln -s /tmp /var/run
 sudo ln -s /tmp /var/spool
 sudo ln -s /tmp /var/lock
-sudo mv /etc/resolv.conf /tmp/
-sudo ln -s /tmp/resolv.conf /etc/resolv.conf
+sudo touch /tmp/dhcpcd.resolv.conf
+sudo ln -s /tmp/dhcpcd.resolv.conf /etc/resolv.conf
+
+sudo rm /var/lib/systemd/random-seed
+sudo ln -s /tmp/random-seed /var/lib/systemd/random-seed
 
 echo "tmpfs         /var/log  tmpfs  nodev,nosuid  0  0
 tmpfs         /var/tmp  tmpfs  nodev,nosuid  0  0
@@ -57,6 +64,13 @@ sudo sed -i /etc/fstab -e "s/\(.*\/.*ext4.*\)defaults\(.*\)/\1defaults,ro\2/"
 
 sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1rootwait fastboot noswap\2/"
 
+echo 'ExecStartPre=/bin/echo "" >/tmp/random-seed' | sudo tee -a /lib/systemd/system/systemd-random-seed.service
+
+sudo sed -i /etc/systemd/system/dhcpcd5.service -e "s/PIDFile\=\/run\/dhcpcd.pid/PIDFile\=\/var\/run\/dhcpcd.pid/g"
+
+sudo apt-get install ntp
+
+sudo sed -i /etc/cron.hourly/fake-hwclock -e "s/.*fake\-hwclock save/  mount \-o remount,rw\n  fake\-hwclock save\n  mount \-o remount,ro/g"
 
 echo "
 set_bash_prompt(){

@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 
-VERSION = '0.3.4'
+VERSION = '0.3.5'
 
 tests_require = ['pytest']
 
@@ -53,4 +53,4 @@ if __name__ == '__main__':
         setup_requires=['pytest-runner'],
         tests_require=tests_require,
         include_package_data=True,
-    )    
+    )

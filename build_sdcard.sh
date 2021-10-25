@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.3.4  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.3.5  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
