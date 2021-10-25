@@ -19,7 +19,6 @@ from PIL import Image, ImageOps
 from PIL import ImageFont
 from PIL import ImageDraw
 shutting_down = False
-picdir = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets'), 'images')
 
 BUTTON_GPIO_1 = 5
 BUTTON_GPIO_2 = 6
@@ -34,10 +33,10 @@ def internet():
         return True
     except Exception as ex:
         logging.warning("No internet")
-        logging.warning(ex)        
+        logging.warning(ex)
         conn.close()
         return False
-    
+
 
 def get_display_size(epd_type):
     if epd_type == "2in7_4gray":
@@ -47,11 +46,11 @@ def get_display_size(epd_type):
     elif epd_type == "2in7":
         epd = epd2in7.EPD()
         mirror = False
-        return epd.width, epd.height, mirror    
+        return epd.width, epd.height, mirror
     elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()
         mirror = False
-        return epd.height, epd.width, mirror        
+        return epd.height, epd.width, mirror
     elif epd_type == "7in5_HD":
         epd = epd7in5_HD.EPD()
         mirror = False
@@ -78,7 +77,7 @@ def draw_image(epd_type, image=None):
         logging.info("draw")
         epd.display(epd.getbuffer(image))
     elif epd_type == "7in5_V2":
-        epd = epd7in5_V2.EPD()    
+        epd = epd7in5_V2.EPD()
         epd.init()
         if image is None:
             image = Image.new('L', (epd.height, epd.width), 255)
@@ -92,7 +91,7 @@ def draw_image(epd_type, image=None):
         logging.info("draw")
         epd.display(epd.getbuffer(image))
     else:
-        raise Exception("Wrong epd_type")    
+        raise Exception("Wrong epd_type")
     epd.sleep()
     setup_GPIO()
 
@@ -126,7 +125,7 @@ def init_logging(warnlevel=logging.WARNING):
     logger.setLevel(warnlevel)
     handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(handler)
-        
+
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -137,10 +136,10 @@ def setup_GPIO():
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
+    GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def main(config, config_file):
-    
+
     global epd_type
     epd_type = config.main.epd_type
 
@@ -148,7 +147,7 @@ def main(config, config_file):
     if config.main.orientation == 90:
         ticker = Ticker(config, h, w)
     elif config.main.orientation == 270:
-        ticker = Ticker(config, h, w)    
+        ticker = Ticker(config, h, w)
     else:
         ticker = Ticker(config, w, h)
 
@@ -161,10 +160,10 @@ def main(config, config_file):
     else:
         # 5*365*(24*60/3.0) / 1000000
         # Update every 2.8 min
-        updatefrequency = 168       
+        updatefrequency = 168
     updatefrequency_after_newblock = 120
     # mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
-    
+
     layout_list = []
     for l in config.main.layout_list.split(","):
         layout_list.append(l.replace('"', "").replace(" ", ""))
@@ -180,14 +179,14 @@ def main(config, config_file):
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
-        days_list.append(int(d.replace('"', '').replace(" ", "")))    
-    
+        days_list.append(int(d.replace('"', '').replace(" ", "")))
+
     days_ind = config.main.start_days_ind
     days_shifting = config.main.days_shifting
     logging.info("Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting)))
-    
+
     inverted = config.main.inverted
-    
+
     def fullupdate(mode, days, layout, inverted, refresh=True):
         try:
             ticker.setDaysAgo(days)
@@ -224,16 +223,16 @@ def main(config, config_file):
 
         notifier = sdnotify.SystemdNotifier()
         notifier.notify("READY=1")
-     
-        while True:         
-            
+
+        while True:
+
             if shutting_down:
                 logging.info("Ticker is shutting down.....")
                 showmessage(epd_type, ticker, "Ticker is shutting down...", mirror, inverted)
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
-            
+
             if GPIO.input(BUTTON_GPIO_1) == GPIO.LOW:
                 logging.info('Key1 after %.2f s' % (time.time() - lastcoinfetch))
                 last_mode_ind += 1
@@ -267,7 +266,7 @@ def main(config, config_file):
                     newblock_displayed = True
                 height = new_height
                 lastheightfetch = time.time()
-            
+
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
@@ -296,7 +295,7 @@ def main(config, config_file):
                 datapulled = True
                 newblock_displayed = False
             else:
-                time.sleep(0.05)  
+                time.sleep(0.05)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

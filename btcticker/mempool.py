@@ -20,19 +20,30 @@ class Mempool():
         self.refresh()
 
     def get_json(self, url):
-        return requests.get(url, verify=self.url_verify, timeout=self.timeout).json()
-
-    def getMempoolBlocks(self, use_fall_back=False):
         try:
-            if use_fall_back:
-                mempoolurl = self.fall_back_url + "v1/fees/mempool-blocks"
-            else:
-                mempoolurl = self.mempoolApiUrl + "v1/fees/mempool-blocks"
-            rawmempoolblocks = self.get_json(mempoolurl)
-            return rawmempoolblocks
+            return requests.get(url, verify=self.url_verify, timeout=self.timeout).json()
+        except requests.exceptions.ReadTimeout as e:
+            logging.exception(e)
+            return None
         except Exception as e:
             logging.exception(e)
             return None
+
+    def getMempoolBlocks(self, use_fall_back=False):
+        if use_fall_back:
+            mempoolurl = self.fall_back_url + "v1/fees/mempool-blocks"
+        else:
+            mempoolurl = self.mempoolApiUrl + "v1/fees/mempool-blocks"
+        rawmempoolblocks = self.get_json(mempoolurl)
+        return rawmempoolblocks
+
+    def getDifficulty(self, use_fall_back=False):
+        if use_fall_back:
+            mempoolurl = self.fall_back_url + "v1/difficulty-adjustment"
+        else:
+            mempoolurl = self.mempoolApiUrl + "v1/difficulty-adjustment"
+        difficulty = self.get_json(mempoolurl)
+        return difficulty
 
     def getBlocks(self, n=1, start_height=None, use_fall_back=False):
         rawblocks = []
@@ -41,20 +52,21 @@ class Mempool():
             url = self.fall_back_url
         else:
             url = self.mempoolApiUrl
-        try:
-            for _ in range(n):
-                if start_height is None and last_height is None:
-                    mempoolurl = url + "blocks"
-                elif last_height is None:
-                    mempoolurl = url + "blocks/%d" % start_height
-                else:
-                    mempoolurl = url + "blocks/%d" % (last_height - 1)
-                rawblocks += self.get_json(mempoolurl)
-                last_height = rawblocks[-1]["height"]
-            return rawblocks
-        except Exception as e:
-            logging.exception(e)
-            return None        
+
+        for _ in range(n):
+            if start_height is None and last_height is None:
+                mempoolurl = url + "blocks"
+            elif last_height is None:
+                mempoolurl = url + "blocks/%d" % start_height
+            else:
+                mempoolurl = url + "blocks/%d" % (last_height - 1)
+            result = self.get_json(mempoolurl)
+            if result is not None:
+                rawblocks += result
+            else:
+                return None
+            last_height = rawblocks[-1]["height"]
+        return rawblocks
 
     def buildFeeArray(self, rawmempoolblocks):
         minFee = []
@@ -80,41 +92,34 @@ class Mempool():
         return time_diff_sum / (n - 1)
 
     def getMempool(self, use_fall_back=False):
-        try:
-            if use_fall_back:
-                mempoolurl = self.fall_back_url + "mempool"
-            else:
-                mempoolurl = self.mempoolApiUrl + "mempool"
-            rawmempool = self.get_json(mempoolurl)
-            return rawmempool
-        except Exception as e:
-            logging.exception(e)
-            return None
-    
+        if use_fall_back:
+            mempoolurl = self.fall_back_url + "mempool"
+        else:
+            mempoolurl = self.mempoolApiUrl + "mempool"
+        rawmempool = self.get_json(mempoolurl)
+        return rawmempool
+
 
     def getBlockHeight(self, use_fall_back=False):
-        try:
-            if use_fall_back:
-                mempoolurl = self.fall_back_url + "blocks/tip/height"
-            else:
-                mempoolurl = self.mempoolApiUrl + "blocks/tip/height"
-            lastblocknum = int(self.get_json(mempoolurl))
-            return lastblocknum
-        except Exception as e:
-            logging.exception(e)
-            return None        
+        if use_fall_back:
+            mempoolurl = self.fall_back_url + "blocks/tip/height"
+        else:
+            mempoolurl = self.mempoolApiUrl + "blocks/tip/height"
+        result = self.get_json(mempoolurl)
+        if result is None:
+            return None
+        lastblocknum = int(result)
+        return lastblocknum
+
 
     def getRecommendedFees(self, use_fall_back=False):
-        try:
-            if use_fall_back:
-                mempoolurl = self.fall_back_url + "v1/fees/recommended"
-            else:
-                mempoolurl = self.mempoolApiUrl + "v1/fees/recommended"
-            fees = self.get_json(mempoolurl)
-            return fees
-        except Exception as e:
-            logging.exception(e)
-            return None
+        if use_fall_back:
+            mempoolurl = self.fall_back_url + "v1/fees/recommended"
+        else:
+            mempoolurl = self.mempoolApiUrl + "v1/fees/recommended"
+        fees = self.get_json(mempoolurl)
+        return fees
+
 
     def optimizeMedianFee(self, pBlock, nextBlock=None, previousFee=None):
         if previousFee is not None:
@@ -127,13 +132,14 @@ class Mempool():
             multiplier = (pBlock["blockVSize"] - 500000) / 500000
             return max(useFee * multiplier, 1.0)
         return useFee
-            
+
     def refresh(self):
+        self.data = {}
         bestFees = {}
         bestFees["fastestFee"] = -1
         bestFees["halfHourFee"] = -1
         bestFees["hourFee"] = -1
-        
+
         logging.info("Getting Data")
         rawmempoolblocks = self.getMempoolBlocks()
         if rawmempoolblocks is None and self.mempoolApiUrl != self.fall_back_url:
@@ -155,44 +161,51 @@ class Mempool():
                     thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], previousFee=secondMedianFee)
                 else:
                     thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], rawmempoolblocks[3], secondMedianFee)
-            
+
             bestFees["fastestFee"] = firstMedianFee
             bestFees["halfHourFee"] = secondMedianFee
             bestFees["hourFee"] = thirdMedianFee
-        
+
+            vsize = 0
+            count = 0
+
+            for block in rawmempoolblocks:
+                vsize += block["blockVSize"]
+                count += block["nTx"]
+                #if vsize / 1024 / 1024 * 3.99 < 300:
+                #    th_fee = fee[0]
+            minFee, medianFee, maxFee = self.buildFeeArray(rawmempoolblocks)
+            self.data["count"] = count
+            self.data["vsize"] = vsize
+            self.data["minFee"] = minFee
+            self.data["maxFee"] = maxFee
+            self.data["bestFees"] = bestFees
+            self.data["medianFee"] = medianFee
+            self.data["blocks"] = math.ceil(self.data["vsize"] / 1e6)
+
         rawblocks = self.getBlocks(n=1)
         if rawblocks is None and self.mempoolApiUrl != self.fall_back_url:
             rawblocks = self.getBlocks(n=1, use_fall_back=True)
         if rawblocks is not None:
             mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         else:
-            mean_time_diff = -1        
-        
-        vsize = 0
-        count = 0
-        for block in rawmempoolblocks:
-            vsize += block["blockVSize"]
-            count += block["nTx"]
-            #if vsize / 1024 / 1024 * 3.99 < 300:
-            #    th_fee = fee[0]
-        
+            mean_time_diff = -1
+
+
+
         lastblocknum = self.getBlockHeight()
         if lastblocknum is None and self.mempoolApiUrl != self.fall_back_url:
             lastblocknum = self.getBlockHeight(use_fall_back=True)
         if lastblocknum is None:
             lastblocknum = -1
-        minFee, medianFee, maxFee = self.buildFeeArray(rawmempoolblocks)
-    
-        self.data = {}
+
+
+
         self.data["rawblocks"] = rawblocks
-        self.data["count"] = count
-        self.data["vsize"] = vsize
-        self.data["blocks"] = math.ceil(self.data["vsize"] / 1e6)
+
+
         self.data["height"] = lastblocknum
-        self.data["minFee"] = minFee
-        self.data["maxFee"] = maxFee
-        self.data["bestFees"] = bestFees
-        self.data["medianFee"] = medianFee
+
         self.data["meanTimeDiff"] = mean_time_diff
 
     def getData(self):

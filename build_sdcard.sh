@@ -34,7 +34,7 @@ fi
 # 2rd optional paramater: GITHUB-USERNAME
 # ---------------------------------------
 # could be any valid github-user that has a fork of the btc-ticker repo - 'rootzoll' is default
-# The 'btc-ticker' repo of this user is used to provisioning sd card 
+# The 'btc-ticker' repo of this user is used to provisioning sd card
 # with btc-ticker assets/scripts later on.
 # If this parameter is set also the branch needs to be given (see next parameter).
 githubUser="$2"
@@ -172,7 +172,7 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "dietpi" ] || \
     # remove unneccesary files
     sudo rm -rf /home/pi/MagPi
     # https://www.reddit.com/r/linux/comments/lbu0t1/microsoft_repo_installed_on_all_raspberry_pis/
-    sudo rm -f /etc/apt/sources.list.d/vscode.list 
+    sudo rm -f /etc/apt/sources.list.d/vscode.list
     sudo rm -f /etc/apt/trusted.gpg.d/microsoft.gpg
   fi
   if [ ! -f /etc/apt/sources.list.d/raspi.list ]; then
@@ -215,7 +215,7 @@ echo "*** PREPARE ${baseimage} ***"
 if [ "$(compgen -u | grep -c dietpi)" -gt 0 ];then
   echo "# Renaming dietpi user to pi"
   sudo usermod -l pi dietpi
-elif [ "$(compgen -u | grep -c pi)" -eq 0 ];then  
+elif [ "$(compgen -u | grep -c pi)" -eq 0 ];then
   echo "# Adding the user pi"
   sudo adduser --disabled-password --gecos "" pi
   sudo adduser pi sudo
@@ -224,7 +224,7 @@ fi
 # special prepare when Raspbian
 if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
    [ "${baseimage}" = "debian_rpi64" ]; then
-  sudo apt install -y raspi-config 
+  sudo apt install -y raspi-config
   # do memory split (16MB)
   sudo raspi-config nonint do_memory_split 16
   # set to wait until network is available on boot (0 seems to yes)
@@ -391,7 +391,7 @@ if [ "${baseimage}" = "armbian" ]; then
 fi
 
 # dependencies for python
-sudo apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev
+sudo apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask
 
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
 sudo update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
@@ -414,14 +414,16 @@ sudo apt install -y psmisc
 sudo apt install -y ufw
 # make sure sqlite3 is available
 sudo apt install -y sqlite3
-
+# nginx
+sudo apt-get install -y nginx-common
+sudo apt-get install -y nginx
 
 sudo apt clean
 sudo apt -y autoremove
 
 
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
-tar zxvf bcm2835-1.60.tar.gz 
+tar zxvf bcm2835-1.60.tar.gz
 cd bcm2835-1.60/
 sudo ./configure
 sudo make
@@ -464,6 +466,9 @@ sudo -H python3 -m pip install matplotlib==3.4.2
 sudo -H python3 -m pip install pandas==1.2.4
 sudo -H python3 -m pip install mplfinance==0.12.7a17
 
+# sudo -H python3 -m pip install flask-bootstrap
+# sudo -H python3 -m pip install wtforms
+# sudo -H python3 -m pip install gunicorn
 
 echo ""
 echo "Build matplot cache"
@@ -556,7 +561,7 @@ sudo bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-sessio
 # *** fail2ban ***
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
 echo "*** HARDENING ***"
-sudo apt install -y --no-install-recommends python3-systemd fail2ban 
+sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
 # *** CACHE DISK IN RAM ***
 echo "Activating CACHE RAM DISK ... "
@@ -595,7 +600,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
   echo "*** DISABLE AUDIO (snd_bcm2835) ***"
   sudo sed -i "s/^dtparam=audio=on/# dtparam=audio=on/g" /boot/config.txt
   echo
-  
+
   # disable DRM VC4 V3D
   echo "*** DISABLE DRM VC4 V3D driver ***"
   dtoverlay=vc4-fkms-v3d
@@ -603,7 +608,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
   echo
 
   # I2C fix (make sure dtparam=i2c_arm is not on)
-  sudo sed -i "s/^dtparam=i2c_arm=.*//g" /boot/config.txt 
+  sudo sed -i "s/^dtparam=i2c_arm=.*//g" /boot/config.txt
   #enable SPI
    sudo sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
 fi

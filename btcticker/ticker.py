@@ -5,11 +5,11 @@ from PIL import ImageFont
 from PIL import ImageDraw
 import logging
 from babel import numbers
-from .mempool import *
+from btcticker.mempool import *
 from blockchain import statistics
-from .price import *
-from .chart import *
-from .config import Config
+from btcticker.price import *
+from btcticker.chart import *
+from btcticker.config import Config
 import os
 from datetime import datetime, timedelta
 
@@ -145,6 +145,10 @@ class Ticker():
         symbolstring=numbers.get_currency_symbol(self.fiat.upper(), locale="en")
 
         mempool = self.mempool.getData()
+
+        if mempool["height"] < 0:
+            return
+
         current_price = self.price.price
         pricestack = self.price.timeseriesstack
 

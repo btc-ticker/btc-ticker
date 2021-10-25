@@ -52,10 +52,22 @@ There are four buttons which the following behaviour (Please be patient after pr
 3. Switch the layout of the ticker
 4. Switch inverted mode
 
+### Switching to rw-mode
+Per default, the file system is mounted read only
+```
+rw
+```
+remounts the file system with write support.
+```
+ro
+```
+switches back to readonly.
 ### Config.ini
 It possible to personalize the ticker to your needs. After logging into your raspi with SSH, the config can be edited with
 ```
+rw
 nano config.ini
+ro
 ```
 After writing the change to the ini file, a restart of the btc-ticker service is needed:
 ```
@@ -65,6 +77,7 @@ sudo systemctl restart btcticker
 ### Update btc-ticker without reflashing the sdcard
 After logging into the btc-ticker with SSH, the update can be started with
 ```
+rw
 ./99updateMenu.sh
 ```
 Select now:
