@@ -42,6 +42,10 @@ sudo apt-get autoremove --purge -y
 sudo apt-get install -y busybox-syslogd
 sudo dpkg --purge -y rsyslog
 
+sudo apt-get install -y ntp
+
+# Internet is not working until reboot after the following line
+
 sudo rm -rf /var/lib/dhcp/ /var/lib/dhcpcd5 /var/run /var/spool /var/lock /etc/resolv.conf
 sudo ln -s /tmp /var/lib/dhcp
 sudo ln -s /tmp /var/lib/dhcpcd5
@@ -67,10 +71,8 @@ sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1root
 echo 'ExecStartPre=/bin/echo "" >/tmp/random-seed' | sudo tee -a /lib/systemd/system/systemd-random-seed.service
 
 sudo sed -i /etc/systemd/system/dhcpcd5.service -e "s/PIDFile\=\/run\/dhcpcd.pid/PIDFile\=\/var\/run\/dhcpcd.pid/g"
-
-sudo apt-get install ntp
-
 sudo sed -i /etc/cron.hourly/fake-hwclock -e "s/.*fake\-hwclock save/  mount \-o remount,rw\n  fake\-hwclock save\n  mount \-o remount,ro/g"
+sudo sed -i /etc/ntp.conf -e "s/PIDFile\=\/run\/dhcpcd.pid/PIDFile\=\/var\/run\/dhcpcd.pid/g"
 
 echo "
 set_bash_prompt(){
