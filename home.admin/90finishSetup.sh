@@ -40,20 +40,20 @@ echo "OK - System is now up to date"
 sudo apt-get remove --purge -y logrotate triggerhappy dphys-swapfile
 sudo apt-get autoremove --purge -y
 sudo apt-get install -y busybox-syslogd
-sudo dpkg --purge -y rsyslog
+sudo dpkg --purge rsyslog
 
 sudo apt-get install -y ntp
 
 # Internet is not working until reboot after the following line
 
-sudo rm -rf /var/lib/dhcp/ /var/lib/dhcpcd5 /var/run /var/spool /var/lock /etc/resolv.conf
+sudo rm -rf /var/lib/dhcp/ /var/lib/dhcpcd5 /var/run /var/spool /var/lock
 sudo ln -s /tmp /var/lib/dhcp
 sudo ln -s /tmp /var/lib/dhcpcd5
 sudo ln -s /tmp /var/run
 sudo ln -s /tmp /var/spool
 sudo ln -s /tmp /var/lock
-sudo touch /tmp/dhcpcd.resolv.conf
-sudo ln -s /tmp/dhcpcd.resolv.conf /etc/resolv.conf
+sudo mv /etc/resolv.conf /tmp/
+sudo ln -s /tmp/resolv.conf /etc/resolv.conf
 
 sudo rm /var/lib/systemd/random-seed
 sudo ln -s /tmp/random-seed /var/lib/systemd/random-seed
@@ -88,6 +88,3 @@ alias rw='sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot'
 PROMPT_COMMAND=set_bash_prompt
 " | sudo tee -a /etc/bash.bashrc
 
-
-# mark setup is done
-sudo sed -i "s/^setupStep=.*/setupStep=100/g" /home/admin/btc-ticker.info
