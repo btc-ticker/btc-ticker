@@ -69,7 +69,10 @@ sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1root
 
 echo 'ExecStartPre=/bin/echo "" >/tmp/random-seed' | sudo tee -a /lib/systemd/system/systemd-random-seed.service
 
-sudo sed -i /etc/cron.hourly/fake-hwclock -e "s/.*fake\-hwclock save/  mount \-o remount,rw\n  fake\-hwclock save\n  mount \-o remount,ro/g"
+sudo sed -i /etc/cron.hourly/fake-hwclock -e "s/.*fake\-hwclock save/  mount \-o remount,rw \/\n  fake\-hwclock save\n  mount \-o remount,ro \//g"
+
+sudo sed -i  /lib/systemd/system/raspberrypi-net-mods.service -e "s/RemainAfterExit=yes/RemainAfterExit=yes\nExecStart=\/usr\/bin\/mount \-o remount,rw \//g"
+sudo sed -i  /lib/systemd/system/raspberrypi-net-mods.service -e "s/ExecStartPost=\/usr\/sbin\/rfkill unblock wifi/ExecStartPost=\/usr\/sbin\/rfkill unblock wifi\nExecStartPost=\/usr\/bin\/mount \-o remount,ro \//g"
 
 echo "
 set_bash_prompt(){
