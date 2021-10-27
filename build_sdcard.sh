@@ -421,7 +421,41 @@ sudo apt-get install -y nginx
 sudo apt clean
 sudo apt -y autoremove
 
+# for background processes
+sudo apt -y install screen
 
+# for multiple (detachable/background) sessions when using SSH
+sudo apt -y install tmux
+
+# install a command-line fuzzy finder (https://github.com/junegunn/fzf)
+sudo apt -y install fzf
+
+echo ""
+echo "*** Python DEFAULT libs & dependencies ***"
+
+# for setup shell scripts
+sudo apt -y install dialog bc python3-dialog
+
+# libs (for global python scripts)
+sudo -H python3 -m pip install requests[socks]==2.21.0
+sudo -H python3 -m pip install RPi.GPIO
+sudo -H python3 -m pip install spidev
+sudo -H python3 -m pip install sdnotify
+sudo -H python3 -m pip install numpy==1.20.2
+sudo -H python3 -m pip install matplotlib==3.4.2
+sudo -H python3 -m pip install pandas==1.2.4
+sudo -H python3 -m pip install mplfinance==0.12.7a17
+
+# sudo -H python3 -m pip install flask-bootstrap
+# sudo -H python3 -m pip install wtforms
+# sudo -H python3 -m pip install gunicorn
+
+# *** fail2ban ***
+# based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
+echo "*** HARDENING ***"
+sudo apt install -y --no-install-recommends python3-systemd fail2ban
+
+rm -rf /home/admin/bcm2835-1.60
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
 tar zxvf bcm2835-1.60.tar.gz
 cd bcm2835-1.60/
@@ -450,25 +484,6 @@ sudo usermod -a -G spi admin
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 
-echo ""
-echo "*** Python DEFAULT libs & dependencies ***"
-
-# for setup shell scripts
-sudo apt -y install dialog bc python3-dialog
-
-# libs (for global python scripts)
-sudo -H python3 -m pip install requests[socks]==2.21.0
-sudo -H python3 -m pip install RPi.GPIO
-sudo -H python3 -m pip install spidev
-sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.20.2
-sudo -H python3 -m pip install matplotlib==3.4.2
-sudo -H python3 -m pip install pandas==1.2.4
-sudo -H python3 -m pip install mplfinance==0.12.7a17
-
-# sudo -H python3 -m pip install flask-bootstrap
-# sudo -H python3 -m pip install wtforms
-# sudo -H python3 -m pip install gunicorn
 
 echo ""
 echo "Build matplot cache"
@@ -495,6 +510,7 @@ cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
 cd /home/admin/
 
+sudo -u admin rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
 cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
 sudo python3 setup.py install
@@ -506,18 +522,10 @@ sudo bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
 echo ""
 echo "*** BTCTICKER EXTRAS ***"
 
-# for background processes
-sudo apt -y install screen
-
-# for multiple (detachable/background) sessions when using SSH
-sudo apt -y install tmux
 
 # optimization for torrent download
 sudo bash -c "echo 'net.core.rmem_max = 4194304' >> /etc/sysctl.conf"
 sudo bash -c "echo 'net.core.wmem_max = 1048576' >> /etc/sysctl.conf"
-
-# install a command-line fuzzy finder (https://github.com/junegunn/fzf)
-sudo apt -y install fzf
 
 sudo bash -c "echo '' >> /home/admin/.bashrc"
 sudo bash -c "echo 'NG_CLI_ANALYTICS=ci' >> /home/admin/.bashrc"
@@ -558,10 +566,6 @@ sudo sed --in-place -i "25s/.*/session required pam_limits.so/" /etc/pam.d/commo
 sudo bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-session-noninteractive"
 
 
-# *** fail2ban ***
-# based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
-echo "*** HARDENING ***"
-sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
 # *** CACHE DISK IN RAM ***
 echo "Activating CACHE RAM DISK ... "
