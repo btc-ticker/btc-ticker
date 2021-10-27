@@ -187,6 +187,10 @@ sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chro
 sudo apt clean
 sudo apt -y autoremove
 
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
+
 if [ -f "/usr/bin/python3.7" ]; then
   # make sure /usr/bin/python exists (and calls Python3.7 in Buster)
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
@@ -207,6 +211,10 @@ echo ""
 echo "*** UPDATE ***"
 sudo apt update -y
 # sudo apt upgrade -f -y
+
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 
 echo ""
 echo "*** PREPARE ${baseimage} ***"
@@ -430,6 +438,10 @@ sudo apt -y install tmux
 # install a command-line fuzzy finder (https://github.com/junegunn/fzf)
 sudo apt -y install fzf
 
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
+
 echo ""
 echo "*** Python DEFAULT libs & dependencies ***"
 
@@ -445,6 +457,10 @@ sudo -H python3 -m pip install numpy==1.20.2
 sudo -H python3 -m pip install matplotlib==3.4.2
 sudo -H python3 -m pip install pandas==1.2.4
 sudo -H python3 -m pip install mplfinance==0.12.7a17
+
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 
 # sudo -H python3 -m pip install flask-bootstrap
 # sudo -H python3 -m pip install wtforms
@@ -466,6 +482,9 @@ sudo make install
 cd ..
 
 
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 
 
 echo ""
@@ -510,11 +529,20 @@ cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
 cd /home/admin/
 
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
+
+
 sudo -u admin rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
 cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
 sudo python3 setup.py install
 cd /home/admin/
+
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 
 # add /sbin to path for all
 sudo bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
@@ -632,6 +660,10 @@ echo "*** btc-ticker SERVICE ***"
 sudo chmod +x /home/admin/run.sh
 sudo cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
 sudo systemctl enable btcticker
+
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 
 # Enable firewwall
 sudo /home/admin/90finishSetup.sh
