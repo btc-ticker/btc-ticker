@@ -1,2 +1,2 @@
 # btc-ticker Version - always [major].[main].[sub] (sub can be a string like '2rc1')
-codeVersion="0.3.7"
+codeVersion="0.4.0"

@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.3.5  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.4.0  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -454,6 +454,9 @@ sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install numpy==1.20.2
+echo "sleeping 60 seconds"
+# sleep for 60 seconds
+sleep 60
 sudo -H python3 -m pip install matplotlib==3.4.2
 sudo -H python3 -m pip install pandas==1.2.4
 sudo -H python3 -m pip install mplfinance==0.12.7a17
