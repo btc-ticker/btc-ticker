@@ -88,8 +88,8 @@ to update the ticker to the newest updates from git.
 
 ## Flash SDcard
 
-* Downlad version 0.3.3 from [btc-ticker-0_3_3.img.gz](https://btc-ticker.com/btc-ticker-0_3_3.img.gz)
-* Verify SHA256 checksum. It should be: `0D7648616F2FF32FC42237E243BFD9ACA88435139B80A8C21C5A8F2D14F9CA41`
+* Downlad version 0.4.0 from [btc-ticker-0_4_0.img.gz](https://btc-ticker.com/btc-ticker-0_3_3.img.gz)
+* Verify SHA256 checksum. It should be: `2B4307966C02B040E2C316CEC2BC26C80CCF77373898A10FF7830FA34EA013DE`
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -103,6 +103,9 @@ network={
 ```
 * replace `[COUNTRY_CODE]` with the ISO2 code (e.g. DE)
 * Set `[WIFI_SSID]` and `[WIFI_PASSWORD]`
+* On the first boot, the filesystem is mounted writable (Necessary for coping the wpa_supplicant.conf).
+* When there is no wpa_supplicant.conf at /boot, the filesystem will be mounten readonly.
+
 
 ## Build SDcard from scratch
 
