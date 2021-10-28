@@ -66,6 +66,7 @@ sudo ln -s /tmp/random-seed /var/lib/systemd/random-seed
 
 echo "tmpfs         /var/log  tmpfs  nodev,nosuid  0  0
 tmpfs         /var/tmp  tmpfs  nodev,nosuid  0  0
+tmpfs         /var/cache   tmpfs  nodev,nosuid  0  0
 tmpfs         /tmp  tmpfs  nodev,nosuid  0  0
 " | sudo tee -a /etc/fstab
 
