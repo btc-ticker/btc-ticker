@@ -664,6 +664,10 @@ sudo chmod +x /home/admin/run.sh
 sudo cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
 sudo systemctl enable btcticker
 
+echo "*** rw remount SERVICE ***"
+sudo cp ./assets/rw_remount.service /etc/systemd/system/rw_remount.service
+sudo systemctl enable rw_remount
+
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60

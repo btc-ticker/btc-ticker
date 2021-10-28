@@ -44,13 +44,20 @@ sudo apt-get remove --purge -y rsyslog
 
 sudo apt-get install -y ntp
 
+sudo systemctl stop apt-daily.timer
+sudo systemctl disable apt-daily.timer
+sudo systemctl mask apt-daily.service
+sudo systemctl daemon-reload
+
 # Internet is not working until reboot after the following line
 
-sudo rm -rf /var/lib/dhcp/ /var/spool /var/lock /var/lib/dhcpcd5
+sudo rm -rf /var/lib/dhcp/ /var/spool /var/lock /var/run /var/lib/dhcpcd5 /var/log/nginx
 sudo ln -s /tmp /var/lib/dhcp
 sudo ln -s /tmp /var/lib/dhcpcd5
 sudo ln -s /tmp /var/spool
 sudo ln -s /tmp /var/lock
+sudo ln -s /tmp /var/log/nginx
+sudo ln -s /tmp /var/run
 sudo mv /etc/resolv.conf /tmp/
 sudo ln -s /tmp/resolv.conf /etc/resolv.conf
 
