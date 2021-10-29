@@ -423,8 +423,8 @@ sudo apt install -y ufw
 # make sure sqlite3 is available
 sudo apt install -y sqlite3
 # nginx
-sudo apt-get install -y nginx-common
-sudo apt-get install -y nginx
+#sudo apt-get install -y nginx-common
+#sudo apt-get install -y nginx
 
 sudo apt clean
 sudo apt -y autoremove
