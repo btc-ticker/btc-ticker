@@ -474,7 +474,7 @@ sleep 60
 echo "*** HARDENING ***"
 sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
-rm -rf /home/admin/bcm2835-1.60
+sudo rm -rf /home/admin/bcm2835-1.60
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
 tar zxvf bcm2835-1.60.tar.gz
 cd bcm2835-1.60/
@@ -537,7 +537,7 @@ echo "sleeping 60 seconds"
 sleep 60
 
 
-sudo -u admin rm -rf /home/admin/e-Paper/
+sudo rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
 cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
 sudo python3 setup.py install
