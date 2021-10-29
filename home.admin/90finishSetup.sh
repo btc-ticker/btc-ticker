@@ -51,13 +51,12 @@ sudo systemctl daemon-reload
 
 # Internet is not working until reboot after the following line
 
-sudo rm -rf /var/lib/dhcp/ /var/spool /var/lock /var/run /var/lib/dhcpcd5 /var/log/nginx
+sudo rm -rf /var/lib/dhcp/ /var/spool /var/lock /var/lib/dhcpcd5
 sudo ln -s /tmp /var/lib/dhcp
 sudo ln -s /tmp /var/lib/dhcpcd5
 sudo ln -s /tmp /var/spool
 sudo ln -s /tmp /var/lock
 # sudo ln -s /tmp /var/log/nginx
-sudo ln -s /tmp /var/run
 sudo mv /etc/resolv.conf /tmp/
 sudo ln -s /tmp/resolv.conf /etc/resolv.conf
 
@@ -70,16 +69,16 @@ tmpfs         /var/cache  tmpfs  nodev,nosuid  0  0
 tmpfs         /tmp  tmpfs  nodev,nosuid  0  0
 " | sudo tee -a /etc/fstab
 
-sudo sed -i /etc/fstab -e "s/\(.*\/boot.*vfat.*\)defaults\(.*\)/\1defaults,ro\2/"
-sudo sed -i /etc/fstab -e "s/\(.*\/.*ext4.*\)defaults\(.*\)/\1defaults,ro\2/"
+#sudo sed -i /etc/fstab -e "s/\(.*\/boot.*vfat.*\)defaults\(.*\)/\1defaults,ro\2/"
+#sudo sed -i /etc/fstab -e "s/\(.*\/.*ext4.*\)defaults\(.*\)/\1defaults,ro\2/"
 
-sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1rootwait fastboot noswap\2/"
+#sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1rootwait fastboot noswap\2/"
 
 echo 'ExecStartPre=/bin/echo "" >/tmp/random-seed' | sudo tee -a /lib/systemd/system/systemd-random-seed.service
 
 sudo sed -i /etc/cron.hourly/fake-hwclock -e "s/.*fake\-hwclock save/  mount \-o remount,rw \/\n  fake\-hwclock save\n  mount \-o remount,ro \//g"
 
-sudo sed -i  /lib/systemd/system/raspberrypi-net-mods.service -e "s/RemainAfterExit=yes/RemainAfterExit=yes\nExecStart=\/usr\/bin\/mount \-o remount,rw \/\nExecStart=\/usr\/bin\/mount \-o remount,rw \/boot/g"
+#sudo sed -i  /lib/systemd/system/raspberrypi-net-mods.service -e "s/RemainAfterExit=yes/RemainAfterExit=yes\nExecStart=\/usr\/bin\/mount \-o remount,rw \/\nExecStart=\/usr\/bin\/mount \-o remount,rw \/boot/g"
 #sudo sed -i  /lib/systemd/system/raspberrypi-net-mods.service -e "s/ExecStartPost=\/usr\/sbin\/rfkill unblock wifi/ExecStartPost=\/usr\/sbin\/rfkill unblock wifi\nExecStartPost=\/usr\/bin\/sync \-f \/boot\nExecStartPost=\/usr\/bin\/sync \-f \/\nExecStartPost=\/usr\/bin\/mount \-o remount,ro \/\nExecStartPost=\/usr\/bin\/mount \-o remount,ro \/boot/g"
 
 echo "

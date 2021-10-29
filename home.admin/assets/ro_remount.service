@@ -1,0 +1,15 @@
+
+[Unit]
+Description=remount file system ro
+ConditionPathExists=/boot/ro
+After=dhcpcd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/mount -o remount,ro /
+ExecStart=/usr/bin/mount -o remount,ro /boot
+
+[Install]
+WantedBy=multi-user.target
+
