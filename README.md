@@ -52,8 +52,15 @@ There are four buttons which the following behaviour (Please be patient after pr
 3. Switch the layout of the ticker
 4. Switch inverted mode
 
-### Switching to rw-mode
-Per default, the file system is mounted read only
+### Switching to ro-mode
+Per default, the file system is mounted writable. When there is a empty ro file in /boot, the filesystem will remounted readonly.
+```
+sudo touch /boot/ro
+```
+enables the readonly remount. The file can also be created with a PC, similar to the ssh file.
+
+### Switching between ro and rw mode
+After logging in with ssh,
 ```
 rw
 ```
@@ -88,8 +95,8 @@ to update the ticker to the newest updates from git.
 
 ## Flash SDcard
 
-* Downlad version 0.4.0 from [btc-ticker-0_4_0.img.gz](https://btc-ticker.com/btc-ticker-0_4_0.img.gz)
-* Verify SHA256 checksum. It should be: `2B4307966C02B040E2C316CEC2BC26C80CCF77373898A10FF7830FA34EA013DE`
+* Downlad version 0.4.2 from [btc-ticker-0_4_2.img.gz](https://btc-ticker.com/btc-ticker-0_4_2.img.gz)
+* Verify SHA256 checksum. It should be: `EAAC5AB9A9583011483E6865F54939F7D61074150CA98C9CAC102EE2692C4C9C`
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
