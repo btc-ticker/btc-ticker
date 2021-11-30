@@ -83,6 +83,13 @@ def draw_image(epd_type, image=None):
             image = Image.new('L', (epd.height, epd.width), 255)
         logging.info("draw")
         epd.display(epd.getbuffer(image))
+    elif epd_type == "2in9_V2":
+        epd = epd2in9_V2.EPD()
+        epd.init()
+        if image is None:
+            image = Image.new('L', (epd.height, epd.width), 255)
+        logging.info("draw")
+        epd.display(epd.getbuffer(image))
     elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()
         epd.init()
