@@ -578,7 +578,7 @@ class Ticker():
                 spark_image = makeSpark(pricestack)
                 w, h = spark_image.size
                 self.image.paste(spark_image ,(100, image_y))
-                if mode != "satfiat":
+                if mode != "satfiat" and self.height > 150:
                     self.drawText(130, image_y + h, str(self.price.days_ago)+"day : "+pricechange, self.font_fee)
 
 

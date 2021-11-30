@@ -12,8 +12,10 @@ def get_display_size(epd_type="2in7_4gray"):
         return 176, 264
     elif epd_type == "2in7_4gray":
         return 176, 264
+    elif epd_type == "2in9_V2":
+        return 128, 296
     elif epd_type == "7in5_V2":
-        return 480, 800       
+        return 480, 800
     else:
         return 528, 880
 
@@ -33,7 +35,7 @@ w, h = get_display_size(epd_type=config.main.epd_type)
 if config.main.orientation == 90:
     ticker = Ticker(config, h, w)
 elif config.main.orientation == 270:
-    ticker = Ticker(config, h, w)    
+    ticker = Ticker(config, h, w)
 else:
     ticker = Ticker(config, w, h)
 ticker.orientation = 0

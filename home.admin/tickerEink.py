@@ -2,6 +2,7 @@
 from btcticker.ticker import Ticker
 from btcticker.config import Config
 import os
+import tempfile
 import sys
 import math
 import socket
@@ -13,12 +14,14 @@ import signal
 import atexit
 import sdnotify
 import RPi.GPIO as GPIO
-from waveshare_epd import epd2in7, epd7in5_HD, epd7in5_V2
+from waveshare_epd import epd2in7, epd7in5_HD, epd7in5_V2, epd2in9_V2
 import time
 from PIL import Image, ImageOps
 from PIL import ImageFont
 from PIL import ImageDraw
 shutting_down = False
+temp_dir = tempfile.TemporaryDirectory()
+os.environ['MPLCONFIGDIR'] = temp_dir.name
 
 BUTTON_GPIO_1 = 5
 BUTTON_GPIO_2 = 6
@@ -45,6 +48,10 @@ def get_display_size(epd_type):
         return epd.width, epd.height, mirror
     elif epd_type == "2in7":
         epd = epd2in7.EPD()
+        mirror = False
+        return epd.width, epd.height, mirror
+    elif epd_type == "2in9_V2":
+        epd = epd2in9_V2.EPD()
         mirror = False
         return epd.width, epd.height, mirror
     elif epd_type == "7in5_V2":
