@@ -69,17 +69,31 @@ else
   echo "4) will use TWEAK-BOOTDRIVE --> '${tweakBootdrives}'"
 fi
 
-# 5th optional paramater: WIFI
+# 5th optional parameter: DISPLAY-CLASS
+# ----------------------------------------
+# Could be 'eink', or 'lcd' (eink is default)
+displayClass="$5"
+if [ ${#displayClass} -eq 0 ]; then
+  displayClass="eink"
+fi
+if [ "${displayClass}" != "eink" ] && [ "${displayClass}" != "lcd" ] then
+  echo "ERROR: DISPLAY-CLASS parameter needs to be 'eink', or 'lcd'"
+  exit 1
+else
+  echo "5) will use DISPLAY-CLASS --> '${displayClass}'"
+fi
+
+# 6th optional paramater: WIFI
 # ---------------------------------------
 # could be 'false' or 'true' (default) or a valid WIFI country code like 'US' (default)
 # If 'false' WIFI will be deactivated by default
 # If 'true' WIFI will be activated by with default country code 'US'
 # If any valid wifi country code Wifi will be activated with that country code by default
-modeWifi="$5"
+modeWifi="$6"
 if [ ${#modeWifi} -eq 0 ] || [ "${modeWifi}" == "true" ]; then
   modeWifi="US"
 fi
-echo "5) will use WIFI --> '${modeWifi}'"
+echo "6) will use WIFI --> '${modeWifi}'"
 
 # AUTO-DETECTION: CPU-ARCHITECTURE
 # ---------------------------------------
@@ -183,7 +197,9 @@ fi
 
 # remove some (big) packages that are not needed
 sudo apt remove -y --purge libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi minecraft-pi plymouth python2 vlc
-sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+if [ "${displayClass}" == "eink" ]; then
+  sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+fi
 sudo apt clean
 sudo apt -y autoremove
 
@@ -385,6 +401,9 @@ sudo apt install -y wiringpi
 
 # network tools
 sudo apt install -y autossh telnet
+
+# prepare for display graphics mode
+sudo apt install -y fbi
 
 # prepare for powertest
 sudo apt install -y sysbench
@@ -688,3 +707,12 @@ echo "IMPORTANT IF WANT TO MAKE A RELEASE IMAGE FROM THIS BUILD:"
 echo "1. login fresh --> user:admin password:btcticker"
 echo "2. run --> ./XXprepareRelease.sh"
 echo ""
+
+
+# (do last - because might trigger reboot)
+if [ "${displayClass}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
+  echo "*** ADDITIONAL DISPLAY OPTIONS ***"
+  echo "- calling: blitz.display.sh set-display ${displayClass}"
+  sudo /home/admin/config.scripts/blitz.display.sh set-display ${displayClass}
+  sudo /home/admin/config.scripts/blitz.display.sh rotate 1
+fi
