@@ -101,83 +101,8 @@ function uninstall_eink() {
   echo "# nothing to uninstall - eink is the default/clean mode"
 }
 
+
 function install_lcd() {
-
-  echo "# INSTALL 64bit LCD DRIVER"
-
-  # set font
-  sudo sed -i "s/^CHARMAP=.*/CHARMAP=\"UTF-8\"/" /etc/default/console-setup
-  sudo sed -i "s/^CODESET=.*/CODESET=\"guess\"/" /etc/default/console-setup
-  sudo sed -i "s/^FONTFACE=.*/FONTFACE=\"TerminusBoldVGA\"/" /etc/default/console-setup
-  sudo sed -i "s/^FONTSIZE=.*/FONTSIZE=\"8x16\"/" /etc/default/console-setup
-
-  # hold bootloader
-  sudo apt-mark hold raspberrypi-bootloader
-
-  # Downloading LCD Driver from Github
-  cd /home/admin/
-  sudo -u admin git clone https://github.com/tux1c/wavesharelcd-64bit-rpi.git
-  sudo -u admin chmod -R 755 wavesharelcd-64bit-rpi
-  sudo -u admin chown -R admin:admin wavesharelcd-64bit-rpi
-  cd /home/admin/wavesharelcd-64bit-rpi
-  sudo -u admin git reset --hard 5a206a7 || exit 1
-
-  # customized from https://github.com/tux1c/wavesharelcd-64bit-rpi/blob/master/install.sh
-  # prepare X11
-  sudo mkdir -p /etc/X11/xorg.conf.d
-  sudo mv /etc/X11/xorg.conf.d/40-libinput.conf /home/admin/wavesharelcd-64bit-rpi/40-libinput.conf 2>/dev/null
-  sudo cp -rf ./99-calibration.conf /etc/X11/xorg.conf.d/99-calibration.conf
-  # sudo cp -rf ./99-fbturbo.conf  /etc/X11/xorg.conf.d/99-fbturbo.conf # there is no such file
-
-  # add waveshare mod
-  sudo cp ./waveshare35a.dtbo /boot/overlays/
-
-  # modify /boot/config.txt
-  sudo sed -i "s/^hdmi_force_hotplug=.*//g" /boot/config.txt
-  sudo sed -i '/^hdmi_group=/d' /boot/config.txt 2>/dev/null
-  sudo sed -i "/^hdmi_mode=/d" /boot/config.txt 2>/dev/null
-  #echo "hdmi_force_hotplug=1" >> /boot/config.txt
-  sudo sed -i "s/^dtparam=i2c_arm=.*//g" /boot/config.txt
-  # echo "dtparam=i2c_arm=on" >> /boot/config.txt --> this is to be called I2C errors - see: https://github.com/rootzoll/raspiblitz/issues/1058#issuecomment-739517713
-  # don't enable SPI and UART ports by default
-  # echo "dtparam=spi=on" >> /boot/config.txt
-  # echo "enable_uart=1" >> /boot/config.txt
-  sudo sed -i "s/^dtoverlay=.*//g" /boot/config.txt
-  echo "dtoverlay=waveshare35a:rotate=90" >> /boot/config.txt
-
-  # modify cmdline.txt
-  modification="dwc_otg.lpm_enable=0 quiet fbcon=map:10 fbcon=font:ProFont6x11 logo.nologo"
-  containsModification=$(sudo grep -c "${modification}" /boot/cmdline.txt)
-  if [ ${containsModification} -eq 0 ]; then
-    echo "# adding modification to /boot/cmdline.txt"
-    cmdlineContent=$(sudo cat /boot/cmdline.txt)
-    echo "${cmdlineContent} ${modification}" > /boot/cmdline.txt
-  else
-    echo "# /boot/cmdline.txt already contains modification"
-  fi
-  containsModification=$(sudo grep -c "${modification}" /boot/cmdline.txt)
-  if [ ${containsModification} -eq 0 ]; then
-    echo "# FAIL: was not able to modify /boot/cmdline.txt"
-    echo "err='ended unclear state'"
-    exit 1
-  fi
-
-  # touch screen calibration
-  apt-get install -y xserver-xorg-input-evdev
-  cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
-  # TODO manual touchscreen calibration option
-  # https://github.com/tux1c/wavesharelcd-64bit-rpi#adapting-guide-to-other-lcds
-
-  # set font that fits the LCD screen
-  # https://github.com/rootzoll/raspiblitz/issues/244#issuecomment-476713706
-  # there can be a different font for different types of LCDs with using the displayType parameter in the future
-  sudo setfont /usr/share/consolefonts/Uni3-TerminusBold16.psf.gz
-
-  echo "# OK install of LCD done ... reboot needed"
-
-}
-
-function install_lcd_legacy() {
 
   echo "*** 32bit LCD DRIVER ***"
   echo "--> Downloading LCD Driver from Github"
@@ -231,8 +156,6 @@ function uninstall_lcd() {
   sudo mv /home/admin/wavesharelcd-64bit-rpi/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf 2>/dev/null
   sudo rm -rf /etc/X11/xorg.conf.d/99-calibration.conf
 
-  # remove github code of LCD drivers
-  sudo rm -r /home/admin/wavesharelcd-64bit-rpi
 
   echo "# OK uninstall LCD done ... reboot needed"
 
