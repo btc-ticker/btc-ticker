@@ -76,7 +76,7 @@ displayClass="$5"
 if [ ${#displayClass} -eq 0 ]; then
   displayClass="eink"
 fi
-if [ "${displayClass}" != "eink" ] && [ "${displayClass}" != "lcd" ] then
+if [ "${displayClass}" != "eink" ] && [ "${displayClass}" != "lcd" ]; then
   echo "ERROR: DISPLAY-CLASS parameter needs to be 'eink', or 'lcd'"
   exit 1
 else
