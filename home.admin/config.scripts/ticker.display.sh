@@ -107,11 +107,10 @@ function install_lcd() {
   echo "*** 32bit LCD DRIVER ***"
   echo "--> Downloading LCD Driver from Github"
   cd /home/admin/
-  sudo -u admin git clone https://github.com/MrYacha/LCD-show.git
+  sudo -u admin git clone https://github.com/waveshare/LCD-show.git
   sudo -u admin chmod -R 755 LCD-show
   sudo -u admin chown -R admin:admin LCD-show
   cd LCD-show/
-  sudo -u admin git reset --hard 53dd0bf || exit 1
   # install xinput calibrator package
   echo "--> install xinput calibrator package"
   sudo apt install -y libxi6
@@ -136,26 +135,8 @@ function uninstall_lcd() {
   # hold bootloader
   sudo apt-mark hold raspberrypi-bootloader
 
-  # make sure xinput-calibrator is installed
-  sudo apt-get install -y xinput-calibrator
-
-  # remove modifications of config.txt
-  sudo sed -i '/^hdmi_force_hotplug=/d' /boot/config.txt 2>/dev/null
-  sudo sed -i '/^hdmi_group=/d' /boot/config.txt 2>/dev/null
-  sudo sed -i "/^hdmi_mode=/d" /boot/config.txt 2>/dev/null
-  sudo sed -i "s/^dtoverlay=.*//g" /boot/config.txt 2>/dev/null
-  echo "hdmi_group=1" >> /boot/config.txt
-  echo "hdmi_mode=3" >> /boot/config.txt
-  echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
-  echo "dtoverlay=disable-bt" >> /boot/config.txt
-
-  # remove modification of cmdline.txt
-  sudo sed -i "s/ dwc_otg.lpm_enable=0 quiet fbcon=map:10 fbcon=font:ProFont6x11 logo.nologo//g" /boot/cmdline.txt
-
-  # un-prepare X11
-  sudo mv /home/admin/wavesharelcd-64bit-rpi/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf 2>/dev/null
-  sudo rm -rf /etc/X11/xorg.conf.d/99-calibration.conf
-
+  cd /home/admin/LCD-show
+  sudo ./LCD-hdmi
 
   echo "# OK uninstall LCD done ... reboot needed"
 

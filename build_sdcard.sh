@@ -718,6 +718,6 @@ echo ""
 if [ "${displayClass}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
   echo "*** ADDITIONAL DISPLAY OPTIONS ***"
   echo "- calling: ticker.display.sh set-display ${displayClass}"
-  sudo /home/admin/config.scripts/ticker.display.sh set-display ${displayClass}
-  sudo /home/admin/config.scripts/ticker.display.sh rotate 1
+  #sudo /home/admin/config.scripts/ticker.display.sh set-display ${displayClass}
+  #sudo /home/admin/config.scripts/ticker.display.sh rotate 1
 fi
