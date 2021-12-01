@@ -410,6 +410,8 @@ sudo apt install -y autossh telnet
 # prepare for display graphics mode
 sudo apt install -y fbi
 
+sudo apt-get install -y qrencode
+
 # prepare for powertest
 sudo apt install -y sysbench
 
@@ -718,6 +720,6 @@ echo ""
 if [ "${displayClass}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
   echo "*** ADDITIONAL DISPLAY OPTIONS ***"
   echo "- calling: ticker.display.sh set-display ${displayClass}"
-  #sudo /home/admin/config.scripts/ticker.display.sh set-display ${displayClass}
+  sudo /home/admin/config.scripts/ticker.display.sh set-display ${displayClass}
   #sudo /home/admin/config.scripts/ticker.display.sh rotate 1
 fi

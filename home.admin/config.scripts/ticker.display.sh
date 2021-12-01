@@ -30,7 +30,7 @@ if [ "${command}" == "rotate" ]; then
 
     # change rotation config
     echo "# Turn ON: LCD ROTATE"
-    sudo sed -i "s/^dtoverlay=.*/dtoverlay=waveshare35a:rotate=90/g" /boot/config.txt
+    sudo sed -i "s/^dtoverlay=.*/dtoverlay=waveshare35b-v2:rotate=90/g" /boot/config.txt
     sudo rm /etc/X11/xorg.conf.d/40-libinput.conf >/dev/null
     echo "# OK - a restart is needed: sudo shutdown -r now"
 
@@ -39,7 +39,7 @@ if [ "${command}" == "rotate" ]; then
 
     # change rotation config
     echo "#Turn OFF: LCD ROTATE"
-    sudo sed -i "s/^dtoverlay=.*/dtoverlay=waveshare35a:rotate=270/g" /boot/config.txt
+    sudo sed -i "s/^dtoverlay=.*/dtoverlay=waveshare35b-v2:rotate=270/g" /boot/config.txt
 
 
     echo "# also rotate touchscreen ..."
@@ -123,7 +123,33 @@ function install_lcd() {
   sudo chmod +x -R /home/admin/LCD-show
   cd /home/admin/LCD-show/
   sudo apt-mark hold raspberrypi-bootloader
-  sudo ./LCD35-show
+  sudo cp waveshare35b-v2-overlay.dtb /boot/overlays
+  sudo cp waveshare35b-v2-overlay.dtb /boot/overlays/waveshare32b-v2.dtbo
+  echo 'dtoverlay=waveshare35b-v2:rotate=90' | sudo tee -a /boot/config.txt
+  sudo sed -i "s/^#hdmi_force_hotplug=1/hdmi_force_hotplug=1/g" /boot/config.txt
+  sudo sed -i "s/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/g" /boot/config.txt
+
+  # modify cmdline.txt
+  modification="dwc_otg.lpm_enable=0 quiet fbcon=map:10 fbcon=font:ProFont6x11 logo.nologo"
+  containsModification=$(sudo grep -c "${modification}" /boot/cmdline.txt)
+  if [ ${containsModification} -eq 0 ]; then
+    echo "# adding modification to /boot/cmdline.txt"
+    cmdlineContent=$(sudo cat /boot/cmdline.txt)
+    echo "${cmdlineContent} ${modification}" > /boot/cmdline.txt
+  else
+    echo "# /boot/cmdline.txt already contains modification"
+  fi
+  containsModification=$(sudo grep -c "${modification}" /boot/cmdline.txt)
+  if [ ${containsModification} -eq 0 ]; then
+    echo "# FAIL: was not able to modify /boot/cmdline.txt"
+    echo "err='ended unclear state'"
+    exit 1
+  fi
+  # touch screen calibration
+  #apt-get install -y xserver-xorg-input-evdev
+  #cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
+
+  sudo setfont /usr/share/consolefonts/Uni3-TerminusBold16.psf.gz
 
 }
 
