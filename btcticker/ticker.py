@@ -111,6 +111,17 @@ class Ticker():
             w, h = self.drawText(x, y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.font_fee, anchor=anchor)
         return w, h
 
+    def drawFeesMax(self, x, y, mempool, anchor="la"):
+        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
+        best_fee_str = "Fees: L %.1f M %.1f H %.1f"
+        minFee = mempool["minFee"]
+        bestFees = mempool["bestFees"]
+        if self.config.main.show_best_fees:
+            w, h, font_size = self.drawTextMax(x, y, self.width, self.height-y, best_fee_str % (bestFees["hourFee"], bestFees["halfHourFee"], bestFees["fastestFee"]), self.config.fonts.font_fee, anchor=anchor)
+        else:
+            w, h, font_size = self.drawTextMax(x, y, self.width, self.height-y, fee_str % (minFee[0], minFee[1], minFee[2], minFee[3], minFee[4], minFee[5], minFee[6]), self.config.fonts.font_fee, anchor=anchor)
+        return w, h
+
     def drawFeesShort(self, x, y, symbol, mempool, last_block_sec_ago, anchor="la"):
         bestFees = mempool["bestFees"]
         hourFee = bestFees["hourFee"]
@@ -434,7 +445,7 @@ class Ticker():
                 w, h_symbolstring = self.drawText(5, self.height - h_low, symbolstring, self.font_side)
 
                 self.rebuildFonts(side_size=34, fee_size=35)
-                w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
+                w, h = self.drawFeesMax(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d:%d - %s' % (t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
                 pos_y += h
