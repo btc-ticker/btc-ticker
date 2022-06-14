@@ -1,8 +1,11 @@
 #!/usr/bin/python3
-from btcticker.ticker import Ticker
-from btcticker.config import Config
 import os
 import tempfile
+temp_dir = tempfile.TemporaryDirectory()
+os.environ['MPLCONFIGDIR'] = temp_dir.name
+
+from btcticker.ticker import Ticker
+from btcticker.config import Config
 import sys
 import math
 import socket
@@ -284,7 +287,7 @@ def main(config, config_file):
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
-                lastcoinfetch=showmessage("Internet is not available! Check your wpa_supplicant.conf", mirror, inverted)
+                showmessage(epd_type, ticker, "Internet is not available! Check your wpa_supplicant.conf", mirror, inverted)
             elif display_update:
                 fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):

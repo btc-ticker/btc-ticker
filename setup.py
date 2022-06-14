@@ -14,6 +14,7 @@ requires = [
     "babel",
     "pycoingecko",
     "blockchain",
+    "pymempool",
     "Pillow",
     "matplotlib",
     "numpy",

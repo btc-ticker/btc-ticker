@@ -41,13 +41,13 @@ def internet():
 
 
 def get_display_size(epd_type):
-    return 480, 320, False
+    return 320, 480, False
 
 
 def draw_image(epd_type, image=None):
 #   A visual cue that the wheels have fallen off
     if image is None:
-        image = Image.new('L', (320, 480), 255)
+        image = Image.new('L', (480, 320), 255)
     image.save(temp_dir.name + "/ticker.png", "PNG")
     os.system("/home/admin/config.scripts/ticker.display.sh image " + temp_dir.name + "/ticker.png")
 

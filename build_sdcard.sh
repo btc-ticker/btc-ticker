@@ -199,6 +199,8 @@ fi
 sudo apt remove -y --purge libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi minecraft-pi plymouth python2 vlc
 if [ "${displayClass}" == "eink" ]; then
   sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+else
+  sudo apt remove -y --purge lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
 fi
 sudo apt clean
 sudo apt -y autoremove

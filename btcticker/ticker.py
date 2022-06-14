@@ -6,7 +6,6 @@ from PIL import ImageDraw
 import logging
 from babel import numbers
 from btcticker.mempool import *
-from blockchain import statistics
 from btcticker.price import *
 from btcticker.chart import *
 from btcticker.config import Config
@@ -24,7 +23,6 @@ class Ticker():
         self.inverted = config.main.inverted
         self.mempool = Mempool(api_url=config.main.mempool_api_url)
         self.price = Price(fiat=self.fiat, days_ago=1)
-        self.stats = None
 
         self.image = Image.new('L', (self.width, self.height), 255)
 
@@ -46,6 +44,14 @@ class Ticker():
             return ImageFont.truetype(os.path.join(google_fontdir, font_name+ ".ttf"), font_size)
         else:
             raise Exception("Could not find %s in %s" % (font_name, self.fontdir))
+
+    def rebuildFonts(self, side_size=None, top_size=None, fee_size=None):
+        if side_size is not None:
+            self.font_side = self.buildFont(self.config.fonts.font_side, side_size)
+        if top_size is not None:
+            self.font_top = self.buildFont(self.config.fonts.font_top, top_size)
+        if fee_size is not None:
+            self.font_fee = self.buildFont(self.config.fonts.font_fee, fee_size)
 
     def setDaysAgo(self, days_ago):
         self.price.setDaysAgo(days_ago)
@@ -80,7 +86,6 @@ class Ticker():
     def refresh(self):
         self.mempool.refresh()
         self.price.refresh()
-        self.stats = statistics.get()
 
     def drawNextDifficulty(self,x ,y, remaining_blocks, retarget_mult, meanTimeDiff, time, retarget_date=None, show_clock=True, font=None):
         t_min = meanTimeDiff // 60
@@ -155,7 +160,7 @@ class Ticker():
         pricechange = self.price.getPriceChange()
         pricenowstring = self.price.getPriceNow()
 
-        last_retarget = self.stats.next_retarget - 2016
+        last_retarget = mempool["last_retarget"]
 
         last_timestamp = mempool["rawblocks"][0]["timestamp"]
         last_block_sec_ago = (datetime.now() - datetime.fromtimestamp(last_timestamp)).seconds
@@ -164,7 +169,7 @@ class Ticker():
         if last_retarget_blocks is not None:
             last_retarget_timestamp = last_retarget_blocks[0]["timestamp"]
             remaining_blocks = 2016 - (last_height - last_retarget_blocks[0]["height"]) + 1
-            difficulty_epoch_duration = self.stats.minutes_between_blocks * 60 * remaining_blocks + (last_timestamp - last_retarget_timestamp)
+            difficulty_epoch_duration = mempool["minutes_between_blocks"] * 60 * remaining_blocks + (last_timestamp - last_retarget_timestamp)
             retarget_mult = 14*24*60*60 / difficulty_epoch_duration
             retarget_timestamp = difficulty_epoch_duration + last_retarget_timestamp
             retarget_date = datetime.fromtimestamp(retarget_timestamp)
@@ -176,7 +181,7 @@ class Ticker():
         self.draw = ImageDraw.Draw(self.image)
 
         # meanTimeDiff = mempool["meanTimeDiff"]
-        meanTimeDiff = self.stats.minutes_between_blocks * 60
+        meanTimeDiff = mempool["minutes_between_blocks"] * 60
         t_min = meanTimeDiff // 60
         t_sec = meanTimeDiff % 60
         blocks = math.ceil(mempool["vsize"] / 1e6)
@@ -425,9 +430,10 @@ class Ticker():
             self.image.paste(ohlc_image ,(0, pos_y))
             pos_y += ohlc_h
             if self.width  > 450:
-                w, h = self.drawText(5, pos_y, symbolstring, self.font_side)
-                self.drawTextMax(self.width - 1, self.height - 1, self.width - w, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
-                pos_y += h
+                w_low, h_low, fs_low = self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
+                w, h_symbolstring = self.drawText(5, self.height - h_low, symbolstring, self.font_side)
+
+                self.rebuildFonts(side_size=34, fee_size=35)
                 w, h = self.drawFees(5, pos_y, mempool, anchor="lt")
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d:%d - %s' % (t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
@@ -436,7 +442,7 @@ class Ticker():
                 pos_y += h
                 w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
+                w, h = self.drawText(5, self.height - h_low - h_symbolstring - 20, "$"+format(int(current_price["usd"]), "")+' - %.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
                 pos_y += h
         elif layout == "mempool":
             if mode == "fiat":
