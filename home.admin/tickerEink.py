@@ -168,7 +168,7 @@ def main(config, config_file):
     else:
         ticker = Ticker(config, w, h)
 
-    height = ticker.mempool.getBlockHeight()
+    height = ticker.mempool.mempool.get_block_tip_height()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     if config.main.show_block_height:
         # 5*365*(24*60/3.6 + 144) / 1000000
@@ -274,7 +274,7 @@ def main(config, config_file):
                 display_update = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                 try:
-                    new_height = ticker.mempool.getBlockHeight()
+                    new_height = ticker.mempool.mempool.get_block_tip_height()
                 except Exception as e:
                     logging.warning(e)
                 if new_height > height and not display_update:
