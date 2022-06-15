@@ -32,7 +32,7 @@ BUTTON_GPIO_3 = 13
 BUTTON_GPIO_4 = 19
 
 def internet():
-    conn = httplib.HTTPConnection("www.google.com", timeout=5)
+    conn = httplib.HTTPConnection("www.google.com", timeout=10)
     try:
         conn.request("HEAD", "/")
         conn.close()
@@ -41,6 +41,16 @@ def internet():
         logging.warning("No internet")
         logging.warning(ex)
         conn.close()
+        return False
+
+
+def checkInternetSocket(host="8.8.8.8", port=53, timeout=10):
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except socket.error as ex:
+        print(ex)
         return False
 
 
@@ -286,8 +296,11 @@ def main(config, config_file):
 
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
-            elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
-                showmessage(epd_type, ticker, "Internet is not available! Check your wpa_supplicant.conf", mirror, inverted)
+            elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not checkInternetSocket():
+                hostname = socket.gethostname()
+                local_ip = socket.gethostbyname(hostname)
+                showmessage(epd_type, ticker, "Internet is not available!\nCheck your wpa_supplicant.conf\nIp:%s" % str(local_ip), mirror, inverted)
+                time.sleep(320)
             elif display_update:
                 fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
             elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):

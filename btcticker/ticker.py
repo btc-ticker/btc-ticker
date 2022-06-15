@@ -146,7 +146,12 @@ class Ticker():
     def build_message(self, message, mirror=True):
         self.image = Image.new('L', (self.width, self.height), 255)    # 255: clear the image with white
         self.draw = ImageDraw.Draw(self.image)
-        w, h, font_size = self.drawTextMax(0, 0, self.width, self.height, message, self.config.fonts.font_buttom, anchor="lt")
+        y = 0
+        message_per_line = message.split("\n")
+        for i in range(len(message_per_line)):
+            w, h, font_size = self.drawTextMax(0, y, self.width, self.height, message_per_line[i], self.config.fonts.font_buttom, anchor="lt")
+            y += h
+
         if self.orientation != 0 :
             self.image=self.image.rotate(self.orientation, expand=True)
         if mirror:
