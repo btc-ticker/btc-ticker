@@ -179,7 +179,8 @@ class Ticker():
         last_retarget = mempool["last_retarget"]
 
         last_timestamp = mempool["rawblocks"][0]["timestamp"]
-        last_block_sec_ago = (datetime.now() - datetime.fromtimestamp(last_timestamp)).seconds
+        last_block_time = datetime.fromtimestamp(last_timestamp)
+        last_block_sec_ago = (datetime.now() - last_block_time).seconds
         last_height = mempool["rawblocks"][0]["height"]
         last_retarget_blocks = self.mempool.getBlocks(start_height=last_retarget)
         if last_retarget_blocks is not None:
@@ -442,6 +443,10 @@ class Ticker():
             if self.width  > 450:
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
                 pos_y += h
+                self.rebuildFonts(side_size=34, fee_size=35)
+                w, h = self.drawText(5, pos_y, '%s (-%d:%d)' % (str(last_block_time.strftime("%d.%b %H:%M")), int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                pos_y += h
+
 
             self.image.paste(ohlc_image ,(0, pos_y))
             pos_y += ohlc_h
@@ -452,13 +457,10 @@ class Ticker():
                 self.rebuildFonts(side_size=34, fee_size=35)
                 w, h = self.drawFeesMax(5, pos_y, mempool, anchor="lt")
                 pos_y += h
-                w, h = self.drawText(5, pos_y, '%d:%d - %s' % (t_min, t_sec, str(time.strftime("%H:%M"))), self.font_top)
+                w, h = self.drawNextDifficulty(5, pos_y, remaining_blocks, retarget_mult, meanTimeDiff, time, retarget_date=retarget_date, show_clock=False)
+                #w, h = self.drawText(5, pos_y, '%d blk - %d:%d' % (remaining_blocks, t_min, t_sec), self.font_side)
                 pos_y += h
-                w, h = self.drawText(5, pos_y, 'lb -%d:%d' % (int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
-                pos_y += h
-                w, h = self.drawText(5, pos_y, '%d blk' % (remaining_blocks), self.font_side)
-                pos_y += h
-                w, h = self.drawText(5, self.height - h_low - h_symbolstring - 20, "$"+format(int(current_price["usd"]), "")+' - %.0f sat/%s' % (current_price["sat_fiat"], symbolstring), self.font_side)
+                w, h, font_size = self.drawTextMax(5, self.height - h_low - h_symbolstring - 20, self.width, (self.height-20) / 2, "$"+format(int(current_price["usd"]), "")+' %.0f sat/%s %.0f sat/$' % (current_price["sat_fiat"], symbolstring, current_price["sat_usd"]), self.config.fonts.font_side)
                 pos_y += h
         elif layout == "mempool":
             if mode == "fiat":
