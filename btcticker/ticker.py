@@ -452,7 +452,7 @@ class Ticker():
             pos_y += ohlc_h
             if self.width  > 450:
                 w_low, h_low, fs_low = self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
-                w, h_symbolstring = self.drawText(5, self.height - h_low, symbolstring + "  " + str(self.price.days_ago)+"d : "+pricechange, self.font_side)
+                w, h_symbolstring = self.drawText(5, self.height - h_low - 10, symbolstring + "  " + str(self.price.days_ago)+"d : "+pricechange, self.font_side)
 
                 self.rebuildFonts(side_size=34, fee_size=35)
                 w, h = self.drawFeesMax(5, pos_y, mempool, anchor="lt")
