@@ -53,7 +53,6 @@ def checkInternetSocket(host="8.8.8.8", port=53, timeout=10):
         print(ex)
         return False
 
-
 def get_display_size(epd_type):
     if epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
@@ -298,11 +297,15 @@ def main(config, config_file):
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not checkInternetSocket():
                 offline_counter += 1
-                if offline_counter > 100:
+                if offline_counter > 18:
                     hostname = socket.gethostname()
                     local_ip = socket.gethostbyname(hostname)
-                    showmessage(epd_type, ticker, "Internet is not available!\nCheck your wpa_supplicant.conf\nIp:%s" % str(local_ip), mirror, inverted)
-                    time.sleep(360)
+                    try:
+                        t = os.popen('vcgencmd measure_temp').readline()
+                    except Exception as e:
+                        t = "could not measure temp"
+                    showmessage(epd_type, ticker, "Internet is not available!\nCheck your wpa_supplicant.conf\nIp:%s\nTemp:%s" % (str(local_ip), str(t)), mirror, inverted)
+                    time.sleep(180)
                     offline_counter = 0
                 else:
                     display_update = False
