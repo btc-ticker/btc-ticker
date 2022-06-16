@@ -44,6 +44,20 @@ def internet():
         return False
 
 
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+
 def checkInternetSocket(host="8.8.8.8", port=53, timeout=10):
     try:
         socket.setdefaulttimeout(timeout)
@@ -298,13 +312,8 @@ def main(config, config_file):
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not checkInternetSocket():
                 offline_counter += 1
                 if offline_counter > 18:
-                    hostname = socket.gethostname()
-                    local_ip = socket.gethostbyname(hostname)
-                    try:
-                        t = os.popen('vcgencmd measure_temp').readline()
-                    except Exception as e:
-                        t = "could not measure temp"
-                    showmessage(epd_type, ticker, "Internet is not available!\nCheck your wpa_supplicant.conf\nIp:%s\nTemp:%s" % (str(local_ip), str(t)), mirror, inverted)
+                    local_ip = get_ip()
+                    showmessage(epd_type, ticker, "Internet is not available!\nWill retry in 3 minutes.\nCheck your wpa_supplicant.conf\nIp:%s" % (str(local_ip), mirror, inverted)
                     time.sleep(180)
                     offline_counter = 0
                 else:
