@@ -95,7 +95,7 @@ class Ticker():
         if show_clock:
             w, h = self.drawText(x, y, '%d blk %.0f %% %d:%d - %s' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec, str(time.strftime("%H:%M"))), font)
         elif retarget_date is not None:
-            w, h = self.drawText(x, y, '%d blk %.1f%% %s' % (remaining_blocks, (retarget_mult * 100 - 100), retarget_date.strftime("%d.%b%H:%M")), font)
+            w, h = self.drawText(x, y, '%d blk %.2f%% %s' % (remaining_blocks, (retarget_mult * 100 - 100), retarget_date.strftime("%d.%b %H:%M")), font)
         else:
             w, h = self.drawText(x, y, '%d blk %.0f %% %d:%d' % (remaining_blocks, (retarget_mult * 100 - 100), t_min, t_sec), font)
         return w, h
@@ -185,7 +185,7 @@ class Ticker():
         last_retarget_blocks = self.mempool.getBlocks(start_height=last_retarget)
         if last_retarget_blocks is not None:
             last_retarget_timestamp = last_retarget_blocks[0]["timestamp"]
-            remaining_blocks = 2016 - (last_height - last_retarget_blocks[0]["height"]) + 1
+            remaining_blocks = 2016 - (last_height - last_retarget_blocks[0]["height"])
             difficulty_epoch_duration = mempool["minutes_between_blocks"] * 60 * remaining_blocks + (last_timestamp - last_retarget_timestamp)
             retarget_mult = 14*24*60*60 / difficulty_epoch_duration
             retarget_timestamp = difficulty_epoch_duration + last_retarget_timestamp
@@ -442,9 +442,9 @@ class Ticker():
             ohlc_w, ohlc_h = ohlc_image.size
             if self.width  > 450:
                 w, h, font_size = self.drawTextMax(0, pos_y, self.width, (self.height-20) / 2, str(mempool["height"]), self.config.fonts.font_console, anchor="lt")
-                pos_y += h
+                pos_y += h - 10
                 self.rebuildFonts(side_size=34, fee_size=35)
-                w, h = self.drawText(5, pos_y, '%s (-%d:%d)' % (str(last_block_time.strftime("%d.%b %H:%M")), int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
+                w, h = self.drawText(5, pos_y, '%s (%d:%d min ago)' % (str(last_block_time.strftime("%d.%b %H:%M")), int(last_block_sec_ago/60), last_block_sec_ago%60), self.font_side)
                 pos_y += h
 
 
