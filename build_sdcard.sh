@@ -459,8 +459,6 @@ sudo apt install -y sqlite3
 #sudo apt-get install -y nginx-common
 #sudo apt-get install -y nginx
 
-sudo apt-get install --reinstall ntp
-
 
 sudo apt clean
 sudo apt -y autoremove
