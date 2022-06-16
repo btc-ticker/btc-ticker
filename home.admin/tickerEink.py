@@ -313,7 +313,7 @@ def main(config, config_file):
                 offline_counter += 1
                 if offline_counter > 18:
                     local_ip = get_ip()
-                    showmessage(epd_type, ticker, "Internet is not available!\nWill retry in 3 minutes.\nCheck your wpa_supplicant.conf\nIp:%s" % (str(local_ip), mirror, inverted)
+                    showmessage(epd_type, ticker, "Internet is not available!\nWill retry in 3 minutes.\nCheck your wpa_supplicant.conf\nIp:%s" % str(local_ip), mirror, inverted)
                     time.sleep(180)
                     offline_counter = 0
                 else:
