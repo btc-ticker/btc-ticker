@@ -452,7 +452,7 @@ class Ticker():
             pos_y += ohlc_h
             if self.width  > 450:
                 w_low, h_low, fs_low = self.drawTextMax(self.width - 1, self.height - 1, self.width, self.height-pos_y, pricenowstring.replace(",", ""), self.config.fonts.font_buttom, anchor="rs")
-                w, h_symbolstring = self.drawText(5, self.height - h_low, symbolstring, self.font_side)
+                w, h_symbolstring = self.drawText(5, self.height - h_low, symbolstring + "  " + str(self.price.days_ago)+"d : "+pricechange, self.font_side)
 
                 self.rebuildFonts(side_size=34, fee_size=35)
                 w, h = self.drawFeesMax(5, pos_y, mempool, anchor="lt")
@@ -460,7 +460,7 @@ class Ticker():
                 w, h = self.drawNextDifficulty(5, pos_y, remaining_blocks, retarget_mult, meanTimeDiff, time, retarget_date=retarget_date, show_clock=False)
                 #w, h = self.drawText(5, pos_y, '%d blk - %d:%d' % (remaining_blocks, t_min, t_sec), self.font_side)
                 pos_y += h
-                w, h, font_size = self.drawTextMax(5, self.height - h_low - h_symbolstring - 20, self.width, (self.height-20) / 2, "$"+format(int(current_price["usd"]), "")+' %.0f sat/%s %.0f sat/$' % (current_price["sat_fiat"], symbolstring, current_price["sat_usd"]), self.config.fonts.font_side)
+                w, h, font_size = self.drawTextMax(5, self.height - h_low - h_symbolstring - 20, self.width, (self.height-20) / 2, "$"+format(int(current_price["usd"]), "")+' - %.0f /%s - %.0f /$' % (current_price["sat_fiat"], symbolstring, current_price["sat_usd"]), self.config.fonts.font_side)
                 pos_y += h
         elif layout == "mempool":
             if mode == "fiat":
