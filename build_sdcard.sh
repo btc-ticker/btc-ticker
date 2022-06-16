@@ -223,6 +223,16 @@ elif [ -f "/usr/bin/python3.9" ]; then
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
   sudo ln -s /usr/bin/python3.9 /usr/bin/python3.7
   echo "python calls python3.9"
+elif [ -f "/usr/bin/python3.10" ]; then
+  # use python 3.10 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+  sudo ln -s /usr/bin/python3.10 /usr/bin/python3.7
+  echo "python calls python3.10"
+elif [ -f "/usr/bin/python3.11" ]; then
+  # use python 3.11 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+  sudo ln -s /usr/bin/python3.11 /usr/bin/python3.7
+  echo "python calls python3.11"
 else
   echo "!!! FAIL !!!"
   echo "There is no tested version of python present"
@@ -404,8 +414,6 @@ sudo apt install -y htop git curl bash-completion vim jq dphys-swapfile bsdmainu
 # installs bandwidth monitoring for future statistics
 sudo apt install -y vnstat
 
-sudo apt install -y wiringpi
-
 # network tools
 sudo apt install -y autossh telnet
 
@@ -486,6 +494,7 @@ echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
 sudo -H python3 -m pip install matplotlib==3.5.2
+sleep 60
 sudo -H python3 -m pip install pandas==1.3.5
 sudo -H python3 -m pip install mplfinance==0.12.9b1
 
