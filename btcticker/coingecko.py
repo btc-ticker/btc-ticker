@@ -47,14 +47,32 @@ class CoinGecko():
           return timeseriesstack
 
      def getOHLC(self, currency):
+          if self.days_ago <= 1:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 1)
+          elif self.days_ago <= 7:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 7)
+          elif self.days_ago <= 14:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 14)
+          elif self.days_ago <= 30:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 30)
+          elif self.days_ago <= 90:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 90)
+          elif self.days_ago <= 180:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 180)
+          elif self.days_ago <= 365:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, 365)
+          else:
+               rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, "max")
 
-          rawohlc = self.cg.get_coin_ohlc_by_id(self.whichcoin, currency, self.days_ago)
           timeseriesstack = []
           timeseriesdate = []
           length=len (rawohlc)
           i=0
+          end_time = datetime.utcfromtimestamp(rawohlc[-1][0]/1000)
           while i < length:
-               timeseriesdate.append(datetime.utcfromtimestamp(rawohlc[i][0]/1000))
-               timeseriesstack.append(rawohlc[i][1:])
+               time = datetime.utcfromtimestamp(rawohlc[i][0]/1000)
+               if ((end_time-time).total_seconds() / 60 / 60 / 24 <= self.days_ago):
+                    timeseriesdate.append(time)
+                    timeseriesstack.append(rawohlc[i][1:])
                i+=1
           return pd.DataFrame(timeseriesstack, index = timeseriesdate, columns=["Open", "High", "Low", "Close"])

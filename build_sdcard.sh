@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.4.2  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.4.3  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -477,17 +477,17 @@ echo "*** Python DEFAULT libs & dependencies ***"
 sudo apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
-sudo -H python3 -m pip install requests[socks]==2.21.0
+sudo -H python3 -m pip install requests[socks]==2.28.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.20.2
+sudo -H python3 -m pip install numpy==1.21.4
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
-sudo -H python3 -m pip install matplotlib==3.4.2
-sudo -H python3 -m pip install pandas==1.2.4
-sudo -H python3 -m pip install mplfinance==0.12.7a17
+sudo -H python3 -m pip install matplotlib==3.5.2
+sudo -H python3 -m pip install pandas==1.3.5
+sudo -H python3 -m pip install mplfinance==0.12.9b1
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
@@ -695,6 +695,11 @@ sudo systemctl enable btcticker
 echo "*** ro remount SERVICE ***"
 sudo cp ./assets/ro_remount.service /etc/systemd/system/ro_remount.service
 sudo systemctl enable ro_remount
+
+echo "*** wlan powersave SERVICE ***"
+sudo cp ./assets/wifi_powersave@.service /etc/systemd/system/wifi_powersave@.service
+sudo systemctl disable wifi_powersave@on.service
+sudo systemctl enable wifi_powersave@off.service
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
