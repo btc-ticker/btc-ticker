@@ -196,11 +196,14 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "dietpi" ] || \
 fi
 
 # remove some (big) packages that are not needed
-sudo apt remove -y --purge libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi minecraft-pi plymouth python2 vlc
+
+sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups
 if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer*
+  # sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
 else
-  sudo apt remove -y --purge lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+  sudo apt remove -y --purge lightdm* vlc* lxde* chromium* desktop* gnome* gstreamer* lx* mesa*
+  # sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
 sudo apt clean
 sudo apt -y autoremove
@@ -209,30 +212,24 @@ echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
 
-if [ -f "/usr/bin/python3.7" ]; then
-  # make sure /usr/bin/python exists (and calls Python3.7 in Buster)
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
-  echo "python calls python3.7"
-elif [ -f "/usr/bin/python3.8" ]; then
-  # use python 3.8 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
-  sudo ln -s /usr/bin/python3.8 /usr/bin/python3.7
-  echo "python calls python3.8"
-elif [ -f "/usr/bin/python3.9" ]; then
+if [ -f "/usr/bin/python3.9" ]; then
   # use python 3.9 if available
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
-  sudo ln -s /usr/bin/python3.9 /usr/bin/python3.7
   echo "python calls python3.9"
 elif [ -f "/usr/bin/python3.10" ]; then
   # use python 3.10 if available
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-  sudo ln -s /usr/bin/python3.10 /usr/bin/python3.7
+  sudo ln -s /usr/bin/python3.10 /usr/bin/python3.9
   echo "python calls python3.10"
 elif [ -f "/usr/bin/python3.11" ]; then
   # use python 3.11 if available
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-  sudo ln -s /usr/bin/python3.11 /usr/bin/python3.7
+  sudo ln -s /usr/bin/python3.11 /usr/bin/python3.9
   echo "python calls python3.11"
+elif [ -f "/usr/bin/python3.8" ]; then
+  # use python 3.8 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
+  echo "python calls python3.8"
 else
   echo "!!! FAIL !!!"
   echo "There is no tested version of python present"
@@ -462,6 +459,9 @@ sudo apt install -y sqlite3
 #sudo apt-get install -y nginx-common
 #sudo apt-get install -y nginx
 
+sudo apt-get install --reinstall ntp
+
+
 sudo apt clean
 sudo apt -y autoremove
 
@@ -489,13 +489,13 @@ sudo -H python3 -m pip install requests[socks]==2.28.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.21.4
+sudo -H python3 -m pip install numpy==1.22.4
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
 sudo -H python3 -m pip install matplotlib==3.5.2
 sleep 60
-sudo -H python3 -m pip install pandas==1.3.5
+sudo -H python3 -m pip install pandas==1.4.2
 sudo -H python3 -m pip install mplfinance==0.12.9b1
 
 echo "sleeping 60 seconds"
