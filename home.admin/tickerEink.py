@@ -298,7 +298,7 @@ def main(config, config_file):
                 time.sleep(10)
             elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not checkInternetSocket():
                 offline_counter += 1
-                if offline_counter > 10:
+                if offline_counter > 100:
                     hostname = socket.gethostname()
                     local_ip = socket.gethostbyname(hostname)
                     showmessage(epd_type, ticker, "Internet is not available!\nCheck your wpa_supplicant.conf\nIp:%s" % str(local_ip), mirror, inverted)
