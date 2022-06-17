@@ -199,12 +199,10 @@ fi
 
 sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups
 if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx*
-  #sudo apt remove -y --purge gnome* desktop* gstreamer*
+  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer*
   # sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
 else
-  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium*
-  # sudo apt remove -y --purge desktop* gnome* gstreamer*
+  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer*
   # sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
 sudo apt clean
@@ -461,17 +459,6 @@ sudo apt install -y sqlite3
 # nginx
 #sudo apt-get install -y nginx-common
 #sudo apt-get install -y nginx
-
-#timeserver
-# sudo apt install -y chrony
-#sudo apt install --reinstall -y systemd-timesyncd
-
-#sudo ufw allow 123/udp
-#sudo ufw allow out 123/udp
-#sudo ufw allow out 53
-sudo ufw allow ntp
-sudo timedatectl set-ntp true
-
 
 sudo apt clean
 sudo apt -y autoremove
