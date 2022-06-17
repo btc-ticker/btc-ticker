@@ -199,10 +199,12 @@ fi
 
 sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups
 if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer*
+  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx*
+  #sudo apt remove -y --purge gnome* desktop* gstreamer*
   # sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
 else
-  sudo apt remove -y --purge lightdm* vlc* lxde* chromium* desktop* gnome* gstreamer* lx* mesa*
+  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium*
+  # sudo apt remove -y --purge desktop* gnome* gstreamer*
   # sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
 sudo apt clean
@@ -453,11 +455,22 @@ sudo apt install -y sshpass
 sudo apt install -y psmisc
 # install firewall
 sudo apt install -y ufw
+
 # make sure sqlite3 is available
 sudo apt install -y sqlite3
 # nginx
 #sudo apt-get install -y nginx-common
 #sudo apt-get install -y nginx
+
+#timeserver
+# sudo apt install -y chrony
+#sudo apt install --reinstall -y systemd-timesyncd
+
+#sudo ufw allow 123/udp
+#sudo ufw allow out 123/udp
+#sudo ufw allow out 53
+sudo ufw allow ntp
+sudo timedatectl set-ntp true
 
 
 sudo apt clean
@@ -509,10 +522,10 @@ sleep 60
 echo "*** HARDENING ***"
 sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
-sudo rm -rf /home/admin/bcm2835-1.60
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
-tar zxvf bcm2835-1.60.tar.gz
-cd bcm2835-1.60/
+sudo rm -rf /home/admin/bcm2835-1.71
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.71.tar.gz
+tar zxvf bcm2835-1.71.tar.gz
+cd bcm2835-1.71/
 sudo ./configure
 sudo make
 sudo make check
@@ -705,8 +718,8 @@ sudo systemctl enable ro_remount
 
 echo "*** wlan powersave SERVICE ***"
 sudo cp ./assets/wifi_powersave@.service /etc/systemd/system/wifi_powersave@.service
-sudo systemctl disable wifi_powersave@on.service
-sudo systemctl enable wifi_powersave@off.service
+#sudo systemctl disable wifi_powersave@on.service
+#sudo systemctl enable wifi_powersave@off.service
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
