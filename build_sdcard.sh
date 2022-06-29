@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.4.3  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.5.0  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -197,13 +197,13 @@ fi
 
 # remove some (big) packages that are not needed
 
-sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups
+sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
 if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer*
-  # sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
+  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
+  sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
 else
-  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer*
-  # sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
+  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
+  sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
 sudo apt clean
 sudo apt -y autoremove
@@ -703,10 +703,9 @@ echo "*** ro remount SERVICE ***"
 sudo cp ./assets/ro_remount.service /etc/systemd/system/ro_remount.service
 sudo systemctl enable ro_remount
 
-echo "*** wlan powersave SERVICE ***"
-sudo cp ./assets/wifi_powersave@.service /etc/systemd/system/wifi_powersave@.service
-#sudo systemctl disable wifi_powersave@on.service
-#sudo systemctl enable wifi_powersave@off.service
+# echo "*** check wlan SERVICE ***"
+# sudo cp ./assets/check_wifi.service /etc/systemd/system/check_wifi.service
+#sudo systemctl enable check_wifi.service
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds

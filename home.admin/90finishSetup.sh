@@ -42,6 +42,8 @@ echo "OK - System is now up to date"
 
 
 # Make system readonly
+# helpful https://www.dzombak.com/blog/2021/11/Reducing-SD-Card-Wear-on-a-Raspberry-Pi-or-Armbian-Device.html
+
 sudo dphys-swapfile swapoff
 sudo dphys-swapfile uninstall
 sudo update-rc.d dphys-swapfile remove
@@ -73,11 +75,10 @@ sudo systemctl daemon-reload
 
 # Internet is not working until reboot after the following line
 
-#sudo rm -rf /var/lock
+sudo rm -rf /var/lock && sudo ln -s /tmp /var/lock
 #sudo ln -s /tmp /var/lib/dhcp
 #sudo ln -s /tmp /var/lib/dhcpcd5
 # sudo ln -s /tmp /var/spool
-#sudo ln -s /tmp /var/lock
 # sudo ln -s /tmp /var/log/nginx
 sudo mv /etc/resolv.conf /var/run/resolv.conf && sudo ln -s /var/run/resolv.conf /etc/resolv.conf
 
@@ -101,7 +102,7 @@ tmpfs  /var/lib/sudo  tmpfs  defaults,noatime,nosuid,nodev,noexec,size=1m,mode=0
 #sudo sed -i /etc/fstab -e "s/\(.*\/boot.*vfat.*\)defaults\(.*\)/\1defaults,ro\2/"
 #sudo sed -i /etc/fstab -e "s/\(.*\/.*ext4.*\)defaults\(.*\)/\1defaults,ro\2/"
 
-#sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1rootwait fsck.mode=skip noswap ro\2/"
+sudo sed -i /boot/cmdline.txt -e "s/\(.*fsck.repair=yes.*\)rootwait\(.*\)/\1rootwait fsck.mode=skip noswap\2/"
 
 echo 'ExecStartPre=/bin/echo "" >/tmp/random-seed' | sudo tee -a /lib/systemd/system/systemd-random-seed.service
 
@@ -124,3 +125,5 @@ alias rw='sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot'
 PROMPT_COMMAND=set_bash_prompt
 " | sudo tee -a /etc/bash.bashrc
 
+echo "sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot
+" | sudo tee -a /etc/bash.bash_logout

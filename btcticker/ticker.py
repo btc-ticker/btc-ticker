@@ -279,6 +279,28 @@ class Ticker():
                 pos_y += h
                 self.drawTextMax(self.width - 1, self.height - 1, self.width, (self.height-pos_y), format(int(current_price["usd"]), ""), self.config.fonts.font_big, anchor="rs")
 
+        elif layout == "one_number":
+
+            if mode == "fiat":
+                first_line = symbolstring+pricenowstring.replace(",", "")
+                second_line = 'Market price of bitcoin'
+            elif mode == "height" or mode == "newblock":
+                first_line = str(mempool["height"])
+                second_line = 'Number of blocks in the blockchain'
+            elif mode == "satfiat":
+                first_line = '/%s%.0f' % (symbolstring, current_price["sat_fiat"])
+                second_line = 'Value of one %s in sats' % symbolstring
+            elif mode == "moscowtime":
+                second_line = 'moscow time'
+                first_line = '%.0f' % (current_price["sat_usd"])
+            elif mode == "usd":
+                first_line = "$"+format(int(current_price["usd"]), "")
+                second_line = 'Market price of bitcoin'
+
+            pos_y = 30
+            w, h, font_size = self.drawTextMax(5, self.height - 15, self.width - 10, 50, second_line, self.config.fonts.font_fee, start_font_size=10, anchor="lb")
+            self.drawTextMax(self.width - 20, pos_y, self.width-40, (self.height-pos_y-h-15), first_line, self.config.fonts.font_big, anchor="rt")
+
         elif layout == "fiat" or (layout == "all" and self.config.main.fiat == "usd"):
 
             if mode == "fiat":

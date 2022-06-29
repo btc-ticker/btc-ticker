@@ -100,6 +100,7 @@ while True:
 
         # update window with new image
         image_elem.update(data=get_img_data(ticker.image))
+        time.sleep(2)
 
 
 window.close()
