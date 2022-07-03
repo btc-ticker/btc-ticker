@@ -27,12 +27,13 @@ class MainConfig(BaseModel):
     mempool_api_url: str = 'https://mempool.space/api/'
     epd_type: str = '2in7_4gray'
     show_best_fees: bool = True
+    show_block_time: bool = True
 
 class FontsConfig(BaseModel):
 
     font_buttom: str = 'googlefonts/Audiowide-Regular.ttf'
     font_console: str = 'googlefonts/ZenDots-Regular.ttf'
-    font_big: str = 'googlefonts/BigShouldersDisplay-Regular.ttf'
+    font_big: str = 'googlefonts/BigShouldersDisplay-SemiBold.ttf'
     font_side: str = 'googlefonts/Roboto-Medium.ttf'
     font_side_size: int = 20
     font_top: str = 'PixelSplitter-Bold.ttf'
