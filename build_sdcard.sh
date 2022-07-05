@@ -11,7 +11,7 @@
 
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.4.2  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.5.0  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
 
@@ -196,9 +196,14 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "dietpi" ] || \
 fi
 
 # remove some (big) packages that are not needed
-sudo apt remove -y --purge libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi minecraft-pi plymouth python2 vlc
+
+sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
 if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop* gnome* gstreamer* gtk* hicolor-icon-theme* lx* mesa*
+  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
+  sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
+else
+  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
+  sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
 sudo apt clean
 sudo apt -y autoremove
@@ -207,20 +212,24 @@ echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
 
-if [ -f "/usr/bin/python3.7" ]; then
-  # make sure /usr/bin/python exists (and calls Python3.7 in Buster)
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
-  echo "python calls python3.7"
+if [ -f "/usr/bin/python3.9" ]; then
+  # use python 3.9 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+  echo "python calls python3.9"
+elif [ -f "/usr/bin/python3.10" ]; then
+  # use python 3.10 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+  sudo ln -s /usr/bin/python3.10 /usr/bin/python3.9
+  echo "python calls python3.10"
+elif [ -f "/usr/bin/python3.11" ]; then
+  # use python 3.11 if available
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+  sudo ln -s /usr/bin/python3.11 /usr/bin/python3.9
+  echo "python calls python3.11"
 elif [ -f "/usr/bin/python3.8" ]; then
   # use python 3.8 if available
   sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
-  sudo ln -s /usr/bin/python3.8 /usr/bin/python3.7
   echo "python calls python3.8"
-elif [ -f "/usr/bin/python3.9" ]; then
-  # use python 3.9 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
-  sudo ln -s /usr/bin/python3.9 /usr/bin/python3.7
-  echo "python calls python3.9"
 else
   echo "!!! FAIL !!!"
   echo "There is no tested version of python present"
@@ -402,8 +411,6 @@ sudo apt install -y htop git curl bash-completion vim jq dphys-swapfile bsdmainu
 # installs bandwidth monitoring for future statistics
 sudo apt install -y vnstat
 
-sudo apt install -y wiringpi
-
 # network tools
 sudo apt install -y autossh telnet
 
@@ -446,6 +453,7 @@ sudo apt install -y sshpass
 sudo apt install -y psmisc
 # install firewall
 sudo apt install -y ufw
+
 # make sure sqlite3 is available
 sudo apt install -y sqlite3
 # nginx
@@ -475,17 +483,18 @@ echo "*** Python DEFAULT libs & dependencies ***"
 sudo apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
-sudo -H python3 -m pip install requests[socks]==2.21.0
+sudo -H python3 -m pip install requests[socks]==2.28.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.20.2
+sudo -H python3 -m pip install numpy==1.22.4
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
 sleep 60
-sudo -H python3 -m pip install matplotlib==3.4.2
-sudo -H python3 -m pip install pandas==1.2.4
-sudo -H python3 -m pip install mplfinance==0.12.7a17
+sudo -H python3 -m pip install matplotlib==3.5.2
+sleep 60
+sudo -H python3 -m pip install pandas==1.4.2
+sudo -H python3 -m pip install mplfinance==0.12.9b1
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds
@@ -500,10 +509,10 @@ sleep 60
 echo "*** HARDENING ***"
 sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
-sudo rm -rf /home/admin/bcm2835-1.60
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
-tar zxvf bcm2835-1.60.tar.gz
-cd bcm2835-1.60/
+sudo rm -rf /home/admin/bcm2835-1.71
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.71.tar.gz
+tar zxvf bcm2835-1.71.tar.gz
+cd bcm2835-1.71/
 sudo ./configure
 sudo make
 sudo make check
@@ -693,6 +702,10 @@ sudo systemctl enable btcticker
 echo "*** ro remount SERVICE ***"
 sudo cp ./assets/ro_remount.service /etc/systemd/system/ro_remount.service
 sudo systemctl enable ro_remount
+
+# echo "*** check wlan SERVICE ***"
+# sudo cp ./assets/check_wifi.service /etc/systemd/system/check_wifi.service
+#sudo systemctl enable check_wifi.service
 
 echo "sleeping 60 seconds"
 # sleep for 60 seconds

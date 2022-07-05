@@ -41,13 +41,13 @@ def internet():
 
 
 def get_display_size(epd_type):
-    return 480, 320, False
+    return 320, 480, False
 
 
 def draw_image(epd_type, image=None):
 #   A visual cue that the wheels have fallen off
     if image is None:
-        image = Image.new('L', (320, 480), 255)
+        image = Image.new('L', (480, 320), 255)
     image.save(temp_dir.name + "/ticker.png", "PNG")
     os.system("/home/admin/config.scripts/ticker.display.sh image " + temp_dir.name + "/ticker.png")
 
@@ -106,7 +106,7 @@ def main(config, config_file):
     else:
         ticker = Ticker(config, w, h)
 
-    height = ticker.mempool.getBlockHeight()
+    height = ticker.mempool.mempool.get_block_tip_height()
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     if config.main.show_block_height:
         # 5*365*(24*60/3.6 + 144) / 1000000
@@ -212,7 +212,7 @@ def main(config, config_file):
                 display_update = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                 try:
-                    new_height = ticker.mempool.getBlockHeight()
+                    new_height = ticker.mempool.mempool.get_block_tip_height()
                 except Exception as e:
                     logging.warning(e)
                 if new_height > height and not display_update:

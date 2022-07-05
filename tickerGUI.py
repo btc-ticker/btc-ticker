@@ -45,15 +45,20 @@ mode_list = []
 for l in config.main.mode_list.split(","):
     mode_list.append(l.replace('"', "").replace(" ", ""))
 ticker_ind = config.main.start_mode_ind
+mode_shifting = config.main.mode_shifting
 
 days_list = []
 for d in config.main.days_list.split(","):
     days_list.append(int(d.replace('"', '').replace(" ", "")))
 days_ind = config.main.start_days_ind
+days_shifting = config.main.days_shifting
+
 layout_list = []
 for l in config.main.layout_list.split(","):
     layout_list.append(l.replace('"', "").replace(" ", ""))
 layout_ind = config.main.start_layout_ind
+layout_shifting = config.main.layout_shifting
+
 ticker.setDaysAgo(days_list[days_ind])
 ticker.refresh()
 ticker.build(mirror=False, mode=mode_list[ticker_ind], layout=layout_list[layout_ind])
@@ -81,15 +86,21 @@ while True:
         break
     elif event == sg.TIMEOUT_EVENT:
         ticker_ind += 1
-        if ticker_ind >= len(mode_list):
+        if ticker_ind >= len(mode_list) or not mode_shifting:
             ticker_ind = 0
             layout_ind += 1
-            if layout_ind >= len(layout_list):
+            if layout_ind >= len(layout_list) or not layout_shifting:
                 layout_ind = 0
+                days_ind += 1
+                if days_ind >= len(days_list) or not days_shifting:
+                    days_ind = 0
+        ticker.setDaysAgo(days_list[days_ind])
+        ticker.refresh()
         ticker.build(mirror=False, mode=mode_list[ticker_ind], layout=layout_list[layout_ind])
 
         # update window with new image
         image_elem.update(data=get_img_data(ticker.image))
+        time.sleep(2)
 
 
 window.close()

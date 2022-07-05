@@ -1,0 +1,14 @@
+[Unit]
+Description=Check Wifi
+After=sys-subsystem-net-devices-wlan0.device
+
+[Service]
+ExecStart=/home/admin/checkWifi.sh
+WorkingDirectory=/home/admin/
+User=admin
+Restart=always
+RestartSec=180s
+
+[Install]
+WantedBy=multi-user.target
+

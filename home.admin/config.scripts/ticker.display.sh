@@ -9,6 +9,15 @@ if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
   exit 1
 fi
 
+# Make sure needed packages are installed
+if [ $(sudo dpkg-query -l | grep "ii  fbi" | wc -l) = 0 ]; then
+   sudo apt-get install fbi -y > /dev/null
+fi
+if [ $(sudo dpkg-query -l | grep "ii  qrencode" | wc -l) = 0 ]; then
+   sudo apt-get install qrencode -y > /dev/null
+fi
+
+
 # 1. Parameter: lcd command
 command=$1
 
@@ -107,6 +116,10 @@ function install_lcd() {
   echo "*** 32bit LCD DRIVER ***"
   echo "--> Downloading LCD Driver from Github"
   cd /home/admin/
+
+  wget https://project-downloads.drogon.net/wiringpi-latest.deb
+  sudo dpkg -i wiringpi-latest.deb
+
   sudo -u admin git clone https://github.com/waveshare/LCD-show.git
   sudo -u admin chmod -R 755 LCD-show
   sudo -u admin chown -R admin:admin LCD-show
@@ -124,10 +137,12 @@ function install_lcd() {
   cd /home/admin/LCD-show/
   sudo apt-mark hold raspberrypi-bootloader
   sudo cp waveshare35b-v2-overlay.dtb /boot/overlays
-  sudo cp waveshare35b-v2-overlay.dtb /boot/overlays/waveshare32b-v2.dtbo
+  sudo cp waveshare35b-v2-overlay.dtb /boot/overlays/waveshare35b-v2.dtbo
   echo 'dtoverlay=waveshare35b-v2:rotate=90' | sudo tee -a /boot/config.txt
   sudo sed -i "s/^#hdmi_force_hotplug=1/hdmi_force_hotplug=1/g" /boot/config.txt
   sudo sed -i "s/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/g" /boot/config.txt
+  sudo sed -i "s/^dtoverlay=vc4-kms-v3d/# dtoverlay=vc4-kms-v3d/g" /boot/config.txt
+  sudo sed -i "s/^max_framebuffers=2/# max_framebuffers=2/g" /boot/config.txt
 
   # modify cmdline.txt
   modification="dwc_otg.lpm_enable=0 quiet fbcon=map:10 fbcon=font:ProFont6x11 logo.nologo"
@@ -146,7 +161,8 @@ function install_lcd() {
     exit 1
   fi
   # touch screen calibration
-  #apt-get install -y xserver-xorg-input-evdev
+  sudo apt-get install -y xserver-xorg-input-evdev
+  sudo apt-get install -y python3-evdev
   #cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
 
   sudo setfont /usr/share/consolefonts/Uni3-TerminusBold16.psf.gz

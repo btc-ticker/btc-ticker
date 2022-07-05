@@ -11,8 +11,8 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User=admin
-TimeoutStartSec=60s
-TimeoutStopSec=60s
+TimeoutStartSec=120s
+TimeoutStopSec=120s
 StartLimitInterval=5min
 StartLimitBurst=20
 # Turn it on only when you are absolutely and positively sure that this service works tip-top, otherwise you may experience reboot loop

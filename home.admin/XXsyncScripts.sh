@@ -35,7 +35,7 @@ if [ "${wantedBranch}" = "-run" ]; then
   wantedGitHubUser="${activeGitHubUser}"
   # detect if running in vagrant VM
   vagrant=$(df | grep -c "/vagrant")
-  if [ "$2" = "git" ]; then 
+  if [ "$2" = "git" ]; then
     echo "# forcing guthub over vagrant sync"
     vagrant=0
   fi
@@ -170,4 +170,4 @@ echo "# ******************************************"
 echo "# OK - shell scripts and assets are synced"
 echo "# Will restart btc-ticker now"
 echo "# If it does not work, please reboot"
-sudo -h sudo systemctl restart btcticker
+sudo -H systemctl restart btcticker

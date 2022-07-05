@@ -10,13 +10,13 @@ class ConfigurationException(ValueError):
 
 class MainConfig(BaseModel):
     fiat: str = 'eur'
-    mode_list: str ='fiat,height,satfiat,usd'
+    mode_list: str ='fiat,height,satfiat,moscowtime,usd'
     start_mode_ind: int = 0
     mode_shifting: bool = False
-    days_list: str = '1,7,30'
+    days_list: str = '1,3,7'
     start_days_ind: int = 0
     days_shifting: bool = False
-    layout_list: str = 'all,fiat,fiatheight,big_one_row,mempool'
+    layout_list: str = 'all,fiat,fiatheight,big_one_row,one_number,mempool,ohlc'
     start_layout_ind: int = 0
     layout_shifting : bool = False
     loglevel: str = 'WARNING'
@@ -27,12 +27,13 @@ class MainConfig(BaseModel):
     mempool_api_url: str = 'https://mempool.space/api/'
     epd_type: str = '2in7_4gray'
     show_best_fees: bool = True
+    show_block_time: bool = True
 
 class FontsConfig(BaseModel):
 
     font_buttom: str = 'googlefonts/Audiowide-Regular.ttf'
     font_console: str = 'googlefonts/ZenDots-Regular.ttf'
-    font_big: str = 'googlefonts/BigShouldersDisplay-Regular.ttf'
+    font_big: str = 'googlefonts/BigShouldersDisplay-SemiBold.ttf'
     font_side: str = 'googlefonts/Roboto-Medium.ttf'
     font_side_size: int = 20
     font_top: str = 'PixelSplitter-Bold.ttf'

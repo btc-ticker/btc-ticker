@@ -2,65 +2,32 @@ import logging
 import requests
 import urllib3
 import math
+from blockchain import statistics
+from pymempool import MempoolAPI
 import numpy as np
 
 
 class Mempool():
     def __init__(self, api_url="https://mempool.space/api/", n_fee_blocks=7):
-        self.mempoolApiUrl = api_url
-        if "mempool.space" in api_url:
-            self.url_verify = True
-        else:
-            urllib3.disable_warnings()
-            self.url_verify = False
         self.fall_back_url = "https://mempool.space/api/"
+        self.mempoolApiUrl = api_url
+        self.mempool = MempoolAPI(api_base_url=api_url)
         self.n_fee_blocks = n_fee_blocks
         self.timeout = 5
         self.data = {}
         self.refresh()
 
-    def get_json(self, url):
-        try:
-            return requests.get(url, verify=self.url_verify, timeout=self.timeout).json()
-        except requests.exceptions.ReadTimeout as e:
-            logging.exception(e)
-            return None
-        except Exception as e:
-            logging.exception(e)
-            return None
-
-    def getMempoolBlocks(self, use_fall_back=False):
-        if use_fall_back:
-            mempoolurl = self.fall_back_url + "v1/fees/mempool-blocks"
-        else:
-            mempoolurl = self.mempoolApiUrl + "v1/fees/mempool-blocks"
-        rawmempoolblocks = self.get_json(mempoolurl)
-        return rawmempoolblocks
-
-    def getDifficulty(self, use_fall_back=False):
-        if use_fall_back:
-            mempoolurl = self.fall_back_url + "v1/difficulty-adjustment"
-        else:
-            mempoolurl = self.mempoolApiUrl + "v1/difficulty-adjustment"
-        difficulty = self.get_json(mempoolurl)
-        return difficulty
-
-    def getBlocks(self, n=1, start_height=None, use_fall_back=False):
+    def getBlocks(self, n=1, start_height=None):
         rawblocks = []
         last_height = None
-        if use_fall_back:
-            url = self.fall_back_url
-        else:
-            url = self.mempoolApiUrl
 
         for _ in range(n):
             if start_height is None and last_height is None:
-                mempoolurl = url + "blocks"
+                result = self.mempool.get_blocks()
             elif last_height is None:
-                mempoolurl = url + "blocks/%d" % start_height
+                result = self.mempool.get_blocks(start_height)
             else:
-                mempoolurl = url + "blocks/%d" % (last_height - 1)
-            result = self.get_json(mempoolurl)
+                result = self.mempool.get_blocks(last_height - 1)
             if result is not None:
                 rawblocks += result
             else:
@@ -91,36 +58,6 @@ class Mempool():
             lasttime = rawblocks[n + 1]["timestamp"]
         return time_diff_sum / (n - 1)
 
-    def getMempool(self, use_fall_back=False):
-        if use_fall_back:
-            mempoolurl = self.fall_back_url + "mempool"
-        else:
-            mempoolurl = self.mempoolApiUrl + "mempool"
-        rawmempool = self.get_json(mempoolurl)
-        return rawmempool
-
-
-    def getBlockHeight(self, use_fall_back=False):
-        if use_fall_back:
-            mempoolurl = self.fall_back_url + "blocks/tip/height"
-        else:
-            mempoolurl = self.mempoolApiUrl + "blocks/tip/height"
-        result = self.get_json(mempoolurl)
-        if result is None:
-            return None
-        lastblocknum = int(result)
-        return lastblocknum
-
-
-    def getRecommendedFees(self, use_fall_back=False):
-        if use_fall_back:
-            mempoolurl = self.fall_back_url + "v1/fees/recommended"
-        else:
-            mempoolurl = self.mempoolApiUrl + "v1/fees/recommended"
-        fees = self.get_json(mempoolurl)
-        return fees
-
-
     def optimizeMedianFee(self, pBlock, nextBlock=None, previousFee=None):
         if previousFee is not None:
             useFee = (pBlock["medianFee"] + previousFee) / 2
@@ -141,9 +78,34 @@ class Mempool():
         bestFees["hourFee"] = -1
 
         logging.info("Getting Data")
-        rawmempoolblocks = self.getMempoolBlocks()
+
+        lastblocknum = self.mempool.get_block_tip_height()
+        if lastblocknum is None and self.mempoolApiUrl != self.fall_back_url:
+            self.mempool.api_base_url = self.fall_back_url
+            lastblocknum = self.mempool.get_block_tip_height()
+            self.mempool.api_base_url = self.mempoolApiUrl
+        if lastblocknum is None:
+            stats = statistics.get()
+            lastblocknum = stats.total_blocks
+
+        difficulty = self.mempool.get_difficulty_adjustment()
+        if difficulty is None and self.mempoolApiUrl != self.fall_back_url:
+            self.mempool.api_base_url = self.fall_back_url
+            difficulty = self.mempool.get_difficulty_adjustment()
+            self.mempool.api_base_url = self.mempoolApiUrl
+        if difficulty is None:
+            stats = statistics.get()
+            last_retarget = stats.next_retarget - 2016
+            minutes_between_blocks = stats.minutes_between_blocks
+        else:
+            last_retarget = lastblocknum - 2016 + difficulty["remainingBlocks"]
+            minutes_between_blocks = difficulty["timeAvg"] / 60000
+
+        rawmempoolblocks = self.mempool.get_mempool_blocks_fee()
         if rawmempoolblocks is None and self.mempoolApiUrl != self.fall_back_url:
-            rawmempoolblocks = self.getMempoolBlocks(use_fall_back=True)
+            self.mempool.api_base_url = self.fall_back_url
+            rawmempoolblocks = self.mempool.get_mempool_blocks_fee()
+            self.mempool.api_base_url = self.mempoolApiUrl
         if rawmempoolblocks is not None:
             if len(rawmempoolblocks) == 1:
                 firstMedianFee = self.optimizeMedianFee(rawmempoolblocks[0])
@@ -185,24 +147,18 @@ class Mempool():
 
         rawblocks = self.getBlocks(n=1)
         if rawblocks is None and self.mempoolApiUrl != self.fall_back_url:
-            rawblocks = self.getBlocks(n=1, use_fall_back=True)
+            self.mempool.api_base_url = self.fall_back_url
+            rawblocks = self.getBlocks(n=1)
+            self.mempool.api_base_url = self.mempoolApiUrl
         if rawblocks is not None:
             mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         else:
             mean_time_diff = -1
 
 
-
-        lastblocknum = self.getBlockHeight()
-        if lastblocknum is None and self.mempoolApiUrl != self.fall_back_url:
-            lastblocknum = self.getBlockHeight(use_fall_back=True)
-        if lastblocknum is None:
-            lastblocknum = -1
-
-
-
         self.data["rawblocks"] = rawblocks
-
+        self.data["last_retarget"] = last_retarget
+        self.data["minutes_between_blocks"] = minutes_between_blocks
 
         self.data["height"] = lastblocknum
 
