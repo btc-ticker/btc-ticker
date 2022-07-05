@@ -47,9 +47,9 @@ Whenever a new block has arrived on the blockchain, the following information is
 Due to the limited lifetime of 1000000 refreshes and an expected lifetime of 5 years, the refresh period has been set to 216 seconds.
 ### Buttons
 There are four buttons which the following behaviour (Please be patient after pressing, the e-ink is quite slow):
-1. Switch through different ticker views
-2. Switch BTC/fiat graph through 1, 7 and 30 days
-3. Switch the layout of the ticker
+1. Switch through different ticker views (views can be selected in the config.ini)
+2. Switch BTC/fiat graph through 1, 3 and 7 days (Can be changed in the config.ini)
+3. Switch the layout of the ticker (layouts can be selected in the config.ini)
 4. Switch inverted mode
 
 ### Switching to ro-mode
@@ -148,4 +148,4 @@ Replace `NEWPASSWORD` with the new password.
 btc-ticker is using the following APIs:
 * [mempool.space/api](https://mempool.space/api), which can also be run locally in e.g. raspiblitz
 * [coingecko api](https://www.coingecko.com/en/api)
-* [blockchain API v1](https://github.com/blockchain/api-v1-client-python)
+* [blockchain API v1](https://github.com/blockchain/api-v1-client-python) (only as backup, when mempool.space is not available)
