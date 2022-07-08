@@ -24,6 +24,7 @@ The config.ini needs the following settings when using the 7.5 inch:
 ```
 epd_type = 7in5_V2
 orientation = 270
+layout_list=ohlc
 ```
 
 
@@ -58,6 +59,11 @@ Per default, the file system is mounted writable. When there is a empty ro file 
 sudo touch /boot/ro
 ```
 enables the readonly remount. The file can also be created with a PC, similar to the ssh file.
+
+On Version 0.5.0, the following has to be done, in order to be able to put the file system into RO mode:
+```
+sudo apt-get purge vnstat
+```
 
 ### Switching between ro and rw mode
 After logging in with ssh,
@@ -95,8 +101,8 @@ to update the ticker to the newest updates from git.
 
 ## Flash SDcard
 
-* Downlad version 0.4.2 from [btc-ticker-0_4_2.img.gz](https://btc-ticker.com/btc-ticker-0_4_2.img.gz)
-* Verify SHA256 checksum. It should be: `EAAC5AB9A9583011483E6865F54939F7D61074150CA98C9CAC102EE2692C4C9C`
+* Downlad version 0.5.0 from [btc-ticker-0_5_0.img.gz](https://btc-ticker.com/btc-ticker-0_5_0.img.gz)
+* Verify SHA256 checksum. It should be: `a6ddfbc7ab25caa13f7746efcd764689cdcdee0c0a4e542e03d8bb146b369328`
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
