@@ -34,7 +34,7 @@ class Price():
         if len(self.timeseriesstack) == 0:
             return ""
 
-        pricechange = str("%+d" % round((self.timeseriesstack[-1]-self.timeseriesstack[0])/self.timeseriesstack[-1]*100,2))+"%"
+        pricechange = str("%+d" % round((self.timeseriesstack[-1]-self.timeseriesstack[0])/self.timeseriesstack[0]*100,2))+"%"
         return pricechange
 
     def getPriceNow(self):
