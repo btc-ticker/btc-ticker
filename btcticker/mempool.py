@@ -2,10 +2,17 @@ import logging
 import requests
 import urllib3
 import math
-from blockchain import statistics
+
 from pymempool import MempoolAPI
 import numpy as np
 
+BLOCKCHAIN_MODULE = None
+if not BLOCKCHAIN_MODULE:
+    try:
+        from blockchain import statistics
+        BLOCKCHAIN_MODULE = "statistics"
+    except ImportError:
+        pass
 
 class Mempool():
     def __init__(self, api_url="https://mempool.space/api/", n_fee_blocks=7):
@@ -84,7 +91,7 @@ class Mempool():
             self.mempool.api_base_url = self.fall_back_url
             lastblocknum = self.mempool.get_block_tip_height()
             self.mempool.api_base_url = self.mempoolApiUrl
-        if lastblocknum is None:
+        if lastblocknum is None and BLOCKCHAIN_MODULE is not None:
             stats = statistics.get()
             lastblocknum = stats.total_blocks
 
@@ -93,7 +100,7 @@ class Mempool():
             self.mempool.api_base_url = self.fall_back_url
             difficulty = self.mempool.get_difficulty_adjustment()
             self.mempool.api_base_url = self.mempoolApiUrl
-        if difficulty is None:
+        if difficulty is None and BLOCKCHAIN_MODULE is not None:
             stats = statistics.get()
             last_retarget = stats.next_retarget - 2016
             minutes_between_blocks = stats.minutes_between_blocks
