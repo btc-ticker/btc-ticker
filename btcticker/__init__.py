@@ -1,9 +1,1 @@
-__all__ = [
-    "chart",
-    "coingecko",
-    "config",
-    "mempool",
-    "price",
-    "ticker",
-    "utils"
-    ]
+__all__ = ["chart", "coingecko", "config", "mempool", "price", "ticker", "utils"]

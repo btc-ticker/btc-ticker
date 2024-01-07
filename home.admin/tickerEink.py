@@ -1,35 +1,45 @@
 #!/usr/bin/python3
+import argparse
+import atexit
+import http.client as httplib
+import logging
+import logging.handlers
 import os
+import signal
+import socket
+import sys
 import tempfile
+import time
+
+import RPi.GPIO as GPIO
+import sdnotify
+from PIL import Image
+from TP_lib import epd2in9_V2 as TP_epd2in9_V2
+from TP_lib import epd2in13_V3 as TP_epd2in13_V3
+from waveshare_epd import (
+    epd2in7,
+    epd2in7_V2,
+    epd2in9_V2,
+    epd2in13_V2,
+    epd2in13_V3,
+    epd3in7,
+    epd7in5_HD,
+    epd7in5_V2,
+)
+
+from btcticker.config import Config
+from btcticker.ticker import Ticker
+
 temp_dir = tempfile.TemporaryDirectory()
 os.environ['MPLCONFIGDIR'] = temp_dir.name
 
-from btcticker.ticker import Ticker
-from btcticker.config import Config
-import sys
-import math
-import socket
-import logging
-import http.client as httplib
-import logging.handlers
-import argparse
-import signal
-import atexit
-import sdnotify
-import RPi.GPIO as GPIO
-from waveshare_epd import epd2in7, epd2in7_V2, epd7in5_HD, epd7in5_V2, epd2in9_V2
-import time
-from PIL import Image, ImageOps
-from PIL import ImageFont
-from PIL import ImageDraw
 shutting_down = False
-temp_dir = tempfile.TemporaryDirectory()
-os.environ['MPLCONFIGDIR'] = temp_dir.name
 
 BUTTON_GPIO_1 = 5
 BUTTON_GPIO_2 = 6
 BUTTON_GPIO_3 = 13
 BUTTON_GPIO_4 = 19
+
 
 def internet():
     conn = httplib.HTTPConnection("www.google.com", timeout=10)
@@ -63,86 +73,79 @@ def checkInternetSocket(host="8.8.8.8", port=53, timeout=10):
         socket.setdefaulttimeout(timeout)
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
-    except socket.error as ex:
+    except OSError as ex:
         print(ex)
         return False
 
-def get_display_size(epd_type):
-    if epd_type == "2in7_4gray":
+
+def get_epd(epd_type):
+    epd = None
+    mirror = False
+    width_first = True
+    Use4Gray = False
+    Init4Gray = False
+    FullUpdate = False
+    if epd_type == "2in13_V2":
+        epd = epd2in13_V2.EPD()
+    elif epd_type == "TP_epd2in13_V3":
+        epd = TP_epd2in13_V3.EPD()
+        FullUpdate = True
+    elif epd_type == "2in13_V3":
+        epd = epd2in13_V3.EPD()
+    elif epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
-        mirror = False
-        return epd.width, epd.height, mirror
+        Use4Gray = True
+        Init4Gray = True
     elif epd_type == "2in7":
         epd = epd2in7.EPD()
-        mirror = False
-        return epd.width, epd.height, mirror
     elif epd_type == "2in7_V2":
         epd = epd2in7_V2.EPD()
-        mirror = False
-        return epd.width, epd.height, mirror
     elif epd_type == "2in9_V2":
         epd = epd2in9_V2.EPD()
-        mirror = False
-        return epd.width, epd.height, mirror
+    elif epd_type == "TP_2in9_V2":
+        epd = TP_epd2in9_V2.EPD()
+    elif epd_type == "3in7":
+        epd = epd3in7.EPD()
+        Use4Gray = True
     elif epd_type == "7in5_V2":
         epd = epd7in5_V2.EPD()
-        mirror = False
-        return epd.height, epd.width, mirror
+        width_first = False
     elif epd_type == "7in5_HD":
         epd = epd7in5_HD.EPD()
-        mirror = False
-        return epd.height, epd.width, mirror
+        width_first = False
     else:
         raise Exception("Wrong epd_type")
+    return epd, mirror, width_first, Use4Gray, Init4Gray, FullUpdate
+
+
+def get_display_size(epd_type):
+    epd, mirror, width_first, Use4Gray, Init4Gray, FullUpdate = get_epd(epd_type)
+    if width_first:
+        return epd.width, epd.height, mirror
+    else:
+        return epd.height, epd.width, mirror
 
 
 def draw_image(epd_type, image=None):
-#   A visual cue that the wheels have fallen off
+    #   A visual cue that the wheels have fallen off
+    epd, mirror, width_first, Use4Gray, Init4Gray, FullUpdate = get_epd(epd_type)
     GPIO.setmode(GPIO.BCM)
-    if epd_type == "2in7_4gray":
-        epd = epd2in7.EPD()
+    if Init4Gray:
         epd.Init_4Gray()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display_4Gray(epd.getbuffer_4Gray(image))
-    elif epd_type == "2in7":
-        epd = epd2in7.EPD()
-        epd.init()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display(epd.getbuffer(image))
-    elif epd_type == "2in7_V2":
-        epd = epd2in7_V2.EPD()
-        epd.init()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display(epd.getbuffer(image))
-    elif epd_type == "2in9_V2":
-        epd = epd2in9_V2.EPD()
-        epd.init()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display(epd.getbuffer(image))
-    elif epd_type == "7in5_V2":
-        epd = epd7in5_V2.EPD()
-        epd.init()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display(epd.getbuffer(image))
-    elif epd_type == "7in5_HD":
-        epd = epd7in5_HD.EPD()
-        epd.init()
-        if image is None:
-            image = Image.new('L', (epd.height, epd.width), 255)
-        logging.info("draw")
-        epd.display(epd.getbuffer(image))
+    elif Use4Gray:
+        epd.init(0)
+    elif FullUpdate:
+        epd.init(epd.FULL_UPDATE)
     else:
-        raise Exception("Wrong epd_type")
+        epd.init()
+    if image is None:
+        image = Image.new('L', (epd.height, epd.width), 255)
+    logging.info("draw")
+    if Use4Gray:
+        epd.display_4Gray(epd.getbuffer_4Gray(image))
+    else:
+        epd.display(epd.getbuffer(image))
+
     epd.sleep()
     setup_GPIO()
 
@@ -182,12 +185,14 @@ def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
+
 def setup_GPIO():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
 def main(config, config_file):
 
@@ -202,7 +207,7 @@ def main(config, config_file):
     else:
         ticker = Ticker(config, w, h)
 
-    height = ticker.mempool.mempool.get_block_tip_height()
+    height = ticker.mempool.getData()['height']
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     if config.main.show_block_height:
         # 5*365*(24*60/3.6 + 144) / 1000000
@@ -216,17 +221,23 @@ def main(config, config_file):
     # mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
 
     layout_list = []
-    for l in config.main.layout_list.split(","):
-        layout_list.append(l.replace('"', "").replace(" ", ""))
+    for layout in config.main.layout_list.split(","):
+        layout_list.append(layout.replace('"', "").replace(" ", ""))
     last_layout_ind = config.main.start_layout_ind
     layout_shifting = config.main.layout_shifting
-    logging.info("Layout: %s - shifting is set to %d" % (layout_list[last_layout_ind], int(layout_shifting)))
+    logging.info(
+        "Layout: %s - shifting is set to %d"
+        % (layout_list[last_layout_ind], int(layout_shifting))
+    )
     mode_list = []
-    for l in config.main.mode_list.split(","):
-        mode_list.append(l.replace('"', "").replace(" ", ""))
+    for mode in config.main.mode_list.split(","):
+        mode_list.append(mode.replace('"', "").replace(" ", ""))
     last_mode_ind = config.main.start_mode_ind
     mode_shifting = config.main.mode_shifting
-    logging.info("Mode: %s - shifting is set to %d" % (mode_list[last_mode_ind], int(mode_shifting)))
+    logging.info(
+        "Mode: %s - shifting is set to %d"
+        % (mode_list[last_mode_ind], int(mode_shifting))
+    )
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
@@ -234,7 +245,9 @@ def main(config, config_file):
 
     days_ind = config.main.start_days_ind
     days_shifting = config.main.days_shifting
-    logging.info("Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting)))
+    logging.info(
+        "Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting))
+    )
 
     inverted = config.main.inverted
 
@@ -246,15 +259,13 @@ def main(config, config_file):
             ticker.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
             draw_image(epd_type, ticker.image)
-            lastgrab=time.time()
+            lastgrab = time.time()
         except Exception as e:
             logging.warning(e)
             showmessage(epd_type, ticker, e, mirror, inverted)
             time.sleep(10)
-            lastgrab=lastcoinfetch
+            lastgrab = lastcoinfetch
         return lastgrab
-
-
 
     global shutting_down
     setup_GPIO()
@@ -262,13 +273,16 @@ def main(config, config_file):
     signal.signal(signal.SIGTERM, signal_hook)
 
     if True:
-        logging.info("BTC ticker %s: set display size to %d x %d" % (epd_type, ticker.width, ticker.height))
+        logging.info(
+            "BTC ticker %s: set display size to %d x %d"
+            % (epd_type, ticker.width, ticker.height)
+        )
         signal.signal(signal.SIGINT, signal_handler)
 
-#       Note that there has been no data pull yet
-        datapulled=False
+        #       Note that there has been no data pull yet
+        datapulled = False
         newblock_displayed = False
-#       Time of start
+        #       Time of start
         lastcoinfetch = time.time()
         lastheightfetch = time.time()
 
@@ -279,7 +293,9 @@ def main(config, config_file):
 
             if shutting_down:
                 logging.info("Ticker is shutting down.....")
-                showmessage(epd_type, ticker, "Ticker is shutting down...", mirror, inverted)
+                showmessage(
+                    epd_type, ticker, "Ticker is shutting down...", mirror, inverted
+                )
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
@@ -308,35 +324,66 @@ def main(config, config_file):
                 display_update = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                 try:
-                    new_height = ticker.mempool.mempool.get_block_tip_height()
+                    new_height = ticker.mempool.getData()['height']
                 except Exception as e:
                     logging.warning(e)
                 if new_height > height and not display_update:
-                    logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], inverted)
+                    logging.info(
+                        "Update newblock after %.2f s" % (time.time() - lastcoinfetch)
+                    )
+                    lastcoinfetch = fullupdate(
+                        "newblock",
+                        days_list[days_ind],
+                        layout_list[last_layout_ind],
+                        inverted,
+                    )
                     newblock_displayed = True
                 height = new_height
                 lastheightfetch = time.time()
 
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
-            elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not checkInternetSocket():
+            elif (
+                (time.time() - lastcoinfetch > updatefrequency) or (datapulled is False)
+            ) and not checkInternetSocket():
                 offline_counter += 1
                 if offline_counter > 360:
                     local_ip = get_ip()
-                    showmessage(epd_type, ticker, "Internet is not available!\nWill retry in 3 minutes.\nCheck your wpa_supplicant.conf\nIp:%s" % str(local_ip), mirror, inverted)
+                    showmessage(
+                        epd_type,
+                        ticker,
+                        "Internet is not available!\nWill retry in 3 minutes.\n"
+                        "Check your wpa_supplicant.conf\nIp:%s" % str(local_ip),
+                        mirror,
+                        inverted,
+                    )
                     time.sleep(180)
                     offline_counter = 0
                 else:
                     display_update = False
                     time.sleep(10)
             elif display_update:
-                fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
+                fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                    refresh=False,
+                )
                 offline_counter = 0
-            elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
-                logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
+            elif (time.time() - lastcoinfetch > updatefrequency) or (
+                datapulled is False
+            ):
+                logging.info(
+                    "Update ticker after %.2f s" % (time.time() - lastcoinfetch)
+                )
                 offline_counter = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
+                lastcoinfetch = fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                )
                 datapulled = True
                 if days_shifting:
                     days_ind += 1
@@ -350,14 +397,25 @@ def main(config, config_file):
                     last_layout_ind += 1
                     if last_layout_ind >= len(layout_list):
                         last_layout_ind = 0
-            elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
-                logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
+            elif newblock_displayed and (
+                time.time() - lastcoinfetch > updatefrequency_after_newblock
+            ):
+                logging.info(
+                    "Update from newblock display after %.2f s"
+                    % (time.time() - lastcoinfetch)
+                )
                 offline_counter = 0
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
+                lastcoinfetch = fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                )
                 datapulled = True
                 newblock_displayed = False
             else:
                 time.sleep(0.05)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

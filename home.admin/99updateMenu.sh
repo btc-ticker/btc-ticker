@@ -14,7 +14,7 @@ release()
 - Download the new SD card image to your laptop:
   https://github.com/btc-ticker/btc-ticker
 - Flash that SD card image to a new SD card (best)
-  or override old SD card after shutdown (fallback) 
+  or override old SD card after shutdown (fallback)
 - Choose 'Start Update' below.
 
 No need to close channels or download blockchain again.
@@ -53,9 +53,9 @@ patchNotice()
 It means it will sync the program code with the
 GitHub repo for your version branch v${codeVersion}.
 
-This can be useful if there are important updates 
+This can be useful if there are important updates
 in between releases to fix severe bugs. It can also
-be used to sync your own code with your btc-ticker 
+be used to sync your own code with your btc-ticker
 if you are developing on your own GitHub Repo.
 
 BUT BEWARE: This means btc-ticker will contact GitHub,

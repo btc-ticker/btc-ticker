@@ -1,0 +1,11 @@
+requests
+babel
+pycoingecko
+blockchain
+pymempool
+Pillow
+matplotlib
+numpy
+pydantic
+mplfinance
+pandas

@@ -24,5 +24,3 @@ NotifyAccess=all
 
 [Install]
 WantedBy=multi-user.target
-
-

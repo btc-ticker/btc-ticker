@@ -1,20 +1,22 @@
 import logging
-import requests
-import urllib3
 import math
 
-from pymempool import MempoolAPI
 import numpy as np
+from pymempool import MempoolAPI
+
+logger = logging.getLogger(__name__)
 
 BLOCKCHAIN_MODULE = None
 if not BLOCKCHAIN_MODULE:
     try:
         from blockchain import statistics
+
         BLOCKCHAIN_MODULE = "statistics"
     except ImportError:
         pass
 
-class Mempool():
+
+class Mempool:
     def __init__(self, api_url="https://mempool.space/api/", n_fee_blocks=7):
         self.fall_back_url = "https://mempool.space/api/"
         self.mempoolApiUrl = api_url
@@ -52,9 +54,15 @@ class Mempool():
                 maxFee.append(rawmempoolblocks[n]["feeRange"][-1])
                 medianFee.append(np.median(rawmempoolblocks[n]["feeRange"]))
             else:
-                minFee.append(rawmempoolblocks[len(rawmempoolblocks)-1]["feeRange"][0])
-                maxFee.append(rawmempoolblocks[len(rawmempoolblocks)-1]["feeRange"][-1])
-                medianFee.append(np.median(rawmempoolblocks[len(rawmempoolblocks)-1]["feeRange"]))
+                minFee.append(
+                    rawmempoolblocks[len(rawmempoolblocks) - 1]["feeRange"][0]
+                )
+                maxFee.append(
+                    rawmempoolblocks[len(rawmempoolblocks) - 1]["feeRange"][-1]
+                )
+                medianFee.append(
+                    np.median(rawmempoolblocks[len(rawmempoolblocks) - 1]["feeRange"])
+                )
         return minFee, medianFee, maxFee
 
     def calcMeanTimeDiff(self, rawblocks):
@@ -84,7 +92,7 @@ class Mempool():
         bestFees["halfHourFee"] = -1
         bestFees["hourFee"] = -1
 
-        logging.info("Getting Data")
+        logger.info("Getting Data")
 
         lastblocknum = self.mempool.get_block_tip_height()
         if lastblocknum is None and self.mempoolApiUrl != self.fall_back_url:
@@ -119,17 +127,27 @@ class Mempool():
                 secondMedianFee = 1
                 thirdMedianFee = 1
             else:
-                firstMedianFee = self.optimizeMedianFee(rawmempoolblocks[0], rawmempoolblocks[1])
+                firstMedianFee = self.optimizeMedianFee(
+                    rawmempoolblocks[0], rawmempoolblocks[1]
+                )
                 if len(rawmempoolblocks) <= 2:
-                    secondMedianFee = self.optimizeMedianFee(rawmempoolblocks[1], previousFee=firstMedianFee)
+                    secondMedianFee = self.optimizeMedianFee(
+                        rawmempoolblocks[1], previousFee=firstMedianFee
+                    )
                 else:
-                    secondMedianFee = self.optimizeMedianFee(rawmempoolblocks[1], rawmempoolblocks[2], firstMedianFee)
+                    secondMedianFee = self.optimizeMedianFee(
+                        rawmempoolblocks[1], rawmempoolblocks[2], firstMedianFee
+                    )
                 if len(rawmempoolblocks) <= 2:
                     thirdMedianFee = 1.0
                 elif len(rawmempoolblocks) <= 3:
-                    thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], previousFee=secondMedianFee)
+                    thirdMedianFee = self.optimizeMedianFee(
+                        rawmempoolblocks[2], previousFee=secondMedianFee
+                    )
                 else:
-                    thirdMedianFee = self.optimizeMedianFee(rawmempoolblocks[2], rawmempoolblocks[3], secondMedianFee)
+                    thirdMedianFee = self.optimizeMedianFee(
+                        rawmempoolblocks[2], rawmempoolblocks[3], secondMedianFee
+                    )
 
             bestFees["fastestFee"] = firstMedianFee
             bestFees["halfHourFee"] = secondMedianFee
@@ -141,7 +159,7 @@ class Mempool():
             for block in rawmempoolblocks:
                 vsize += block["blockVSize"]
                 count += block["nTx"]
-                #if vsize / 1024 / 1024 * 3.99 < 300:
+                # if vsize / 1024 / 1024 * 3.99 < 300:
                 #    th_fee = fee[0]
             minFee, medianFee, maxFee = self.buildFeeArray(rawmempoolblocks)
             self.data["count"] = count
@@ -161,7 +179,6 @@ class Mempool():
             mean_time_diff = self.calcMeanTimeDiff(rawblocks)
         else:
             mean_time_diff = -1
-
 
         self.data["rawblocks"] = rawblocks
         self.data["last_retarget"] = last_retarget

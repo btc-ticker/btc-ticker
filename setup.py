@@ -1,8 +1,3 @@
-import codecs
-import io
-import os
-import sys
-
 from setuptools import setup
 
 VERSION = '0.5.0'
@@ -20,7 +15,7 @@ requires = [
     "numpy",
     "pydantic",
     "mplfinance",
-    "pandas"
+    "pandas",
 ]
 
 if __name__ == '__main__':
@@ -30,11 +25,7 @@ if __name__ == '__main__':
         description='BTC ticker',
         url='http://www.github.com/btc-ticker/btc-ticker',
         keywords=['btc', 'ticker'],
-        packages=[
-            "btcticker",
-            "btcticker.fonts",
-            "btcticker.fonts.googlefonts"
-        ],
+        packages=["btcticker", "btcticker.fonts", "btcticker.fonts.googlefonts"],
         classifiers=[
             'License :: OSI Approved :: MIT License',
             'Operating System :: OS Independent',
@@ -50,7 +41,10 @@ if __name__ == '__main__':
             'Topic :: Office/Business :: Financial',
         ],
         install_requires=requires,
-        package_data={'btcticker.fonts': ['*.ttf'], 'btcticker.fonts.googlefonts': ['*.ttf', '*.txt'], },
+        package_data={
+            'btcticker.fonts': ['*.ttf'],
+            'btcticker.fonts.googlefonts': ['*.ttf', '*.txt'],
+        },
         setup_requires=['pytest-runner'],
         tests_require=tests_require,
         include_package_data=True,

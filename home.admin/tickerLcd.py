@@ -1,23 +1,22 @@
 #!/usr/bin/python3
-from btcticker.ticker import Ticker
-from btcticker.config import Config
-import os
-import tempfile
-import sys
-import math
-import socket
-import logging
-import http.client as httplib
-import logging.handlers
 import argparse
-import signal
 import atexit
-import sdnotify
-import RPi.GPIO as GPIO
+import http.client as httplib
+import logging
+import logging.handlers
+import os
+import signal
+import sys
+import tempfile
 import time
-from PIL import Image, ImageOps
-from PIL import ImageFont
-from PIL import ImageDraw
+
+import RPi.GPIO as GPIO
+import sdnotify
+from PIL import Image
+
+from btcticker.config import Config
+from btcticker.ticker import Ticker
+
 shutting_down = False
 temp_dir = tempfile.TemporaryDirectory()
 os.environ['MPLCONFIGDIR'] = temp_dir.name
@@ -26,6 +25,7 @@ BUTTON_GPIO_1 = 5
 BUTTON_GPIO_2 = 6
 BUTTON_GPIO_3 = 13
 BUTTON_GPIO_4 = 19
+
 
 def internet():
     conn = httplib.HTTPConnection("www.google.com", timeout=5)
@@ -45,11 +45,16 @@ def get_display_size(epd_type):
 
 
 def draw_image(epd_type, image=None):
-#   A visual cue that the wheels have fallen off
+    #   A visual cue that the wheels have fallen off
     if image is None:
         image = Image.new('L', (480, 320), 255)
     image.save(temp_dir.name + "/ticker.png", "PNG")
-    os.system("/home/admin/config.scripts/ticker.display.sh image " + temp_dir.name + "/ticker.png")
+    os.system(
+        "/home/admin/config.scripts/ticker.display.sh image "
+        + temp_dir.name
+        + "/ticker.png"
+    )
+
 
 def showmessage(epd_type, ticker, message, mirror, inverted):
     ticker.inverted = inverted
@@ -86,12 +91,14 @@ def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
+
 def setup_GPIO():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
 def main(config, config_file):
 
@@ -120,17 +127,23 @@ def main(config, config_file):
     # mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
 
     layout_list = []
-    for l in config.main.layout_list.split(","):
-        layout_list.append(l.replace('"', "").replace(" ", ""))
+    for layout in config.main.layout_list.split(","):
+        layout_list.append(layout.replace('"', "").replace(" ", ""))
     last_layout_ind = config.main.start_layout_ind
     layout_shifting = config.main.layout_shifting
-    logging.info("Layout: %s - shifting is set to %d" % (layout_list[last_layout_ind], int(layout_shifting)))
+    logging.info(
+        "Layout: %s - shifting is set to %d"
+        % (layout_list[last_layout_ind], int(layout_shifting))
+    )
     mode_list = []
-    for l in config.main.mode_list.split(","):
-        mode_list.append(l.replace('"', "").replace(" ", ""))
+    for mode in config.main.mode_list.split(","):
+        mode_list.append(mode.replace('"', "").replace(" ", ""))
     last_mode_ind = config.main.start_mode_ind
     mode_shifting = config.main.mode_shifting
-    logging.info("Mode: %s - shifting is set to %d" % (mode_list[last_mode_ind], int(mode_shifting)))
+    logging.info(
+        "Mode: %s - shifting is set to %d"
+        % (mode_list[last_mode_ind], int(mode_shifting))
+    )
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
@@ -138,7 +151,9 @@ def main(config, config_file):
 
     days_ind = config.main.start_days_ind
     days_shifting = config.main.days_shifting
-    logging.info("Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting)))
+    logging.info(
+        "Days: %d - shifting is set to %d" % (days_list[days_ind], int(days_shifting))
+    )
 
     inverted = config.main.inverted
 
@@ -150,15 +165,13 @@ def main(config, config_file):
             ticker.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
             draw_image(epd_type, ticker.image)
-            lastgrab=time.time()
+            lastgrab = time.time()
         except Exception as e:
             logging.warning(e)
             showmessage(epd_type, ticker, e, mirror, inverted)
             time.sleep(10)
-            lastgrab=lastcoinfetch
+            lastgrab = lastcoinfetch
         return lastgrab
-
-
 
     global shutting_down
     setup_GPIO()
@@ -166,13 +179,16 @@ def main(config, config_file):
     signal.signal(signal.SIGTERM, signal_hook)
 
     if True:
-        logging.info("BTC ticker %s: set display size to %d x %d" % (epd_type, ticker.width, ticker.height))
+        logging.info(
+            "BTC ticker %s: set display size to %d x %d"
+            % (epd_type, ticker.width, ticker.height)
+        )
         signal.signal(signal.SIGINT, signal_handler)
 
-#       Note that there has been no data pull yet
-        datapulled=False
+        #       Note that there has been no data pull yet
+        datapulled = False
         newblock_displayed = False
-#       Time of start
+        #       Time of start
         lastcoinfetch = time.time()
         lastheightfetch = time.time()
 
@@ -183,7 +199,9 @@ def main(config, config_file):
 
             if shutting_down:
                 logging.info("Ticker is shutting down.....")
-                showmessage(epd_type, ticker, "Ticker is shutting down...", mirror, inverted)
+                showmessage(
+                    epd_type, ticker, "Ticker is shutting down...", mirror, inverted
+                )
                 break
             display_update = False
             notifier.notify("WATCHDOG=1")
@@ -216,21 +234,49 @@ def main(config, config_file):
                 except Exception as e:
                     logging.warning(e)
                 if new_height > height and not display_update:
-                    logging.info("Update newblock after %.2f s" % (time.time() - lastcoinfetch))
-                    lastcoinfetch = fullupdate("newblock", days_list[days_ind], layout_list[last_layout_ind], inverted)
+                    logging.info(
+                        "Update newblock after %.2f s" % (time.time() - lastcoinfetch)
+                    )
+                    lastcoinfetch = fullupdate(
+                        "newblock",
+                        days_list[days_ind],
+                        layout_list[last_layout_ind],
+                        inverted,
+                    )
                     newblock_displayed = True
                 height = new_height
                 lastheightfetch = time.time()
 
             if mode_list[last_mode_ind] == "newblock" and datapulled:
                 time.sleep(10)
-            elif ((time.time() - lastcoinfetch > updatefrequency) or (datapulled==False)) and not internet():
-                lastcoinfetch=showmessage("Internet is not available! Check your wpa_supplicant.conf", mirror, inverted)
+            elif (
+                (time.time() - lastcoinfetch > updatefrequency) or (datapulled is False)
+            ) and not internet():
+                lastcoinfetch = showmessage(
+                    "Internet is not available! Check your wpa_supplicant.conf",
+                    mirror,
+                    inverted,
+                )
             elif display_update:
-                fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted, refresh=False)
-            elif (time.time() - lastcoinfetch > updatefrequency) or (datapulled==False):
-                logging.info("Update ticker after %.2f s" % (time.time() - lastcoinfetch))
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
+                fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                    refresh=False,
+                )
+            elif (time.time() - lastcoinfetch > updatefrequency) or (
+                datapulled is False
+            ):
+                logging.info(
+                    "Update ticker after %.2f s" % (time.time() - lastcoinfetch)
+                )
+                lastcoinfetch = fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                )
                 datapulled = True
                 if days_shifting:
                     days_ind += 1
@@ -244,13 +290,24 @@ def main(config, config_file):
                     last_layout_ind += 1
                     if last_layout_ind >= len(layout_list):
                         last_layout_ind = 0
-            elif newblock_displayed and (time.time() - lastcoinfetch > updatefrequency_after_newblock):
-                logging.info("Update from newblock display after %.2f s" % (time.time() - lastcoinfetch))
-                lastcoinfetch=fullupdate(mode_list[last_mode_ind], days_list[days_ind], layout_list[last_layout_ind], inverted)
+            elif newblock_displayed and (
+                time.time() - lastcoinfetch > updatefrequency_after_newblock
+            ):
+                logging.info(
+                    "Update from newblock display after %.2f s"
+                    % (time.time() - lastcoinfetch)
+                )
+                lastcoinfetch = fullupdate(
+                    mode_list[last_mode_ind],
+                    days_list[days_ind],
+                    layout_list[last_layout_ind],
+                    inverted,
+                )
                 datapulled = True
                 newblock_displayed = False
             else:
                 time.sleep(0.05)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

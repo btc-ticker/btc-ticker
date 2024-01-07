@@ -1,16 +1,15 @@
-import os
 from configparser import ConfigParser
-from pydantic import BaseModel, validator, HttpUrl
 
+from pydantic import BaseModel
 
 
 class ConfigurationException(ValueError):
-    """Configuration Exception"""
+    """Configuration Exception."""
 
 
 class MainConfig(BaseModel):
     fiat: str = 'eur'
-    mode_list: str ='fiat,height,satfiat,moscowtime,usd'
+    mode_list: str = 'fiat,height,satfiat,moscowtime,usd'
     start_mode_ind: int = 0
     mode_shifting: bool = False
     days_list: str = '1,3,7'
@@ -18,7 +17,7 @@ class MainConfig(BaseModel):
     days_shifting: bool = False
     layout_list: str = 'all,fiat,fiatheight,big_one_row,one_number,mempool,ohlc'
     start_layout_ind: int = 0
-    layout_shifting : bool = False
+    layout_shifting: bool = False
     loglevel: str = 'WARNING'
     orientation: int = 0
     inverted: bool = False
@@ -28,6 +27,7 @@ class MainConfig(BaseModel):
     epd_type: str = '2in7_4gray'
     show_best_fees: bool = True
     show_block_time: bool = True
+
 
 class FontsConfig(BaseModel):
 
@@ -39,7 +39,7 @@ class FontsConfig(BaseModel):
     font_top: str = 'PixelSplitter-Bold.ttf'
     font_top_size: int = 18
     font_fee: str = 'googlefonts/Audiowide-Regular.ttf'
-    font_fee_size :int = 14
+    font_fee_size: int = 14
 
 
 class Config:

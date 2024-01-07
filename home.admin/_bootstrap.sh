@@ -113,7 +113,7 @@ if [ ${isRaspbian} -gt 0 ]; then
 fi
 if [ ${isArmbian} -gt 0 ]; then
   baseImage="armbian"
-fi 
+fi
 if [ ${isUbuntu} -gt 0 ]; then
 baseImage="ubuntu"
 fi

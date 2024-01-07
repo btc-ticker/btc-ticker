@@ -12,4 +12,3 @@ ExecStart=/usr/bin/mount -o remount,ro /boot
 
 [Install]
 WantedBy=multi-user.target
-

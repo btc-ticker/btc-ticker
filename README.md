@@ -155,3 +155,39 @@ btc-ticker is using the following APIs:
 * [mempool.space/api](https://mempool.space/api), which can also be run locally in e.g. raspiblitz
 * [coingecko api](https://www.coingecko.com/en/api)
 * [blockchain API v1](https://github.com/blockchain/api-v1-client-python) (only as backup, when mempool.space is not available)
+
+## Pre-commit-config
+
+### Installation
+
+```
+$ pip install pre-commit
+```
+
+### Using homebrew:
+```
+$ brew install pre-commit
+```
+
+```
+$ pre-commit --version
+pre-commit 2.10.0
+```
+
+### Install the git hook scripts
+
+```
+$ pre-commit install
+```
+
+### Run against all the files
+```
+pre-commit run --all-files
+pre-commit run --show-diff-on-failure --color=always --all-files
+```
+
+### Update package rev in pre-commit yaml
+```bash
+pre-commit autoupdate
+pre-commit run --show-diff-on-failure --color=always --all-files
+```
