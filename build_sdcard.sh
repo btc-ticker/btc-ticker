@@ -312,16 +312,16 @@ fi
 
 # remove some (big) packages that are not needed
 
-sudo apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
-if [ "${displayClass}" == "eink" ]; then
-  sudo apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
-  sudo apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
+apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
+if [ "${display}" == "eink" ]; then
+  apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
+  apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
 else
-  sudo apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
-  sudo apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
+  apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
+  apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
-sudo apt clean
-sudo apt -y autoremove
+apt clean
+apt -y autoremove
 
 echo -e "\n*** UPDATE Debian***"
 apt-get update -y
@@ -379,15 +379,15 @@ fi
 # special prepare when Raspbian
 if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${baseimage}" = "raspios_arm64" ]||\
    [ "${baseimage}" = "debian_rpi64" ]; then
-  sudo apt install -y raspi-config
+  apt install -y raspi-config
   # do memory split (16MB)
-  sudo raspi-config nonint do_memory_split 16
+  raspi-config nonint do_memory_split 16
   # set to wait until network is available on boot (0 seems to yes)
-  sudo raspi-config nonint do_boot_wait 0
+  raspi-config nonint do_boot_wait 0
   # Enable SPI
-  sudo raspi-config nonint do_spi 1
+  raspi-config nonint do_spi 1
   # Enable i2c
-  sudo raspi-config nonint do_i2c 1
+  raspi-config nonint do_i2c 1
   # set WIFI country so boot does not block
   [ "${wifi_region}" != "off" ] && raspi-config nonint do_wifi_country $wifi_region
 
@@ -396,9 +396,9 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${b
   max_usb_currentDone=$(grep -c "$max_usb_current" $configFile)
 
   if [ ${max_usb_currentDone} -eq 0 ]; then
-    echo "" | sudo tee -a $configFile
-    echo "# Btc-Ticker" | sudo tee -a $configFile
-    echo "$max_usb_current" | sudo tee -a $configFile
+    echo | tee -a $configFile
+    echo "# Raspiblitz" | tee -a $configFile
+    echo "$max_usb_current" | tee -a $configFile
   else
     echo "$max_usb_current already in $configFile"
   fi
@@ -407,7 +407,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${b
   # use command to check last fsck check: sudo tune2fs -l /dev/mmcblk0p2
   if [ "${tweak_boot_drive}" == "true" ]; then
     echo "* running tune2fs"
-    sudo tune2fs -c 1 /dev/mmcblk0p2
+    tune2fs -c 1 /dev/mmcblk0p2
   else
     echo "* skipping tweak_boot_drive"
   fi
@@ -443,8 +443,8 @@ echo -e "\n*** CONFIG ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#raspi-config
 
 # set new default password for root user
-echo "root:btcticker" | sudo chpasswd
-echo "pi:btcticker" | sudo chpasswd
+echo "root:btcticker" | chpasswd
+echo "pi:btcticker" | chpasswd
 
 # limit journald system use
 sed -i "s/^#SystemMaxUse=.*/SystemMaxUse=250M/g" /etc/systemd/journald.conf
@@ -515,85 +515,85 @@ echo "	postrotate" >> ./rsyslog
 echo "		invoke-rc.d rsyslog rotate > /dev/null" >> ./rsyslog
 echo "	endscript" >> ./rsyslog
 echo "}" >> ./rsyslog
-sudo mv ./rsyslog /etc/logrotate.d/rsyslog
-sudo chown root:root /etc/logrotate.d/rsyslog
-sudo service rsyslog restart
+mv ./rsyslog /etc/logrotate.d/rsyslog
+chown root:root /etc/logrotate.d/rsyslog
+service rsyslog restart
 
 echo ""
 echo "*** SOFTWARE UPDATE ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#software-update
 
 # installs like on RaspiBolt
-sudo apt install -y htop git curl bash-completion vim jq dphys-swapfile bsdmainutils
+apt install -y htop git curl bash-completion vim jq dphys-swapfile bsdmainutils
 
 # installs bandwidth monitoring for future statistics
-sudo apt install -y vnstat
+apt install -y vnstat
 
 # network tools
-sudo apt install -y autossh telnet
+apt install -y autossh telnet
 
 # prepare for display graphics mode
-sudo apt install -y fbi
+apt install -y fbi
 
-sudo apt-get install -y qrencode
+apt-get install -y qrencode
 
 # prepare for powertest
-sudo apt install -y sysbench
+apt install -y sysbench
 
 # check for dependencies on DietPi, Ubuntu, Armbian
-sudo apt install -y build-essential
+apt install -y build-essential
 
 # add armbian-config
 if [ "${baseimage}" = "armbian" ]; then
   # add armbian config
-  sudo apt install armbian-config -y
+  apt install armbian-config -y
 fi
 
 # dependencies for python
-sudo apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask
+apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask
 
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
-sudo update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 # rsync is needed to copy from HDD
-sudo apt install -y rsync
+apt install -y rsync
 # install ifconfig
-sudo apt install -y net-tools
+apt install -y net-tools
 #to display hex codes
-sudo apt install -y xxd
+apt install -y xxd
 # setuptools needed for Nyx
-sudo pip install setuptools
+pip install setuptools
 # install OpenSSH client + server
-sudo apt install -y openssh-client
-sudo apt install -y openssh-sftp-server
-sudo apt install -y sshpass
+apt install -y openssh-client
+apt install -y openssh-sftp-server
+apt install -y sshpass
 # install killall, fuser
-sudo apt install -y psmisc
+apt install -y psmisc
 # install firewall
-sudo apt install -y ufw
+apt install -y ufw
 
 # make sure sqlite3 is available
-sudo apt install -y sqlite3
+apt install -y sqlite3
 # nginx
-#sudo apt-get install -y nginx-common
-#sudo apt-get install -y nginx
+#apt-get install -y nginx-common
+#apt-get install -y nginx
 
-sudo apt clean
-sudo apt -y autoremove
+apt clean
+apt -y autoremove
 
 # for background processes
-sudo apt -y install screen
+apt -y install screen
 
 # for multiple (detachable/background) sessions when using SSH
-sudo apt -y install tmux
+apt -y install tmux
 
 # install a command-line fuzzy finder (https://github.com/junegunn/fzf)
-sudo apt -y install fzf
+apt -y install fzf
 
 echo -e "\n*** Python DEFAULT libs & dependencies ***"
 
 # for setup shell scripts
-sudo apt -y install dialog bc python3-dialog
+apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
 sudo -H python3 -m pip install requests[socks]==2.31.0
@@ -613,32 +613,32 @@ sudo -H python3 -m pip install mplfinance==0.12.10b0
 # *** fail2ban ***
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
 echo "*** HARDENING ***"
-sudo apt install -y --no-install-recommends python3-systemd fail2ban
+apt install -y --no-install-recommends python3-systemd fail2ban
 
-sudo rm -rf /home/admin/bcm2835-1.73
+rm -rf /home/admin/bcm2835-1.73
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
 tar zxvf bcm2835-1.73.tar.gz
 cd bcm2835-1.73/
-sudo ./configure
-sudo make
-sudo make check
-sudo make install
+./configure
+make
+make check
+make install
 cd ..
 
 
 echo -e "\n*** ADDING MAIN USER admin ***"
 # using the default password 'btcticker'
 
-sudo adduser --disabled-password --gecos "" admin
-echo "admin:btcticker" | sudo chpasswd
+adduser --disabled-password --gecos "" admin
+echo "admin:btcticker" | chpasswd
 
-sudo adduser admin sudo
-sudo chsh admin -s /bin/bash
+adduser admin sudo
+chsh admin -s /bin/bash
 
 # configure sudo for usage without password entry
-echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
+echo '%sudo ALL=(ALL) NOPASSWD:ALL' | EDITOR='tee -a' visudo
 # check if group "admin" was created
-if [ $(sudo cat /etc/group | grep -c "^admin") -lt 1 ]; then
+if [ $(cat /etc/group | grep -c "^admin") -lt 1 ]; then
   echo -e "\nMissing group admin - creating it ..."
   /usr/sbin/groupadd --force --gid 1002 admin
   usermod -a -G admin admin
@@ -646,9 +646,9 @@ else
   echo -e "\nOK group admin exists"
 fi
 
-sudo usermod -a -G gpio admin
-sudo usermod -a -G spi admin
-sudo usermod -a -G i2c admin
+usermod -a -G gpio admin
+usermod -a -G spi admin
+usermod -a -G i2c admin
 
 
 echo -e "\nBuild matplot cache"
@@ -675,38 +675,38 @@ sudo -H python3 setup.py install
 cd /home/admin/
 
 
-sudo rm -rf /home/admin/e-Paper/
+rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
 cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
-sudo python3 setup.py install
+python3 setup.py install
 cd /home/admin/
 
-sudo rm -rf /home/admin/Touch_e-Paper_HAT/
+rm -rf /home/admin/Touch_e-Paper_HAT/
 sudo -u admin git clone https://github.com/waveshare/Touch_e-Paper_HAT
 cd /home/admin/Touch_e-Paper_HAT/python
-sudo python3 setup.py install
+python3 setup.py install
 cd /home/admin/
 
 # add /sbin to path for all
-sudo bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
+bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
 
 echo ""
 echo "*** BTCTICKER EXTRAS ***"
 
 
 # optimization for torrent download
-sudo bash -c "echo 'net.core.rmem_max = 4194304' >> /etc/sysctl.conf"
-sudo bash -c "echo 'net.core.wmem_max = 1048576' >> /etc/sysctl.conf"
+bash -c "echo 'net.core.rmem_max = 4194304' >> /etc/sysctl.conf"
+bash -c "echo 'net.core.wmem_max = 1048576' >> /etc/sysctl.conf"
 
-sudo bash -c "echo '' >> /home/admin/.bashrc"
-sudo bash -c "echo 'NG_CLI_ANALYTICS=ci' >> /home/admin/.bashrc"
+bash -c "echo '' >> /home/admin/.bashrc"
+bash -c "echo 'NG_CLI_ANALYTICS=ci' >> /home/admin/.bashrc"
 
 homeFile=/home/admin/.bashrc
 keyBindings="source /usr/share/doc/fzf/examples/key-bindings.bash"
 keyBindingsDone=$(grep -c "$keyBindings" $homeFile)
 
 if [ ${keyBindingsDone} -eq 0 ]; then
-  sudo bash -c "echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> /home/admin/.bashrc"
+  bash -c "echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> /home/admin/.bashrc"
   echo "key-bindings added to $homeFile"
 else
   echo "key-bindings already in $homeFile"
@@ -717,28 +717,28 @@ echo -e "\n*** SWAP FILE ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#moving-the-swap-file
 # but just deactivating and deleting old (will be created alter when user adds HDD)
 
-sudo dphys-swapfile swapoff
-sudo dphys-swapfile uninstall
+dphys-swapfile swapoff
+dphys-swapfile uninstall
 
 echo -e "\n*** INCREASE OPEN FILE LIMIT ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#increase-your-open-files-limit
 
-sudo sed --in-place -i "56s/.*/*    soft nofile 128000/" /etc/security/limits.conf
-sudo bash -c "echo '*    hard nofile 128000' >> /etc/security/limits.conf"
-sudo bash -c "echo 'root soft nofile 128000' >> /etc/security/limits.conf"
-sudo bash -c "echo 'root hard nofile 128000' >> /etc/security/limits.conf"
-sudo bash -c "echo '# End of file' >> /etc/security/limits.conf"
+sed --in-place -i "56s/.*/*    soft nofile 128000/" /etc/security/limits.conf
+bash -c "echo '*    hard nofile 128000' >> /etc/security/limits.conf"
+bash -c "echo 'root soft nofile 128000' >> /etc/security/limits.conf"
+bash -c "echo 'root hard nofile 128000' >> /etc/security/limits.conf"
+bash -c "echo '# End of file' >> /etc/security/limits.conf"
 
-sudo sed --in-place -i "23s/.*/session required pam_limits.so/" /etc/pam.d/common-session
+sed --in-place -i "23s/.*/session required pam_limits.so/" /etc/pam.d/common-session
 
-sudo sed --in-place -i "25s/.*/session required pam_limits.so/" /etc/pam.d/common-session-noninteractive
-sudo bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-session-noninteractive"
+sed --in-place -i "25s/.*/session required pam_limits.so/" /etc/pam.d/common-session-noninteractive
+bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-session-noninteractive"
 
 
 
 # *** CACHE DISK IN RAM ***
 echo -e "\nActivating CACHE RAM DISK ... "
-sudo /home/admin/config.scripts/ticker.cache.sh on
+/home/admin/config.scripts/ticker.cache.sh on
 
 # *** Bluetooth & other configs ***
 if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
@@ -753,64 +753,64 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
 
   if [ ${disableBTDone} -eq 0 ]; then
     # disable bluetooth module
-    sudo echo "" >> $configFile
-    sudo echo "# Raspiblitz" >> $configFile
-    echo 'dtoverlay=pi3-disable-bt' | sudo tee -a $configFile
-    echo 'dtoverlay=disable-bt' | sudo tee -a $configFile
+    echo "" >> $configFile
+    echo "# Raspiblitz" >> $configFile
+    echo 'dtoverlay=pi3-disable-bt' | tee -a $configFile
+    echo 'dtoverlay=disable-bt' | tee -a $configFile
   else
     echo "disable BT already in $configFile"
   fi
 
   # remove bluetooth services
-  sudo systemctl disable bluetooth.service
-  sudo systemctl disable hciuart.service
+  systemctl disable bluetooth.service
+  systemctl disable hciuart.service
 
   # remove bluetooth packages
-  sudo apt remove -y --purge pi-bluetooth bluez bluez-firmware
+  apt remove -y --purge pi-bluetooth bluez bluez-firmware
   echo
 
   # disable audio
   echo "*** DISABLE AUDIO (snd_bcm2835) ***"
-  sudo sed -i "s/^dtparam=audio=on/# dtparam=audio=on/g" /boot/config.txt
+  sed -i "s/^dtparam=audio=on/# dtparam=audio=on/g" /boot/config.txt
   echo
 
   # disable DRM VC4 V3D
   echo "*** DISABLE DRM VC4 V3D driver ***"
   dtoverlay=vc4-fkms-v3d
-  sudo sed -i "s/^dtoverlay=vc4-fkms-v3d/# dtoverlay=vc4-fkms-v3d/g" /boot/config.txt
+  sed -i "s/^dtoverlay=vc4-fkms-v3d/# dtoverlay=vc4-fkms-v3d/g" /boot/config.txt
   echo
 
   #enable i2c
-  sudo sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/config.txt
+  sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/config.txt
   #enable SPI
-   sudo sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
+   sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
 fi
 
-sudo timedatectl set-timezone Europe/Berlin
+timedatectl set-timezone Europe/Berlin
 
 # *** BOOTSTRAP ***
 # see background README for details
 echo -e "\n*** RASPI BOOTSTRAP SERVICE ***"
 cd /home/admin/
-sudo chmod +x /home/admin/_bootstrap.sh
-sudo cp /home/admin/assets/bootstrap.service /etc/systemd/system/bootstrap.service
-sudo systemctl enable bootstrap
+chmod +x /home/admin/_bootstrap.sh
+cp /home/admin/assets/bootstrap.service /etc/systemd/system/bootstrap.service
+systemctl enable bootstrap
 
 echo -e "\n*** btc-ticker SERVICE ***"
-sudo chmod +x /home/admin/run.sh
-sudo cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
-sudo systemctl enable btcticker
+chmod +x /home/admin/run.sh
+cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
+systemctl enable btcticker
 
 echo -e "\n*** ro remount SERVICE ***"
-sudo cp /home/admin/assets/ro_remount.service /etc/systemd/system/ro_remount.service
-sudo systemctl enable ro_remount
+cp /home/admin/assets/ro_remount.service /etc/systemd/system/ro_remount.service
+systemctl enable ro_remount
 
 # echo "*** check wlan SERVICE ***"
-# sudo cp ./assets/check_wifi.service /etc/systemd/system/check_wifi.service
-#sudo systemctl enable check_wifi.service
+# cp ./assets/check_wifi.service /etc/systemd/system/check_wifi.service
+#systemctl enable check_wifi.service
 
 # Enable firewwall
-sudo /home/admin/90finishSetup.sh
+/home/admin/90finishSetup.sh
 
 # *** BTCTICKER IMAGE READY INFO ***
 echo ""
@@ -828,9 +828,9 @@ echo ""
 
 
 # (do last - because might trigger reboot)
-if [ "${displayClass}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
+if [ "${display}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
   echo "*** ADDITIONAL DISPLAY OPTIONS ***"
-  echo "- calling: ticker.display.sh set-display ${displayClass}"
-  sudo /home/admin/config.scripts/ticker.display.sh set-display ${displayClass}
-  #sudo /home/admin/config.scripts/ticker.display.sh rotate 1
+  echo "- calling: ticker.display.sh set-display ${display}"
+  /home/admin/config.scripts/ticker.display.sh set-display ${display}
+  #/home/admin/config.scripts/ticker.display.sh rotate 1
 fi
