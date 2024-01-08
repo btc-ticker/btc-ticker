@@ -11,12 +11,12 @@ on:
     branches: ["main"]
     paths:
       - "build_sdcard.sh"
-      - "ci/armhf-rpi/**"
+      - "ci/armhf_rpi/**"
   pull_request:
     branches: ["main"]
     paths:
       - "build_sdcard.sh"
-      - "ci/armhf-rpi/**"
+      - "ci/armhf_rpi/**"
 
 jobs:
   armhf-rpi-image-build:
