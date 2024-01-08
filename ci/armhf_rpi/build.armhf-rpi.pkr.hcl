@@ -1,4 +1,3 @@
-
 variable "pack" { default = "lean" }
 variable "github_user" { default = "btc-ticker" }
 variable "branch" { default = "main" }
