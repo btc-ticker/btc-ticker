@@ -526,9 +526,6 @@ echo "*** SOFTWARE UPDATE ***"
 # installs like on RaspiBolt
 apt install -y htop git curl bash-completion vim jq dphys-swapfile bsdmainutils
 
-# installs bandwidth monitoring for future statistics
-apt install -y vnstat
-
 # network tools
 apt install -y autossh telnet
 
