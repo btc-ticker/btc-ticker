@@ -32,22 +32,22 @@ jobs:
       - name: Run the build script
         run: |
           echo "Using the variables: --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}"
-          cd ci/armhf-rpi
+          cd ci/armhf_rpi
           bash packer.build.armhf-rpi.sh --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}
 
       - name: Compute checksum of the raw image
         run: |
-          cd ci/armhf-rpi
+          cd ci/armhf_rpi
           sha256sum btcticker-armhf-rpi-lean.img > btcticker-armhf-rpi-lean.img.sha256
 
       - name: Compress image
         run: |
-          cd ci/armhf-rpi
+          cd ci/armhf_rpi
           gzip -v9 btcticker-armhf-rpi-lean.img
 
       - name: Compute checksum of the compressed image
         run: |
-          cd ci/armhf-rpi
+          cd ci/armhf_rpi
           sha256sum btcticker-armhf-rpi-lean.img.gz > btcticker-armhf-rpi-lean.img.gz.sha256
 
       - name: Upload the image and checksums
@@ -55,6 +55,6 @@ jobs:
         with:
           name: btcticker-armhf-rpi-image-${{ env.BUILD_DATE }}-${{ env.BUILD_VERSION }}
           path: |
-            ${{ github.workspace }}/ci/armhf-rpi/btcticker-armhf-rpi-lean.img.sha256
-            ${{ github.workspace }}/ci/armhf-rpi/btcticker-armhf-rpi-lean.img.gz
-            ${{ github.workspace }}/ci/armhf-rpi/btcticker-armhf-rpi-lean.img.gz.sha256
+            ${{ github.workspace }}/ci/armhf_rpi/btcticker-armhf-rpi-lean.img.sha256
+            ${{ github.workspace }}/ci/armhf_rpi/btcticker-armhf-rpi-lean.img.gz
+            ${{ github.workspace }}/ci/armhf_rpi/btcticker-armhf-rpi-lean.img.gz.sha256
