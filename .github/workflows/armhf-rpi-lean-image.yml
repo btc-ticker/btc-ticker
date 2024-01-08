@@ -1,18 +1,8 @@
-
 name: armhf-rpi-lean-image-build
 
 on:
-  workflow_dispatch:
   push:
-    branches: ["main"]
-    paths:
-      - "build_sdcard.sh"
-      - "ci/armhf_rpi/**"
   pull_request:
-    branches: ["main"]
-    paths:
-      - "build_sdcard.sh"
-      - "ci/armhf_rpi/**"
 
 jobs:
   armhf-rpi-image-build:
