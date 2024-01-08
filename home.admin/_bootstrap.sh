@@ -147,7 +147,9 @@ else
 fi
 echo ""
 
-
+echo -e "\nBuild matplot cache"
+cd /home/admin/
+sudo -u admin python3 -c "from pylab import *; set_loglevel('debug'); plot(); show()"
 
 ################################
 # GENERATE UNIQUE SSH PUB KEYS

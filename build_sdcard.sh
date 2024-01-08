@@ -320,8 +320,8 @@ else
   apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
   apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 fi
-apt clean
-apt -y autoremove
+apt clean -y
+apt autoremove -y
 
 echo -e "\n*** UPDATE Debian***"
 apt-get update -y
@@ -596,6 +596,7 @@ echo -e "\n*** Python DEFAULT libs & dependencies ***"
 apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
+sudo -H python3 -m pip install --upgrade pip
 sudo -H python3 -m pip install requests[socks]==2.31.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
@@ -621,7 +622,7 @@ tar zxvf bcm2835-1.73.tar.gz
 cd bcm2835-1.73/
 ./configure
 make
-make check
+# make check
 make install
 cd ..
 
@@ -650,10 +651,6 @@ usermod -a -G gpio admin
 usermod -a -G spi admin
 usermod -a -G i2c admin
 
-
-echo -e "\nBuild matplot cache"
-cd /home/admin/
-sudo -u admin python3 -c "from pylab import *; set_loglevel('debug'); plot(); show()"
 
 echo -e "\n*** SHELL SCRIPTS AND ASSETS ***"
 

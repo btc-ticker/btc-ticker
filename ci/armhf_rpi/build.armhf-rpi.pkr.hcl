@@ -29,7 +29,7 @@ source "arm" "btcticker-armhf-rpi" {
     type         = "83"
   }
   image_path                   = "btcticker-armhf-rpi-${var.pack}.img"
-  image_size                   = "28G"
+  image_size                   = "12G"
   image_type                   = "dos"
   qemu_binary_destination_path = "/usr/bin/qemu-arm-static"
   qemu_binary_source_path      = "/usr/bin/qemu-arm-static"
