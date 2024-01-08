@@ -1,199 +1,314 @@
 #!/bin/bash
 #########################################################################
-# Build your SD card image based on:
-# raspios_armhf-2021-03-25
-# https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2021-03-25/
-# SHA256: a30a3650c3ef22a69f6f025760c6b04611a5992961a8c2cd44468f1c429d68bb
+# Build your SD card image based on: 2023-12-05-raspios-bookworm-armhf.img.xz
+# https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2023-12-06/
+# SHA256: ca3b1c40b7b051e1626b663e16fbf5a0a8abff3b8a3a27319d164d52b0c96c05
+# also change in: btc-ticker/ci/armhf-rpi/build.arm64-rpi.pkr.hcl
+# PGP fingerprint: 8738CD6B956F460C - to check signature:
+# curl -O https://www.raspberrypi.org/raspberrypi_downloads.gpg.key && gpg --import ./raspberrypi_downloads.gpg.key && gpg --verify *.sig
+# setup fresh SD card with image above - login via SSH and run this script:
 ##########################################################################
-# setup fresh SD card with image above - login per SSH and run this script:
-# This script has been modified from https://raw.githubusercontent.com/rootzoll/raspiblitz/v1.7/build_sdcard.sh
-##########################################################################
 
-echo ""
-echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.5.0  *"
-echo "*****************************************"
-echo "For details on optional parameters - see build script source code:"
+defaultRepo="btc-ticker" #user that hosts a `btc-ticker` repo
+defaultBranch="main"
 
-# 1st optional paramater: NO-INTERACTION
-# ----------------------------------------
-# When 'true' then no questions will be ask on building .. so it can be used in build scripts
-# for containers or as part of other build scripts (default is false)
+me="${0##/*}"
 
-noInteraction="$1"
-if [ ${#noInteraction} -eq 0 ]; then
-  noInteraction="false"
-fi
-if [ "${noInteraction}" != "true" ] && [ "${noInteraction}" != "false" ]; then
-  echo "ERROR: NO-INTERACTION parameter needs to be either 'true' or 'false'"
+nocolor="\033[0m"
+red="\033[31m"
+
+## usage as a function to be called whenever there is a huge mistake on the options
+usage(){
+  printf %s"${me} [--option <argument>]
+
+Options:
+  -EXPORT                                  just print build parameters & exit'
+  -h, --help                               this help info
+  -i, --interaction [0|1]                  interaction before proceeding with execution (default: 1)
+  -f, --fatpack [0|1]                      fatpack mode (default: 1)
+  -u, --github-user [btc-ticker|other]     github user to be checked from the repo (default: ${defaultRepo})
+  -b, --branch [main|other]                 branch to be built on (default: ${defaultBranch})
+  -d, --display [eink|lcd]        display class (default: eink)
+  -t, --tweak-boot-drive [0|1]             tweak boot drives (default: 1)
+  -w, --wifi-region [off|DE|US|GB|other]      wifi iso code (default: DE) or 'off'
+
+Notes:
+  all options, long and short accept --opt=value mode also
+  [0|1] can also be referenced as [false|true]
+"
   exit 1
-else
-  echo "1) will use NO-INTERACTION --> '${noInteraction}'"
+}
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  usage
 fi
 
-# 2rd optional paramater: GITHUB-USERNAME
+# check if started with sudo
+if [ "$EUID" -ne 0 ]; then
+  echo "error='run as root / may use sudo'"
+  exit 1
+fi
+
+if [ "$1" = "-EXPORT" ] || [ "$1" = "EXPORT" ]; then
+  cd /home/admin/btc-ticker 2>/dev/null
+  activeBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ "${activeBranch}" == "" ]; then
+    activeBranch="${defaultBranch}"
+  fi
+  echo "githubUser='${defaultRepo}'"
+  echo "githubBranch='${activeBranch}'"
+  echo "defaultAPIuser='${defaultAPIuser}'"
+  echo "defaultAPIrepo='${defaultAPIrepo}'"
+  echo "defaultWEBUIuser='${defaultWEBUIuser}'"
+  echo "defaultWEBUIrepo='${defaultWEBUIrepo}'"
+  exit 0
+fi
+
+## default user message
+error_msg(){ printf %s"${red}${me}: ${1}${nocolor}\n"; exit 1; }
+
+## assign_value variable_name "${opt}"
+## it strips the dashes and assign the clean value to the variable
+## assign_value status --on IS status=on
+## variable_name is the name you want it to have
+## $opt being options with single or double dashes that don't require arguments
+assign_value(){
+  case "${2}" in
+    --*) value="${2#--}";;
+    -*) value="${2#-}";;
+    *) value="${2}"
+  esac
+  case "${value}" in
+    0) value="false";;
+    1) value="true";;
+  esac
+  ## Escaping quotes is needed because else if will fail if the argument is quoted
+  # shellcheck disable=SC2140
+  eval "${1}"="\"${value}\""
+}
+
+## get_arg variable_name "${opt}" "${arg}"
+## get_arg service --service ssh
+## variable_name is the name you want it to have
+## $opt being options with single or double dashes
+## $arg is requiring and argument, else it fails
+## assign_value "${1}" "${3}" means it is assining the argument ($3) to the variable_name ($1)
+get_arg(){
+  case "${3}" in
+    ""|-*) error_msg "Option '${2}' requires an argument.";;
+  esac
+  assign_value "${1}" "${3}"
+}
+
+## hacky getopts
+## 1. if the option requires an argument, and the option is preceeded by single or double dash and it
+##    can be it can be specified with '-s=ssh' or '-s ssh' or '--service=ssh' or '--service ssh'
+##    use: get_arg variable_name "${opt}" "${arg}"
+## 2. if a bunch of options that does different things are to be assigned to the same variable
+##    and the option is preceeded by single or double dash use: assign_value variable_name "${opt}"
+##    as this option does not require argument, specifu $shift_n=1
+## 3. if the option does not start with dash and does not require argument, assign to command manually.
+while :; do
+  case "${1}" in
+    -*=*) opt="${1%=*}"; arg="${1#*=}"; shift_n=1;;
+    -*) opt="${1}"; arg="${2}"; shift_n=2;;
+    *) opt="${1}"; arg="${2}"; shift_n=1;;
+  esac
+  case "${opt}" in
+    -i|-i=*|--interaction|--interaction=*) get_arg interaction "${opt}" "${arg}";;
+    -f|-f=*|--fatpack|--fatpack=*) get_arg fatpack "${opt}" "${arg}";;
+    -u|-u=*|--github-user|--github-user=*) get_arg github_user "${opt}" "${arg}";;
+    -b|-b=*|--branch|--branch=*) get_arg branch "${opt}" "${arg}";;
+    -d|-d=*|--display|--display=*) get_arg display "${opt}" "${arg}";;
+    -t|-t=*|--tweak-boot-drive|--tweak-boot-drive=*) get_arg tweak_boot_drive "${opt}" "${arg}";;
+    -w|-w=*|--wifi-region|--wifi-region=*) get_arg wifi_region "${opt}" "${arg}";;
+    "") break;;
+    *) error_msg "Invalid option: ${opt}";;
+  esac
+  shift "${shift_n}"
+done
+
+## if there is a limited option, check if the value of variable is within this range
+## $ range_argument variable_name possible_value_1 possible_value_2
+range_argument(){
+  name="${1}"
+  eval var='$'"${1}"
+  shift
+  if [ -n "${var:-}" ]; then
+    success=0
+    for tests in "${@}"; do
+      [ "${var}" = "${tests}" ] && success=1
+    done
+    [ ${success} -ne 1 ] && error_msg "Option '--${name}' cannot be '${var}'! It can only be: ${*}."
+  fi
+}
+
+apt_install() {
+  for package in "$@"; do
+    apt-get install -y -q "$package"
+    if [ $? -eq 100 ]; then
+      echo "FAIL! apt-get failed to install package: $package"
+      exit 1
+    fi
+  done
+}
+
+general_utils="curl"
+## loop through all general_utils to see if program is installed (placed on PATH) and if not, add to the list of commands to be installed
+for prog in ${general_utils}; do
+  ! command -v ${prog} >/dev/null && general_utils_install="${general_utils_install} ${prog}"
+done
+## if any of the required programs are not installed, update and if successfull, install packages
+if [ -n "${general_utils_install}" ]; then
+  echo -e "\n*** SOFTWARE UPDATE ***"
+  apt-get update -y || exit 1
+  apt_install ${general_utils_install}
+fi
+
+## use default values for variables if empty
+
+# INTERACTION
+# ----------------------------------------
+# When 'false' then no questions will be asked on building .. so it can be used in build scripts
+# for containers or as part of other build scripts (default is true)
+: "${interaction:=true}"
+range_argument interaction "0" "1" "false" "true"
+
+# FATPACK
+# -------------------------------
+# could be 'true' (default) or 'false'
+# When 'true' it will pre-install needed frameworks for additional apps and features
+# as a convenience to safe on install and update time for additional apps.
+# When 'false' it will just install the bare minimum and additional apps will just
+# install needed frameworks and libraries on demand when activated by user.
+# Use 'false' if you want to run your node without: go, dot-net, nodejs, docker, ...
+: "${fatpack:=true}"
+range_argument fatpack "0" "1" "false" "true"
+
+# GITHUB-USERNAME
 # ---------------------------------------
-# could be any valid github-user that has a fork of the btc-ticker repo - 'rootzoll' is default
-# The 'btc-ticker' repo of this user is used to provisioning sd card
-# with btc-ticker assets/scripts later on.
-# If this parameter is set also the branch needs to be given (see next parameter).
-githubUser="$2"
-if [ ${#githubUser} -eq 0 ]; then
-  githubUser="btc-ticker"
-fi
-echo "2) will use GITHUB-USERNAME --> '${githubUser}'"
+# could be any valid github-user that has a fork of the btc-ticker repo - 'btc-ticker' is default
+# The 'btc-ticker' repo of this user is used to provisioning sd card with btc-ticker assets/scripts later on.
+: "${github_user:=$defaultRepo}"
+curl --header "X-GitHub-Api-Version:2022-11-28" -s "https://api.github.com/repos/${github_user}/btc-ticker" | grep -q "\"message\": \"Not Found\"" && error_msg "Repository 'btc-ticker' not found for user '${github_user}"
 
-# 3th optional paramater: GITHUB-BRANCH
+# GITHUB-BRANCH
 # -------------------------------------
-# could be any valid branch of the given GITHUB-USERNAME forked btc-ticker repo - 'dev' is default
-githubBranch="$3"
-if [ ${#githubBranch} -eq 0 ]; then
-  githubBranch="main"
-fi
-echo "3) will use GITHUB-BRANCH --> '${githubBranch}'"
+# could be any valid branch or tag of the given GITHUB-USERNAME forked btc-ticker repo
+: "${branch:=$defaultBranch}"
+curl --header "X-GitHub-Api-Version:2022-11-28" -s "https://api.github.com/repos/${github_user}/btc-ticker/branches/${branch}" | grep -q "\"message\": \"Branch not found\"" && error_msg "Repository 'btc-ticker' for user '${github_user}' does not contain branch '${branch}'"
 
+# DISPLAY-CLASS
+# ----------------------------------------
+# Could be 'eink', 'lcd' (eink is default)
+: "${display:=eink}"
+range_argument display "eink" "lcd"
 
-# 4th optional paramater: TWEAK-BOOTDRIVE
+# TWEAK-BOOTDRIVE
 # ---------------------------------------
 # could be 'true' (default) or 'false'
 # If 'true' it will try (based on the base OS) to optimize the boot drive.
 # If 'false' this will skipped.
-tweakBootdrives="$4"
-if [ ${#tweakBootdrives} -eq 0 ]; then
-  tweakBootdrives="true"
-fi
-if [ "${tweakBootdrives}" != "true" ] && [ "${tweakBootdrives}" != "false" ]; then
-  echo "ERROR: TWEAK-BOOTDRIVE parameter needs to be either 'true' or 'false'"
-  exit 1
-else
-  echo "4) will use TWEAK-BOOTDRIVE --> '${tweakBootdrives}'"
-fi
+: "${tweak_boot_drive:=true}"
+range_argument tweak_boot_drive "0" "1" "false" "true"
 
-# 5th optional parameter: DISPLAY-CLASS
-# ----------------------------------------
-# Could be 'eink', or 'lcd' (eink is default)
-displayClass="$5"
-if [ ${#displayClass} -eq 0 ]; then
-  displayClass="eink"
-fi
-if [ "${displayClass}" != "eink" ] && [ "${displayClass}" != "lcd" ]; then
-  echo "ERROR: DISPLAY-CLASS parameter needs to be 'eink', or 'lcd'"
-  exit 1
-else
-  echo "5) will use DISPLAY-CLASS --> '${displayClass}'"
-fi
-
-# 6th optional paramater: WIFI
+# WIFI
 # ---------------------------------------
-# could be 'false' or 'true' (default) or a valid WIFI country code like 'US' (default)
-# If 'false' WIFI will be deactivated by default
-# If 'true' WIFI will be activated by with default country code 'US'
+# WIFI country code like 'DE' (default)
 # If any valid wifi country code Wifi will be activated with that country code by default
-modeWifi="$6"
-if [ ${#modeWifi} -eq 0 ] || [ "${modeWifi}" == "true" ]; then
-  modeWifi="US"
-fi
-echo "6) will use WIFI --> '${modeWifi}'"
+: "${wifi_region:=DE}"
+
+
+echo ""
+echo "*****************************************"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.6.0  *"
+echo "*****************************************"
+echo "For details on optional parameters - see build script source code:"
+
+
+# output
+for key in interaction fatpack github_user branch display tweak_boot_drive wifi_region; do
+  eval val='$'"${key}"
+  [ -n "${val}" ] && printf '%s\n' "${key}=${val}"
+done
 
 # AUTO-DETECTION: CPU-ARCHITECTURE
 # ---------------------------------------
-# keep in mind that DietPi for Raspberry is also a stripped down Raspbian
-isARM=$(uname -m | grep -c 'arm')
-isAARCH64=$(uname -m | grep -c 'aarch64')
-isX86_64=$(uname -m | grep -c 'x86_64')
-cpu="?"
-if [ ${isARM} -gt 0 ]; then
-  cpu="arm"
-elif [ ${isAARCH64} -gt 0 ]; then
-  cpu="aarch64"
-elif [ ${isX86_64} -gt 0 ]; then
-  cpu="x86_64"
-else
-  echo "!!! FAIL !!!"
-  echo "Can only build on ARM, aarch64, x86_64 not on:"
-  uname -m
-  exit 1
-fi
-echo "X) will use CPU-ARCHITECTURE --> '${cpu}'"
+cpu="$(uname -m)" && echo "cpu=${cpu}"
+case "${cpu}" in
+  aarch64|x86_64|armv7l);;
+  *) echo -e "# FAIL #\nCan only build on aarch64 or x86_64 not on: cpu=${cpu}"; exit 1;;
+esac
+architecture="$(dpkg --print-architecture 2>/dev/null)" && echo "architecture=${architecture}"
+case "${architecture}" in
+  arm*|amd64|armv7l);;
+  *) echo -e "# FAIL #\nCan only build on arm* or amd64 not on: architecture=${cpu}"; exit 1;;
+esac
 
 # AUTO-DETECTION: OPERATINGSYSTEM
 # ---------------------------------------
-baseimage="?"
-isDietPi=$(uname -n | grep -c 'DietPi')
-isRaspbian=$(grep -c 'Raspbian' /etc/os-release 2>/dev/null)
-isDebian=$(grep -c 'Debian' /etc/os-release 2>/dev/null)
-isUbuntu=$(grep -c 'Ubuntu' /etc/os-release 2>/dev/null)
-isNvidia=$(uname -a | grep -c 'tegra')
-if [ ${isRaspbian} -gt 0 ]; then
-  baseimage="raspbian"
-fi
-if [ ${isDebian} -gt 0 ]; then
-  if [ $(uname -n | grep -c 'rpi') -gt 0 ] && [ ${isAARCH64} -gt 0 ]; then
-    baseimage="debian_rpi64"
-  elif [ $(uname -n | grep -c 'raspberrypi') -gt 0 ] && [ ${isAARCH64} -gt 0 ]; then
-    baseimage="raspios_arm64"
-  elif [ ${isAARCH64} -gt 0 ] || [ ${isARM} -gt 0 ] ; then
-    baseimage="armbian"
+if [ $(cat /etc/os-release 2>/dev/null | grep -c 'Debian') -gt 0 ]; then
+  if [ -f /etc/apt/sources.list.d/raspi.list ] && [ "${cpu}" = armv7l ]; then
+    # default image for RaspberryPi
+    baseimage="raspios_armhf"
   else
+    # experimental: fallback for all to debian
     baseimage="debian"
   fi
-fi
-if [ ${isUbuntu} -gt 0 ]; then
+elif [ $(cat /etc/os-release 2>/dev/null | grep -c 'Ubuntu') -gt 0 ]; then
   baseimage="ubuntu"
-fi
-if [ ${isDietPi} -gt 0 ]; then
-  baseimage="dietpi"
-fi
-if [ "${baseimage}" = "?" ]; then
+elif [ $(cat /etc/os-release 2>/dev/null | grep -c 'Armbian') -gt 0 ]; then
+  baseimage="armbian"
+elif [ $(cat /etc/os-release 2>/dev/null | grep -c 'Raspbian') -gt 0 ]; then
+  baseimage="raspbian"
+else
+  echo "\n# FAIL: Base Image cannot be detected or is not supported."
   cat /etc/os-release 2>/dev/null
-  echo "!!! FAIL: Base Image cannot be detected or is not supported."
+  uname -a
   exit 1
 fi
-echo "X) will use OPERATINGSYSTEM ---> '${baseimage}'"
+echo "baseimage=${baseimage}"
 
 # USER-CONFIRMATION
-if [ "${noInteraction}" != "true" ]; then
-  echo -n "Do you agree with all parameters above? (yes/no) "
-  read installBtcTickerAnswer
-  if [ "$installBtcTickerAnswer" != "yes" ] ; then
-    exit 1
-  fi
+if [ "${interaction}" = "true" ]; then
+  echo -n "# Do you agree with all parameters above? (yes/no) "
+  read -r installBtcTickerAnswer
+  [ "$installBtcTickerAnswer" != "yes" ] && exit 1
 fi
-echo "Building btc-ticker ..."
-echo ""
-sleep 3
+echo -e "Building BTC-Ticker ...\n"
+sleep 3 ## give time to cancel
 
+export DEBIAN_FRONTEND=noninteractive
 
+echo "*** Prevent sleep ***" # on all platforms https://wiki.debian.org/Suspend
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+mkdir /etc/systemd/sleep.conf.d
+echo "[Sleep]
+AllowSuspend=no
+AllowHibernation=no
+AllowSuspendThenHibernate=no
+AllowHybridSleep=no" | tee /etc/systemd/sleep.conf.d/nosuspend.conf
+mkdir /etc/systemd/logind.conf.d
+echo "[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchDocked=ignore" | tee /etc/systemd/logind.conf.d/nosuspend.conf
 
 # FIXING LOCALES
 # https://daker.me/2014/10/how-to-fix-perl-warning-setting-locale-failed-in-raspbian.html
 # https://stackoverflow.com/questions/38188762/generate-all-locales-in-a-docker-image
-if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "dietpi" ] || \
-   [ "${baseimage}" = "raspios_arm64" ]||[ "${baseimage}" = "debian_rpi64" ]; then
-  echo ""
-  echo "*** FIXING LOCALES FOR BUILD ***"
-
-  sudo sed -i "s/^# en_US.UTF-8 UTF-8.*/en_US.UTF-8 UTF-8/g" /etc/locale.gen
-  sudo sed -i "s/^# en_US ISO-8859-1.*/en_US ISO-8859-1/g" /etc/locale.gen
-  sudo locale-gen
+if [ "${cpu}" = "aarch64" ] && { [ "${baseimage}" = "raspios_arm64" ] || [ "${baseimage}" = "raspian" ] || [ "${baseimage}" = "debian" ]; }; then
+  echo -e "\n*** FIXING LOCALES FOR BUILD ***"
+  sed -i "s/^# en_US.UTF-8 UTF-8.*/en_US.UTF-8 UTF-8/g" /etc/locale.gen
+  sed -i "s/^# en_US ISO-8859-1.*/en_US ISO-8859-1/g" /etc/locale.gen
+  locale-gen
+  export LC_ALL=C
   export LANGUAGE=en_US.UTF-8
   export LANG=en_US.UTF-8
-  if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "dietpi" ]; then
-    export LC_ALL=en_US.UTF-8
-
-    sudo sed -i "s/^    SendEnv LANG LC.*/#   SendEnv LANG LC_*/g" /etc/ssh/ssh_config
-
-    # remove unneccesary files
-    sudo rm -rf /home/pi/MagPi
-    # https://www.reddit.com/r/linux/comments/lbu0t1/microsoft_repo_installed_on_all_raspberry_pis/
-    sudo rm -f /etc/apt/sources.list.d/vscode.list
-    sudo rm -f /etc/apt/trusted.gpg.d/microsoft.gpg
-  fi
   if [ ! -f /etc/apt/sources.list.d/raspi.list ]; then
     echo "# Add the archive.raspberrypi.org/debian/ to the sources.list"
-    echo "deb http://archive.raspberrypi.org/debian/ buster main" | sudo tee /etc/apt/sources.list.d/raspi.list
+    echo "deb http://archive.raspberrypi.org/debian/ bullseye main" | tee /etc/apt/sources.list.d/raspi.list
   fi
 fi
+
 
 # remove some (big) packages that are not needed
 
@@ -208,59 +323,61 @@ fi
 sudo apt clean
 sudo apt -y autoremove
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
+echo -e "\n*** UPDATE Debian***"
+apt-get update -y
+apt-get upgrade -f -y
 
-if [ -f "/usr/bin/python3.9" ]; then
-  # use python 3.9 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
-  echo "python calls python3.9"
+echo -e "\n*** Python DEFAULT libs & dependencies ***"
+
+if [ -f "/usr/bin/python3.11" ]; then
+  # use python 3.11 if available
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+  # keep python backwards compatible
+  ln -s /usr/bin/python3.11 /usr/bin/python3.9
+  ln -s /usr/bin/python3.11 /usr/bin/python3.10
+  echo "python calls python3.11"
 elif [ -f "/usr/bin/python3.10" ]; then
   # use python 3.10 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-  sudo ln -s /usr/bin/python3.10 /usr/bin/python3.9
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+  # keep python backwards compatible
+  ln -s /usr/bin/python3.10 /usr/bin/python3.9
   echo "python calls python3.10"
-elif [ -f "/usr/bin/python3.11" ]; then
-  # use python 3.11 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-  sudo ln -s /usr/bin/python3.11 /usr/bin/python3.9
-  echo "python calls python3.11"
+elif [ -f "/usr/bin/python3.9" ]; then
+  # use python 3.9 if available
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+  echo "python calls python3.9"
 elif [ -f "/usr/bin/python3.8" ]; then
   # use python 3.8 if available
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
   echo "python calls python3.8"
 else
-  echo "!!! FAIL !!!"
+  echo "# FAIL #"
   echo "There is no tested version of python present"
   exit 1
 fi
 
-# update debian
-echo ""
-echo "*** UPDATE ***"
-sudo apt update -y
-# sudo apt upgrade -f -y
+# don't protect system packages from pip install
+for PYTHONDIR in /usr/lib/python3.*; do
+  if [ -f "$PYTHONDIR/EXTERNALLY-MANAGED" ]; then
+    rm "$PYTHONDIR/EXTERNALLY-MANAGED"
+  fi
+done
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
+update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-echo ""
-echo "*** PREPARE ${baseimage} ***"
+echo -e "\n*** PREPARE ${baseimage} ***"
 
 # make sure the pi user is present
-if [ "$(compgen -u | grep -c dietpi)" -gt 0 ];then
-  echo "# Renaming dietpi user to pi"
-  sudo usermod -l pi dietpi
-elif [ "$(compgen -u | grep -c pi)" -eq 0 ];then
+if ! compgen -u pi; then
   echo "# Adding the user pi"
-  sudo adduser --disabled-password --gecos "" pi
-  sudo adduser pi sudo
+  adduser --system --group --shell /bin/bash --home /home/pi pi
+  # copy the skeleton files for login
+  sudo -u pi cp -r /etc/skel/. /home/pi/
+  adduser pi sudo
 fi
 
 # special prepare when Raspbian
-if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
+if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${baseimage}" = "raspios_arm64" ]||\
    [ "${baseimage}" = "debian_rpi64" ]; then
   sudo apt install -y raspi-config
   # do memory split (16MB)
@@ -269,11 +386,10 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
   sudo raspi-config nonint do_boot_wait 0
   # Enable SPI
   sudo raspi-config nonint do_spi 1
+  # Enable i2c
+  sudo raspi-config nonint do_i2c 1
   # set WIFI country so boot does not block
-  if [ "${modeWifi}" != "false" ]; then
-    # this will undo the softblock of rfkill on RaspiOS
-    sudo raspi-config nonint do_wifi_country $modeWifi
-  fi
+  [ "${wifi_region}" != "off" ] && raspi-config nonint do_wifi_country $wifi_region
 
   configFile="/boot/config.txt"
   max_usb_current="max_usb_current=1"
@@ -281,7 +397,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
 
   if [ ${max_usb_currentDone} -eq 0 ]; then
     echo "" | sudo tee -a $configFile
-    echo "# Raspiblitz" | sudo tee -a $configFile
+    echo "# Btc-Ticker" | sudo tee -a $configFile
     echo "$max_usb_current" | sudo tee -a $configFile
   else
     echo "$max_usb_current already in $configFile"
@@ -289,11 +405,11 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
 
   # run fsck on sd root partition on every startup to prevent "maintenance login" screen
   # use command to check last fsck check: sudo tune2fs -l /dev/mmcblk0p2
-  if [ "${tweakBootdrives}" == "true" ]; then
+  if [ "${tweak_boot_drive}" == "true" ]; then
     echo "* running tune2fs"
     sudo tune2fs -c 1 /dev/mmcblk0p2
   else
-    echo "* skipping tweakBootdrives"
+    echo "* skipping tweak_boot_drive"
   fi
 
   # edit kernel parameters
@@ -304,13 +420,13 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
   fsOption2InFile=$(grep -c ${fsOption2} ${kernelOptionsFile})
 
   if [ ${fsOption1InFile} -eq 0 ]; then
-    sudo sed -i "s/^/$fsOption1 /g" "$kernelOptionsFile"
+    sed -i "s/^/$fsOption1 /g" "$kernelOptionsFile"
     echo "$fsOption1 added to $kernelOptionsFile"
   else
     echo "$fsOption1 already in $kernelOptionsFile"
   fi
   if [ ${fsOption2InFile} -eq 0 ]; then
-    sudo sed -i "s/^/$fsOption2 /g" "$kernelOptionsFile"
+    sed -i "s/^/$fsOption2 /g" "$kernelOptionsFile"
     echo "$fsOption2 added to $kernelOptionsFile"
   else
     echo "$fsOption2 already in $kernelOptionsFile"
@@ -318,19 +434,21 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64" ]||\
 fi
 
 # special prepare when Nvidia Jetson Nano
-if [ ${isNvidia} -eq 1 ] ; then
-  # disable GUI on boot
-  sudo systemctl set-default multi-user.target
+if [ $(uname -a | grep -c 'tegra') -gt 0 ] ; then
+  echo "Nvidia --> disable GUI on boot"
+  systemctl set-default multi-user.target
 fi
 
-echo ""
-echo "*** CONFIG ***"
+echo -e "\n*** CONFIG ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#raspi-config
 
 # set new default password for root user
 echo "root:btcticker" | sudo chpasswd
 echo "pi:btcticker" | sudo chpasswd
 
+# limit journald system use
+sed -i "s/^#SystemMaxUse=.*/SystemMaxUse=250M/g" /etc/systemd/journald.conf
+sed -i "s/^#SystemMaxFileSize=.*/SystemMaxFileSize=50M/g" /etc/systemd/journald.conf
 
 
 # change log rotates
@@ -472,33 +590,21 @@ sudo apt -y install tmux
 # install a command-line fuzzy finder (https://github.com/junegunn/fzf)
 sudo apt -y install fzf
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
-
-echo ""
-echo "*** Python DEFAULT libs & dependencies ***"
+echo -e "\n*** Python DEFAULT libs & dependencies ***"
 
 # for setup shell scripts
 sudo apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
-sudo -H python3 -m pip install requests[socks]==2.28.0
+sudo -H python3 -m pip install requests[socks]==2.31.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.22.4
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
-sudo -H python3 -m pip install matplotlib==3.5.2
-sleep 60
-sudo -H python3 -m pip install pandas==1.4.2
-sudo -H python3 -m pip install mplfinance==0.12.9b1
+sudo -H python3 -m pip install numpy==1.26.3
+sudo -H python3 -m pip install matplotlib==3.8.2
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
+sudo -H python3 -m pip install pandas==2.1.4
+sudo -H python3 -m pip install mplfinance==0.12.10b0
 
 # sudo -H python3 -m pip install flask-bootstrap
 # sudo -H python3 -m pip install wtforms
@@ -509,10 +615,10 @@ sleep 60
 echo "*** HARDENING ***"
 sudo apt install -y --no-install-recommends python3-systemd fail2ban
 
-sudo rm -rf /home/admin/bcm2835-1.71
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.71.tar.gz
-tar zxvf bcm2835-1.71.tar.gz
-cd bcm2835-1.71/
+sudo rm -rf /home/admin/bcm2835-1.73
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
+tar zxvf bcm2835-1.73.tar.gz
+cd bcm2835-1.73/
 sudo ./configure
 sudo make
 sudo make check
@@ -520,56 +626,53 @@ sudo make install
 cd ..
 
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
-
-
-echo ""
-echo "*** ADDING MAIN USER admin ***"
+echo -e "\n*** ADDING MAIN USER admin ***"
 # using the default password 'btcticker'
 
 sudo adduser --disabled-password --gecos "" admin
 echo "admin:btcticker" | sudo chpasswd
+
 sudo adduser admin sudo
 sudo chsh admin -s /bin/bash
 
-sudo usermod -a -G gpio admin
-sudo usermod -a -G spi admin
-
 # configure sudo for usage without password entry
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
+# check if group "admin" was created
+if [ $(sudo cat /etc/group | grep -c "^admin") -lt 1 ]; then
+  echo -e "\nMissing group admin - creating it ..."
+  /usr/sbin/groupadd --force --gid 1002 admin
+  usermod -a -G admin admin
+else
+  echo -e "\nOK group admin exists"
+fi
+
+sudo usermod -a -G gpio admin
+sudo usermod -a -G spi admin
+sudo usermod -a -G i2c admin
 
 
-
-echo ""
-echo "Build matplot cache"
+echo -e "\nBuild matplot cache"
 cd /home/admin/
 sudo -u admin python3 -c "from pylab import *; set_loglevel('debug'); plot(); show()"
 
-echo ""
-echo "*** SHELL SCRIPTS AND ASSETS ***"
+echo -e "\n*** SHELL SCRIPTS AND ASSETS ***"
 
 # copy btc-ticker repo from github
 cd /home/admin/
 sudo -u admin git config --global user.name "${githubUser}"
 sudo -u admin git config --global user.email "johndoe@example.com"
 sudo -u admin rm -rf /home/admin/btc-ticker
-sudo -u admin git clone -b ${githubBranch} https://github.com/${githubUser}/btc-ticker.git
+sudo -u admin git clone -b "${branch}" https://github.com/${github_user}/btc-ticker.git
 sudo -u admin cp -r /home/admin/btc-ticker/home.admin/*.* /home/admin
 sudo -u admin chmod +x *.sh
 sudo -u admin cp -r /home/admin/btc-ticker/home.admin/assets /home/admin/
-sudo -u admin cp -r /home/admin/raspiblitz/home.admin/.tmux.conf /home/admin
+sudo -u admin cp -r /home/admin/btc-ticker/home.admin/.tmux.conf /home/admin
 sudo -u admin cp -r /home/admin/btc-ticker/home.admin/config.scripts /home/admin/
 sudo -u admin chmod +x /home/admin/config.scripts/*.sh
 
 cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
 cd /home/admin/
-
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
 
 
 sudo rm -rf /home/admin/e-Paper/
@@ -578,9 +681,11 @@ cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
 sudo python3 setup.py install
 cd /home/admin/
 
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
+sudo rm -rf /home/admin/Touch_e-Paper_HAT/
+sudo -u admin git clone https://github.com/waveshare/Touch_e-Paper_HAT
+cd /home/admin/Touch_e-Paper_HAT/python
+sudo python3 setup.py install
+cd /home/admin/
 
 # add /sbin to path for all
 sudo bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
@@ -608,16 +713,14 @@ else
 fi
 
 
-echo ""
-echo "*** SWAP FILE ***"
+echo -e "\n*** SWAP FILE ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#moving-the-swap-file
 # but just deactivating and deleting old (will be created alter when user adds HDD)
 
 sudo dphys-swapfile swapoff
 sudo dphys-swapfile uninstall
 
-echo ""
-echo "*** INCREASE OPEN FILE LIMIT ***"
+echo -e "\n*** INCREASE OPEN FILE LIMIT ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#increase-your-open-files-limit
 
 sudo sed --in-place -i "56s/.*/*    soft nofile 128000/" /etc/security/limits.conf
@@ -634,7 +737,7 @@ sudo bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-sessio
 
 
 # *** CACHE DISK IN RAM ***
-echo "Activating CACHE RAM DISK ... "
+echo -e "\nActivating CACHE RAM DISK ... "
 sudo /home/admin/config.scripts/ticker.cache.sh on
 
 # *** Bluetooth & other configs ***
@@ -677,8 +780,8 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
   sudo sed -i "s/^dtoverlay=vc4-fkms-v3d/# dtoverlay=vc4-fkms-v3d/g" /boot/config.txt
   echo
 
-  # I2C fix (make sure dtparam=i2c_arm is not on)
-  sudo sed -i "s/^dtparam=i2c_arm=.*//g" /boot/config.txt
+  #enable i2c
+  sudo sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/config.txt
   #enable SPI
    sudo sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
 fi
@@ -687,29 +790,24 @@ sudo timedatectl set-timezone Europe/Berlin
 
 # *** BOOTSTRAP ***
 # see background README for details
-echo ""
-echo "*** RASPI BOOTSTRAP SERVICE ***"
+echo -e "\n*** RASPI BOOTSTRAP SERVICE ***"
+cd /home/admin/
 sudo chmod +x /home/admin/_bootstrap.sh
-sudo cp ./assets/bootstrap.service /etc/systemd/system/bootstrap.service
+sudo cp /home/admin/assets/bootstrap.service /etc/systemd/system/bootstrap.service
 sudo systemctl enable bootstrap
 
-echo ""
-echo "*** btc-ticker SERVICE ***"
+echo -e "\n*** btc-ticker SERVICE ***"
 sudo chmod +x /home/admin/run.sh
 sudo cp /home/admin/assets/btcticker.service /etc/systemd/system/btcticker.service
 sudo systemctl enable btcticker
 
-echo "*** ro remount SERVICE ***"
-sudo cp ./assets/ro_remount.service /etc/systemd/system/ro_remount.service
+echo -e "\n*** ro remount SERVICE ***"
+sudo cp /home/admin/assets/ro_remount.service /etc/systemd/system/ro_remount.service
 sudo systemctl enable ro_remount
 
 # echo "*** check wlan SERVICE ***"
 # sudo cp ./assets/check_wifi.service /etc/systemd/system/check_wifi.service
 #sudo systemctl enable check_wifi.service
-
-echo "sleeping 60 seconds"
-# sleep for 60 seconds
-sleep 60
 
 # Enable firewwall
 sudo /home/admin/90finishSetup.sh

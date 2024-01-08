@@ -124,7 +124,7 @@ network={
 
 The SDcard build process is inspired by the great [raspiblitz](https://github.com/rootzoll/raspiblitz).
 
-* Download lastest [raspios image](https://downloads.raspberrypi.org/raspios_armhf/images/)
+* Download lastest [raspios image](https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/)
 * Write the Image to a SD card [Tutorial](https://www.raspberrypi.org/documentation/installation/installing-images/README.md)
 * Add a `ssh` file to the boot partition when mounted on PC
 * Add a `wpa_supplicant.conf` file, as shown in the section before. More information are also available [here](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)

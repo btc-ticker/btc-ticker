@@ -14,18 +14,6 @@ import time
 import RPi.GPIO as GPIO
 import sdnotify
 from PIL import Image
-from TP_lib import epd2in9_V2 as TP_epd2in9_V2
-from TP_lib import epd2in13_V3 as TP_epd2in13_V3
-from waveshare_epd import (
-    epd2in7,
-    epd2in7_V2,
-    epd2in9_V2,
-    epd2in13_V2,
-    epd2in13_V3,
-    epd3in7,
-    epd7in5_HD,
-    epd7in5_V2,
-)
 
 from btcticker.config import Config
 from btcticker.ticker import Ticker
@@ -86,31 +74,53 @@ def get_epd(epd_type):
     Init4Gray = False
     FullUpdate = False
     if epd_type == "2in13_V2":
+        from waveshare_epd import epd2in13_V2
+
         epd = epd2in13_V2.EPD()
     elif epd_type == "TP_epd2in13_V3":
-        epd = TP_epd2in13_V3.EPD()
+        from TP_lib import epd2in13_V3
+
+        epd = epd2in13_V3.EPD()
         FullUpdate = True
     elif epd_type == "2in13_V3":
+        from waveshare_epd import epd2in13_V3
+
         epd = epd2in13_V3.EPD()
     elif epd_type == "2in7_4gray":
+        from waveshare_epd import epd2in7
+
         epd = epd2in7.EPD()
         Use4Gray = True
         Init4Gray = True
     elif epd_type == "2in7":
+        from waveshare_epd import epd2in7
+
         epd = epd2in7.EPD()
     elif epd_type == "2in7_V2":
+        from waveshare_epd import epd2in7_V2
+
         epd = epd2in7_V2.EPD()
     elif epd_type == "2in9_V2":
+        from waveshare_epd import epd2in9_V2
+
         epd = epd2in9_V2.EPD()
     elif epd_type == "TP_2in9_V2":
-        epd = TP_epd2in9_V2.EPD()
+        from TP_lib import epd2in9_V2
+
+        epd = epd2in9_V2.EPD()
     elif epd_type == "3in7":
+        from waveshare_epd import epd3in7
+
         epd = epd3in7.EPD()
         Use4Gray = True
     elif epd_type == "7in5_V2":
+        from waveshare_epd import epd7in5_V2
+
         epd = epd7in5_V2.EPD()
         width_first = False
     elif epd_type == "7in5_HD":
+        from waveshare_epd import epd7in5_HD
+
         epd = epd7in5_HD.EPD()
         width_first = False
     else:
