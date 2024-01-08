@@ -1,11 +1,8 @@
 
 name: armhf-rpi-lean-image-build
 
-concurrency:
-  group: armhf-rpi-lean-image-build-${{ github.head_ref }}
-  cancel-in-progress: true
-
 on:
+  workflow_dispatch:
   push:
     branches: ["main"]
     paths:
