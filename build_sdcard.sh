@@ -235,12 +235,12 @@ done
 # ---------------------------------------
 cpu="$(uname -m)" && echo "cpu=${cpu}"
 case "${cpu}" in
-  aarch64|x86_64|armv7l);;
+  aarch64|x86_64|armv7l|armv6l);;
   *) echo -e "# FAIL #\nCan only build on aarch64 or x86_64 not on: cpu=${cpu}"; exit 1;;
 esac
 architecture="$(dpkg --print-architecture 2>/dev/null)" && echo "architecture=${architecture}"
 case "${architecture}" in
-  arm*|amd64|armv7l);;
+  arm*|amd64|armv7l|armv6l);;
   *) echo -e "# FAIL #\nCan only build on arm* or amd64 not on: architecture=${cpu}"; exit 1;;
 esac
 
