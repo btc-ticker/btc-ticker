@@ -313,6 +313,7 @@ fi
 # remove some (big) packages that are not needed
 
 apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
+apt remove --purge -y thonny libqt5* realvnc-vnc-server libgstreamer*
 if [ "${display}" == "eink" ]; then
   apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
   apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
@@ -534,9 +535,6 @@ apt install -y fbi
 
 apt-get install -y qrencode
 
-# prepare for powertest
-apt install -y sysbench
-
 # check for dependencies on DietPi, Ubuntu, Armbian
 apt install -y build-essential
 
@@ -547,7 +545,7 @@ if [ "${baseimage}" = "armbian" ]; then
 fi
 
 # dependencies for python
-apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask
+apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask python3-matplotlib python3-pandas
 
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
 update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
@@ -558,8 +556,6 @@ apt install -y rsync
 apt install -y net-tools
 #to display hex codes
 apt install -y xxd
-# setuptools needed for Nyx
-pip install setuptools
 # install OpenSSH client + server
 apt install -y openssh-client
 apt install -y openssh-sftp-server
@@ -594,14 +590,12 @@ apt -y install dialog bc python3-dialog
 
 # libs (for global python scripts)
 sudo -H python3 -m pip install --upgrade pip
+sudo -H python3 -m pip install setuptools
 sudo -H python3 -m pip install requests[socks]==2.31.0
 sudo -H python3 -m pip install RPi.GPIO
 sudo -H python3 -m pip install spidev
 sudo -H python3 -m pip install sdnotify
-sudo -H python3 -m pip install numpy==1.26.3
-sudo -H python3 -m pip install matplotlib==3.8.2
-
-sudo -H python3 -m pip install pandas==2.1.4
+sudo -H python3 -m pip install pydantic
 sudo -H python3 -m pip install mplfinance==0.12.10b0
 
 # sudo -H python3 -m pip install flask-bootstrap

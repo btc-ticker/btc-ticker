@@ -60,11 +60,6 @@ sudo touch /boot/ro
 ```
 enables the readonly remount. The file can also be created with a PC, similar to the ssh file.
 
-On Version 0.5.0, the following has to be done, in order to be able to put the file system into RO mode:
-```
-sudo apt-get purge vnstat
-```
-
 ### Switching between ro and rw mode
 After logging in with ssh,
 ```
