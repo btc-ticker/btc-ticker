@@ -10,13 +10,13 @@ from matplotlib.figure import Figure
 from PIL import Image
 
 
-def makeSpark(pricestack, figsize=(10, 3), dpi=17):
+def makeSpark(pricestack, figsize_pixel=(170, 51), dpi=17):
     # Draw and save the sparkline that represents historical data
 
     # Subtract the mean from the sparkline to make the
     # mean appear on the plot (it's really the x axis)
     x = pricestack - np.mean(pricestack)
-
+    figsize = (figsize_pixel[0] / dpi, figsize_pixel[1] / dpi)
     fig = Figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot()
     canvas = FigureCanvasAgg(fig)
@@ -37,7 +37,9 @@ def makeSpark(pricestack, figsize=(10, 3), dpi=17):
     return im
 
 
-def makeCandle(ohlc, figsize=(10, 3), dpi=17, plot_type='candle', x_axis=True):
+def makeCandle(ohlc, figsize_pixel=(170, 51), dpi=17, plot_type='candle', x_axis=True):
+
+    figsize = (figsize_pixel[0] / dpi, figsize_pixel[1] / dpi)
     converter = mdates.ConciseDateConverter()
     munits.registry[np.datetime64] = converter
     munits.registry[datetime.date] = converter

@@ -1,4 +1,5 @@
 import logging
+import time
 
 from .coingecko import CoinGecko
 from .coinpaprika import Coinpaprika
@@ -10,13 +11,19 @@ class Price:
     def __init__(self, fiat="eur", days_ago=1):
         self.coingecko = CoinGecko(whichcoin="bitcoin", days_ago=days_ago)
         self.coinpaprika = Coinpaprika(whichcoin="btc-bitcoin")
+        self.min_refresh_time = 120
         self.fiat = fiat
         self.ohlc = {}
         self.price = {}
         self.timeseriesstack = []
 
     def refresh(self):
-
+        current_time = time.time()
+        if (
+            'timestamp' in self.price
+            and current_time - self.price['timestamp'] < self.min_refresh_time
+        ):
+            return
         logger.info("Getting Data")
 
         self.price = {}
@@ -26,6 +33,7 @@ class Price:
             self.price["sat_usd"] = 1e8 / self.price["usd"]
             self.price["fiat"] = self.coingecko.getCurrentPrice(self.fiat)
             self.price["sat_fiat"] = 1e8 / self.price["fiat"]
+            self.price["timestamp"] = current_time
             self.ohlc = self.coingecko.getOHLC(self.fiat)
             self.timeseriesstack = self.coingecko.getHistoryPrice(self.fiat)
             price_update_successfull = True
@@ -37,6 +45,10 @@ class Price:
                 self.price["sat_usd"] = 1e8 / self.price["usd"]
                 self.price["fiat"] = self.coinpaprika.getCurrentPrice(self.fiat.upper())
                 self.price["sat_fiat"] = 1e8 / self.price["fiat"]
+                self.price["timestamp"] = current_time
+                self.timeseriesstack = [self.price["fiat"]]
+                self.ohlc = {}
+                price_update_successfull = True
             except Exception as e:
                 logger.warn(str(e))
 
@@ -48,7 +60,7 @@ class Price:
         return self.coingecko.days_ago
 
     def getPriceChange(self):
-        if len(self.timeseriesstack) == 0:
+        if len(self.timeseriesstack) < 2:
             return ""
 
         pricechange = (

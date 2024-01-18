@@ -7,9 +7,8 @@ tests_require = ['pytest']
 requires = [
     "requests",
     "babel",
-    "pycoingecko",
-    "blockchain",
-    "pymempool",
+    "pycoingecko>=3.1.0",
+    "pymempool>=0.1.2",
     "Pillow",
     "matplotlib",
     "numpy",

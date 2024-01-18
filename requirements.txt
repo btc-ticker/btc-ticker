@@ -1,8 +1,7 @@
 requests
 babel
 pycoingecko
-blockchain
-pymempool
+pymempool>=0.1.2
 Pillow
 matplotlib
 numpy

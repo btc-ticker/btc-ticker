@@ -161,9 +161,9 @@ def draw_image(epd_type, image=None):
 
 
 def showmessage(epd_type, ticker, message, mirror, inverted):
-    ticker.inverted = inverted
+    ticker.drawer.inverted = inverted
     ticker.build_message(message, mirror=mirror)
-    draw_image(epd_type, ticker.image)
+    draw_image(epd_type, ticker.get_image())
     return time.time()
 
 
@@ -227,6 +227,7 @@ def main(config, config_file):
         # 5*365*(24*60/3.0) / 1000000
         # Update every 2.8 min
         updatefrequency = 168
+    ticker.set_min_refresh_time(updatefrequency - 1)
     updatefrequency_after_newblock = 120
     # mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
 
@@ -266,9 +267,9 @@ def main(config, config_file):
             ticker.setDaysAgo(days)
             if refresh:
                 ticker.refresh()
-            ticker.inverted = inverted
+            ticker.drawer.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
-            draw_image(epd_type, ticker.image)
+            draw_image(epd_type, ticker.get_image())
             lastgrab = time.time()
         except Exception as e:
             logging.warning(e)

@@ -164,7 +164,7 @@ def main(config, config_file):
                 ticker.refresh()
             ticker.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
-            draw_image(epd_type, ticker.image)
+            draw_image(epd_type, ticker.get_image())
             lastgrab = time.time()
         except Exception as e:
             logging.warning(e)

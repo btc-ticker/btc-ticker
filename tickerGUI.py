@@ -67,9 +67,9 @@ layout_shifting = config.main.layout_shifting
 ticker.setDaysAgo(days_list[days_ind])
 ticker.refresh()
 ticker.build(mirror=False, mode=mode_list[ticker_ind], layout=layout_list[layout_ind])
+ticker.set_min_refresh_time(120)
 
-
-image_elem = sg.Image(data=get_img_data(ticker.image))
+image_elem = sg.Image(data=get_img_data(ticker.get_image()))
 
 col = [[image_elem]]
 
@@ -111,7 +111,7 @@ while True:
         )
 
         # update window with new image
-        image_elem.update(data=get_img_data(ticker.image))
+        image_elem.update(data=get_img_data(ticker.get_image()))
         time.sleep(2)
 
 
