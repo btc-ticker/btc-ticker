@@ -546,7 +546,7 @@ fi
 
 # dependencies for python
 apt install -y python3-venv python3-dev python3-wheel python3-jinja2 python3-pip python3-pil python3-numpy libatlas-base-dev python3-flask python3-matplotlib python3-pandas
-apt install -y python3-pydantic python3-rpi.gpio python3-spidev python3-sdnotify python3-requests-unixsocket python3-requests
+apt install -y python3-pydantic python3-rpi.gpio python3-spidev python3-sdnotify python3-requests-unixsocket python3-requests python3-babel
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
 update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
@@ -671,7 +671,7 @@ cd /home/admin/Touch_e-Paper_HAT/python
 python3 setup.py install
 cd /home/admin/
 
-sudo -H python3 -m pip uninstall Jetson.GPIO
+sudo -H python3 -m pip uninstall -y Jetson.GPIO
 
 # add /sbin to path for all
 bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
