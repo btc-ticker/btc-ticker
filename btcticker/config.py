@@ -23,8 +23,10 @@ class MainConfig(BaseModel):
     inverted: bool = False
     show_block_height: bool = False
     update_on_new_block: bool = True
-    mempool_api_url: str = 'https://mempool.space/api/,https://mempool.emzy.de/api/,"\
-        "https://mempool.bitcoin-21.org/api/'
+    mempool_api_url: str = (
+        'https://mempool.space/api/,https://mempool.emzy.de/api/,'
+        'https://mempool.bitcoin-21.org/api/'
+    )
     epd_type: str = '2in7_4gray'
     show_best_fees: bool = True
     show_block_time: bool = True

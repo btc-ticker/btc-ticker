@@ -17,8 +17,9 @@ bitcoin-ticker is a E-ink ticker that shows usefull information about bitcoin. D
 * micro SD card with 16 GB or more (e.g. from [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/speicherkarten/sandisk-ultra-microsdhc-a1-98mb/s-class-10-speicherkarte-43-adapter-16gb))
 * Printed Case (e.g. Typ B from [ebay](https://www.ebay.de/itm/GEHAUSE-fur-2-7-264-176-ePaper-e-Ink-Display-HAT-und-Raspberry-Pi-Zero/384176908149) oder [ebay-kleinanzeigen](https://www.ebay-kleinanzeigen.de/s-anzeige/gehaeuse-fuer-2-7-e-ink-display-hat-rasp-pi-zero-typ-b/1807419003-225-8325))
 
-I'm currently working on a 7.5 inch version with the following e-Paper:
+### More e-paper that are supportet:
 * waveshare 7.5 V2 (e.g. from [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/7.5-800-215-480-epaper-display-hat-f-252-r-raspberry-pi-v2))
+* waveshare 3.7 (e.g. from [welectron](https://www.welectron.com/Waveshare-18057-37inch-e-Paper-HAT))
 
 The config.ini needs the following settings when using the 7.5 inch:
 ```
@@ -94,10 +95,15 @@ Select now:
 * PATCH
 to update the ticker to the newest updates from git.
 
-## Flash SDcard
-
+## Download image
 * Downlad version 0.5.0 from [btc-ticker-0_5_0.img.gz](https://btc-ticker.com/btc-ticker-0_5_0.img.gz)
 * Verify SHA256 checksum. It should be: `a6ddfbc7ab25caa13f7746efcd764689cdcdee0c0a4e542e03d8bb146b369328`
+
+### Flash SDcard with Raspberry Pi Imager
+Use https://www.raspberrypi.com/software/ and enter your wlan credentials before flashing the image to the sd-card.
+
+### Flash SDcard with an other flasher
+
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev

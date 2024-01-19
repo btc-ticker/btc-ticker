@@ -598,6 +598,7 @@ sudo -H python3 -m pip install sdnotify
 sudo -H python3 -m pip install pydantic
 sudo -H python3 -m pip install mplfinance==0.12.10b0
 
+
 # sudo -H python3 -m pip install flask-bootstrap
 # sudo -H python3 -m pip install wtforms
 # sudo -H python3 -m pip install gunicorn
@@ -674,6 +675,8 @@ sudo -u admin git clone https://github.com/waveshare/Touch_e-Paper_HAT
 cd /home/admin/Touch_e-Paper_HAT/python
 python3 setup.py install
 cd /home/admin/
+
+sudo -H python3 -m pip remove Jetson.GPIO
 
 # add /sbin to path for all
 bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"

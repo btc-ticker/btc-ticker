@@ -724,12 +724,12 @@ class Ticker:
             show_clock=False,
         )
         w = 6
-        dpi = int(528 / w)
+        dpi = int(480 / w)
 
-        factor5_w = int(5 / 528 * self.width)
-        factor3_h = int(3 / 880 * self.height)
-        factor10_h = int(10 / 880 * self.height)
-        factor20_h = int(20 / 880 * self.height)
+        factor5_w = int(5 / 480 * self.width)
+        factor3_h = int(3 / 800 * self.height)
+        factor10_h = int(10 / 800 * self.height)
+        factor20_h = int(20 / 800 * self.height)
         pos_y = factor3_h
 
         if self.width > 450 and self.height > self.width:
@@ -772,7 +772,7 @@ class Ticker:
         if self.width > 450 and self.height > self.width:
             ohlc_image = makeCandle(
                 self.price.ohlc,
-                figsize_pixel=(self.width, self.height * 0.55),
+                figsize_pixel=(self.width, self.height * 0.45),
                 dpi=dpi,
                 x_axis=False,
             )
