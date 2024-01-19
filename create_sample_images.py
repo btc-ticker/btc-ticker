@@ -26,10 +26,10 @@ layout_list = ["one_number"]
 # layout_list = ["big_two_rows"]
 # layout_list = ["mempool"]
 layout_list = ["fiatheight"]
-# layout_list = ["fiat"]
-# layout_list = ["all"]
+layout_list = ["fiat"]
+layout_list = ["all"]
 # layout_list = ["mempool"]
-layout_list = ["ohlc"]
+# layout_list = ["ohlc"]
 size_list = [
     (122, 250, 0),
     (176, 264, 0),

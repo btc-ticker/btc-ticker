@@ -494,7 +494,7 @@ class Ticker:
         factor51_h = int(51 / 176 * self.height)
 
         pos_y = factor3_h
-        height_div = 10
+        height_div = 9
         font_size = self.drawer.calc_font_size(
             self.width - factor10_w,
             (self.height) / height_div - factor3_h,
@@ -1191,8 +1191,7 @@ class Ticker:
                 line_str[3] = '%d blk' % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
                 line_str[5] = '$'
-                line_str[6] = " "
-                line_str[7] = format(int(current_price["usd"]), "")
+                line_str[6] = format(int(current_price["usd"]), "")
 
             line_str[1] = self.get_fees_string(mempool)
 
