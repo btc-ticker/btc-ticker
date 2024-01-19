@@ -96,8 +96,8 @@ Select now:
 to update the ticker to the newest updates from git.
 
 ## Download image
-* Downlad version 0.5.0 from [btc-ticker-0_5_0.img.gz](https://btc-ticker.com/btc-ticker-0_5_0.img.gz)
-* Verify SHA256 checksum. It should be: `a6ddfbc7ab25caa13f7746efcd764689cdcdee0c0a4e542e03d8bb146b369328`
+* Downlad version 0.6.0 from [btc-ticker-0_6_0.img.gz](https://btc-ticker.com/btc-ticker-0_6_0.img.gz)
+* Verify SHA256 checksum. It should be: `ebeb7e615237853f7388f3f8b00268c2e88b560104f711f11e76ed6e0e59805d`
 
 ### Flash SDcard with Raspberry Pi Imager
 Use https://www.raspberrypi.com/software/ for flashing the image to the sd-card.
