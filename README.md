@@ -111,7 +111,7 @@ Use https://www.raspberrypi.com/software/ for flashing the image to the sd-card.
 
 ### wpa_supplicant.conf (only when not using settings on Imager)
 When you use the Raspberry Pi Imager with settings, there is no need for adding wpa_supplicant.conf manually.
-When you did not enter your wifi credentials in the settings menu, you need to do thefollowing: 
+When you did not enter your wifi credentials in the settings menu, you need to do thefollowing:
 
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
