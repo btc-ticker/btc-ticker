@@ -100,9 +100,18 @@ to update the ticker to the newest updates from git.
 * Verify SHA256 checksum. It should be: `a6ddfbc7ab25caa13f7746efcd764689cdcdee0c0a4e542e03d8bb146b369328`
 
 ### Flash SDcard with Raspberry Pi Imager
-Use https://www.raspberrypi.com/software/ and enter your wlan credentials before flashing the image to the sd-card.
+Use https://www.raspberrypi.com/software/ for flashing the image to the sd-card.
+* Select btc-ticker img file
+* select sdcard
+* Before writing click on settings and modify the following settings
+* enable ssh with Use password authentication
+* set username and password and write Username: admin Password: btcticker
+* enable WiFi and enter your WiFi connection details
+* start with clicking on write
 
-### Flash SDcard with an other flasher
+### wpa_supplicant.conf (only when not using settings on Imager)
+When you use the Raspberry Pi Imager with settings, there is no need for adding wpa_supplicant.conf manually.
+When you did not enter your wifi credentials in the settings menu, you need to do thefollowing: 
 
 * add `wpa_supplicant.conf` to the boot partition when mounted on PC
 ```
