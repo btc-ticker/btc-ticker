@@ -16,6 +16,7 @@ import sdnotify
 from PIL import Image
 
 from btcticker.config import Config
+from btcticker.epd import get_epd
 from btcticker.ticker import Ticker
 
 temp_dir = tempfile.TemporaryDirectory()
@@ -64,68 +65,6 @@ def checkInternetSocket(host="8.8.8.8", port=53, timeout=10):
     except OSError as ex:
         print(ex)
         return False
-
-
-def get_epd(epd_type):
-    epd = None
-    mirror = False
-    width_first = True
-    Use4Gray = False
-    Init4Gray = False
-    FullUpdate = False
-    if epd_type == "2in13_V2":
-        from waveshare_epd import epd2in13_V2
-
-        epd = epd2in13_V2.EPD()
-    elif epd_type == "TP_epd2in13_V3":
-        from TP_lib import epd2in13_V3
-
-        epd = epd2in13_V3.EPD()
-        FullUpdate = True
-    elif epd_type == "2in13_V3":
-        from waveshare_epd import epd2in13_V3
-
-        epd = epd2in13_V3.EPD()
-    elif epd_type == "2in7_4gray":
-        from waveshare_epd import epd2in7
-
-        epd = epd2in7.EPD()
-        Use4Gray = True
-        Init4Gray = True
-    elif epd_type == "2in7":
-        from waveshare_epd import epd2in7
-
-        epd = epd2in7.EPD()
-    elif epd_type == "2in7_V2":
-        from waveshare_epd import epd2in7_V2
-
-        epd = epd2in7_V2.EPD()
-    elif epd_type == "2in9_V2":
-        from waveshare_epd import epd2in9_V2
-
-        epd = epd2in9_V2.EPD()
-    elif epd_type == "TP_2in9_V2":
-        from TP_lib import epd2in9_V2
-
-        epd = epd2in9_V2.EPD()
-    elif epd_type == "3in7":
-        from waveshare_epd import epd3in7
-
-        epd = epd3in7.EPD()
-        Use4Gray = True
-    elif epd_type == "7in5_V2":
-        from waveshare_epd import epd7in5_V2
-
-        epd = epd7in5_V2.EPD()
-        width_first = False
-    elif epd_type == "7in5_HD":
-        from waveshare_epd import epd7in5_HD
-
-        epd = epd7in5_HD.EPD()
-        width_first = False
-    else:
-        raise Exception("Wrong epd_type")
-    return epd, mirror, width_first, Use4Gray, Init4Gray, FullUpdate
 
 
 def get_display_size(epd_type):

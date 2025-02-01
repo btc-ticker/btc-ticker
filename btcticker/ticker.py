@@ -7,54 +7,36 @@ from babel import numbers
 
 from btcticker.chart import makeCandle, makeSpark
 from btcticker.config import Config
-from btcticker.drawer import Drawer
 from btcticker.mempool import Mempool
-from btcticker.price import Price
+from btcpriceticker.price import Price
+
+from piltext import ImageDrawer, FontManager, TextGrid
 
 
 class Ticker:
     def __init__(self, config: Config, width, height):
         self.config = config
-        self.height = width
-        self.width = height
+        self.height = height
+        self.width = width
         self.fiat = config.main.fiat
         self.mempool = Mempool(api_url=config.main.mempool_api_url)
-        self.price = Price(fiat=self.fiat, days_ago=1)
+        self.price = Price(fiat=self.fiat, days_ago=1, enable_ohlc=True)
         self.mempool.request_timeout = 20
 
         fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts')
+        self.font_manager = FontManager(fontdir, default_font_size=20, default_font_name="Roboto-Medium")
+        self.image = ImageDrawer(width, height, self.font_manager)
 
-        self.drawer = Drawer(
-            width, height, config.main.orientation, config.main.inverted, fontdir
-        )
+        # config.main.orientation, config.main.inverted
 
-        self.font_side = self.drawer.buildFont(
-            config.fonts.font_side, config.fonts.font_side_size
-        )
-        self.font_top = self.drawer.buildFont(
-            config.fonts.font_top, config.fonts.font_top_size
-        )
-        self.font_fee = self.drawer.buildFont(
-            config.fonts.font_fee, config.fonts.font_fee_size
-        )
 
-    def rebuildFonts(self, side_size=None, top_size=None, fee_size=None):
-        if side_size is not None:
-            self.font_side = self.drawer.buildFont(
-                self.config.fonts.font_side, side_size
-            )
-        if top_size is not None:
-            self.font_top = self.drawer.buildFont(self.config.fonts.font_top, top_size)
-        if fee_size is not None:
-            self.font_fee = self.drawer.buildFont(self.config.fonts.font_fee, fee_size)
+    def set_days_ago(self, days_ago):
+        self.price.set_days_ago(days_ago)
 
-    def setDaysAgo(self, days_ago):
-        self.price.setDaysAgo(days_ago)
-
-    def _change_size(self, width, height):
-        self.height = width
-        self.width = height
-        self.drawer._change_size(width, height)
+    def change_size(self, width, height):
+        self.height = height
+        self.width = width
+        self.image.change_size(width, height)
 
     def set_min_refresh_time(self, min_refresh_time):
         self.price.min_refresh_time = min_refresh_time
@@ -63,6 +45,20 @@ class Ticker:
     def refresh(self):
         self.mempool.refresh()
         self.price.refresh()
+
+    def get_w_factor(self, w, factor=264):
+        if w < 0:
+            w = 0
+        if w > factor:
+            w = factor
+        return int(w / factor * self.width)
+
+    def get_h_factor(self, h, factor=176):
+        if h < 0:
+            h = 0
+        if h > factor:
+            h = factor
+        return int(h / factor * self.height)
 
     def get_next_difficulty_string(
         self,
@@ -191,29 +187,23 @@ class Ticker:
     def build_message(self, message, mirror=True):
         if not isinstance(message, str):
             return
-        self.drawer.initialize()
+        self.image.initialize()
         y = 0
         message_per_line = message.split("\n")
         for i in range(len(message_per_line)):
-            font_size = self.drawer.calc_font_size(
-                self.width,
-                self.height,
+            w, h, font_size = self.image.draw_text(
                 message_per_line[i],
-                self.config.fonts.font_buttom,
-                anchor="lt",
-            )
-            w, h = self.drawer.draw_text(
-                0,
-                y,
-                font_size,
-                message_per_line[i],
-                self.config.fonts.font_buttom,
+                (0, y),
+                end=(self.width - 1, self.height - 1),
+                font_name=self.config.fonts.font_buttom,
                 anchor="lt",
             )
             y += h
-        self.drawer.finalize(mirror=mirror)
+        self.image.finalize(mirror=mirror)
 
     #   Send the image to the screen
+    def initialize(self):
+        self.image.initialize()
 
     def build(self, mode="fiat", layout="all", mirror=True):
 
@@ -221,7 +211,7 @@ class Ticker:
 
         if mempool["height"] < 0:
             return
-        self.drawer.initialize()
+        self.initialize()
         if layout == "big_two_rows":
             self.draw_big_two_rows(mode)
         elif layout == "big_one_row":
@@ -239,20 +229,20 @@ class Ticker:
         else:
             self.draw_all(mode)
 
-        self.drawer.finalize(mirror=mirror)
+        self.image.finalize(mirror=mirror, orientation=self.config.main.orientation, inverted=self.config.main.inverted)
 
     #   Send the image to the screen
 
     def show(self):
 
-        self.drawer.show()
+        self.image.show()
 
     def get_current_price(self, symbol, with_symbol=False, shorten=True):
         price_str = ""
         current_price = self.price.price
         symbolstring = numbers.get_currency_symbol(self.fiat.upper(), locale="en")
         if symbol == "fiat":
-            pricenowstring = self.price.getPriceNow()
+            pricenowstring = self.price.get_price_now()
             price_str = pricenowstring.replace(",", "")
             if with_symbol:
                 price_str = symbolstring + price_str
@@ -281,7 +271,7 @@ class Ticker:
         return price_str
 
     def get_price_change(self, with_symbol=True):
-        pricechange = self.price.getPriceChange()
+        pricechange = self.price.get_price_change()
         symbolstring = numbers.get_currency_symbol(self.fiat.upper(), locale="en")
         if with_symbol:
             return " "
@@ -346,277 +336,159 @@ class Ticker:
         )
 
     def draw_4_lines(self, line_str):
-        factor5_w = int(5 / 264 * self.width)
-        factor3_h = int(3 / 176 * self.height)
-        factor15_h = int(15 / 176 * self.height)
+        xy = (self.get_w_factor(5),  self.get_h_factor(3))
+        xy_end = (self.width, (self.height - self.get_h_factor(15)) / 3)
+        w, h, font_size = self.image.draw_text(line_str[0], xy, end=xy_end, font_name=self.config.fonts.font_console, anchor="lt")
 
-        pos_y = factor3_h
-        font_size = self.drawer.calc_font_size(
-            self.width - factor5_w,
-            (self.height - factor15_h) / 3,
-            line_str[0],
-            self.config.fonts.font_console,
-            anchor="lt",
-        )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[0],
-            self.config.fonts.font_console,
-            anchor="lt",
-        )
-        pos_y += int(h * 0.85)
+        xy = (xy[0], xy[1] + int(h * 0.85))
+        xy_end = (self.width, (self.height) / 5 + xy[1])
+        w, h, font_size = self.image.draw_text(line_str[1], xy, end=xy_end, font_name=self.config.fonts.font_side, anchor="lt")
 
-        font_size = self.drawer.calc_font_size(
-            self.width - factor5_w,
-            self.height / 5,
-            line_str[1],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[1],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        pos_y += h
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[2],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        pos_y += h
-
-        font_size = self.drawer.calc_font_size(
-            self.width,
-            self.height - pos_y,
-            line_str[3],
-            self.config.fonts.font_big,
-            anchor="rs",
-        )
-        self.drawer.draw_text(
-            self.width - 1,
-            self.height - 1,
-            font_size,
-            line_str[3],
-            self.config.fonts.font_big,
-            anchor="rs",
-        )
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(line_str[2], xy, font_size=font_size, font_name=self.config.fonts.font_side, anchor="lt")
+        start = (self.width - 1, self.height - 1)
+        xy_end = (xy[0], xy[1])
+        w, h, font_size = self.image.draw_text(line_str[3], start, end=xy_end, font_name=self.config.fonts.font_big, anchor="rs")
 
     def draw_5_lines(self, line_str):
-        factor5_w = int(5 / 264 * self.width)
-        factor3_h = int(3 / 176 * self.height)
+        xy = (self.get_w_factor(5), self.get_h_factor(3))
+        xy_end = (self.width,  (self.height) / 4)
+        w, h, font_size = self.image.draw_text(
+            line_str[0], xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_console,
+            anchor="lt",
+        )
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
+            line_str[1], xy,
+            end=(self.width - 2 * self.get_w_factor(5) + xy[0], (self.height) / 8 - self.get_h_factor(3) + xy[1]),
+            font_name=self.config.fonts.font_fee,
+            anchor="lt",
+        )
 
-        pos_y = factor3_h
-        font_size = self.drawer.calc_font_size(
-            self.width - factor5_w,
-            (self.height) / 4 - factor3_h,
-            line_str[0],
-            self.config.fonts.font_console,
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
+            line_str[2], xy, fontsize=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[0],
-            self.config.fonts.font_console,
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
+            line_str[3],xy, fontsize=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        pos_y += h
-        font_size = self.drawer.calc_font_size(
-            self.width - 2 * factor5_w,
-            (self.height) / 8 - factor3_h,
-            line_str[1],
-            self.config.fonts.font_fee,
-            anchor="lt",
-        )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[1],
-            self.config.fonts.font_fee,
-            anchor="lt",
-        )
-        pos_y += h
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[2],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        pos_y += h
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[3],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        pos_y += h
-
-        font_size = self.drawer.calc_font_size(
-            self.width,
-            self.height - pos_y,
+        
+        xy = (xy[0], xy[1] + h)
+        xy_end = (xy[0], xy[1])
+        w, h, font_size = self.image.draw_text(
             line_str[4],
-            self.config.fonts.font_buttom,
-            anchor="rs",
-        )
-        self.drawer.draw_text(
-            self.width - 1,
-            self.height - 1,
-            font_size,
-            line_str[4],
-            self.config.fonts.font_buttom,
+            (self.width - 1, self.height - 1),
+            end=xy_end,
+            font_name=self.config.fonts.font_buttom,
             anchor="rs",
         )
 
     def draw_7_lines_with_image(self, line_str, mode):
-        pricestack = self.price.timeseriesstack
-        pricechange = self.price.getPriceChange()
-        factor5_w = int(5 / 264 * self.width)
-        factor10_w = int(10 / 264 * self.width)
-        factor100_w = int(100 / 264 * self.width)
-        factor130_w = int(130 / 264 * self.width)
-        factor170_w = int(170 / 264 * self.width)
-        factor3_h = int(3 / 176 * self.height)
-        factor51_h = int(51 / 176 * self.height)
-
-        pos_y = factor3_h
+        pricestack = self.price.timeseries_stack
+        pricechange = self.price.get_price_change()
+        xy = ( self.get_w_factor(5), self.get_h_factor(3))
         height_div = 9
-        font_size = self.drawer.calc_font_size(
-            self.width - factor10_w,
-            (self.height) / height_div - factor3_h,
+        xy_end = (self.width - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div + self.get_h_factor(3) + xy[1])
+        w, h, font_size = self.image.draw_text(
             line_str[0],
-            self.config.fonts.font_top,
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_top,
             anchor="lt",
         )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[0],
-            self.config.fonts.font_top,
-            anchor="lt",
-        )
-        pos_y += h
-        font_size = self.drawer.calc_font_size(
-            self.width - factor10_w,
-            (self.height) / height_div - factor3_h,
+        xy = (xy[0], xy[1] + h)
+        xy_end=(self.width - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div + xy[1])
+        w, h, font_size = self.image.draw_text(
             line_str[1],
-            self.config.fonts.font_fee,
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[1],
-            self.config.fonts.font_fee,
+        xy = (xy[0], xy[1] + h)
+        image_y = xy[1]
+        xy_end = (self.width / 2 - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div - self.get_h_factor(3) + xy[1])
+            
+        w, h, font_size = self.image.draw_text(
+            line_str[2], xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        pos_y += h
-        image_y = pos_y
-        font_size = self.drawer.calc_font_size(
-            self.width / 2 - factor10_w,
-            (self.height) / height_div - factor3_h,
-            line_str[2],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[2],
-            self.config.fonts.font_side,
-            anchor="lt",
-        )
-        pos_y += h
 
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[3],
-            self.config.fonts.font_side,
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
+            line_str[3], xy,
+            font_size=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        pos_y += h
 
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[4],
-            self.config.fonts.font_side,
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
+            line_str[4], xy,
+            font_size=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        pos_y += h
-        image_text_y = pos_y
+
+        image_text_y = xy[1] + h - self.get_h_factor(1)
+        xy = (xy[0], xy[1] + h)
         font_size_image = font_size
-
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
+        w, h, font_size = self.image.draw_text(
             line_str[5],
-            self.config.fonts.font_side,
+            xy,
+            font_size=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        pos_y += h
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
+        
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
             line_str[6],
-            self.config.fonts.font_side,
+            xy,
+            font_size=font_size,
+            font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        font_size = self.drawer.calc_font_size(
-            self.width - w,
-            self.height - pos_y,
+        xy_end = (xy[0], self.height - xy[1] + h)
+        w, h, font_size = self.image.draw_text(
             line_str[7],
-            self.config.fonts.font_buttom,
-            anchor="rs",
-        )
-        self.drawer.draw_text(
-            self.width - 1,
-            self.height - 1,
-            font_size,
-            line_str[7],
-            self.config.fonts.font_buttom,
+            (self.width - 1, self.height - 1),
+            end=xy_end,
+            font_name=self.config.fonts.font_buttom,
             anchor="rs",
         )
 
-        spark_image = makeSpark(pricestack, figsize_pixel=(factor170_w, factor51_h))
+        spark_image = makeSpark(
+            pricestack, figsize_pixel=(self.get_w_factor(170), self.get_h_factor(51))
+        )
         w, h = spark_image.size
-        self.drawer.paste(spark_image, (factor100_w, image_y))
+        self.image.paste(spark_image, (self.get_w_factor(100), image_y))
         if mode != "satfiat":
-            self.drawer.draw_text(
-                factor130_w,
-                image_text_y,
-                font_size_image,
+            xy_end = (self.width, image_text_y - self.get_h_factor(20))
+            self.image.draw_text(
                 str(self.price.days_ago) + "day : " + pricechange,
-                self.config.fonts.font_fee,
+                (self.get_w_factor(130), image_text_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_fee,
                 anchor="lt",
             )
 
     def draw_ohlc(self, mode):
         line_str = ['', '', '', '', '', '', '']
         current_price = self.price.price
-        pricechange = self.price.getPriceChange()
+        pricechange = self.price.get_price_change()
         mempool = self.mempool.getData()
         last_timestamp = mempool["last_block"]["timestamp"]
         last_height = mempool["last_block"]["height"]
@@ -726,49 +598,40 @@ class Ticker:
         w = 6
         dpi = int(480 / w)
 
-        factor5_w = int(5 / 480 * self.width)
-        factor3_h = int(3 / 800 * self.height)
-        factor10_h = int(10 / 800 * self.height)
-        factor20_h = int(20 / 800 * self.height)
-        pos_y = factor3_h
+        pos_y = self.get_h_factor(3)
 
         if self.width > 450 and self.height > self.width:
-            font_size = self.drawer.calc_font_size(
-                self.width,
-                (self.height - factor20_h) / 2,
+            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            w, h, font_size = self.image.draw_text(
                 line_str[0],
-                self.config.fonts.font_console,
+                (0, pos_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_console,
                 anchor="lt",
             )
-            w, h = self.drawer.draw_text(
-                0,
-                pos_y,
-                font_size,
-                line_str[0],
-                self.config.fonts.font_console,
+
+            pos_y += h - self.get_h_factor(10, factor=800)
+            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            w, h, font_size = self.image.draw_text(
+                line_str[1],
+                (self.get_w_factor(5), pos_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_side,
                 anchor="lt",
             )
-            pos_y += h - factor10_h
-            self.rebuildFonts(side_size=34, fee_size=35)
-            w, h = self.drawer.drawText(factor5_w, pos_y, line_str[1], self.font_side)
+
             pos_y += h
         else:
-            font_size = self.drawer.calc_font_size(
-                self.width,
-                (self.height - factor20_h) / 2,
+            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            w, h, font_size = self.image.draw_text(
                 line_str[0],
-                self.config.fonts.font_console,
+                (0, pos_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_console,
                 anchor="lt",
             )
-            w, h = self.drawer.draw_text(
-                0,
-                pos_y,
-                font_size,
-                line_str[0],
-                self.config.fonts.font_console,
-                anchor="lt",
-            )
-            pos_y += h - factor10_h
+
+            pos_y += h - self.get_h_factor(10, factor=800)
         if self.width > 450 and self.height > self.width:
             ohlc_image = makeCandle(
                 self.price.ohlc,
@@ -784,61 +647,59 @@ class Ticker:
                 x_axis=False,
             )
         ohlc_w, ohlc_h = ohlc_image.size
-        self.drawer.paste(ohlc_image, (0, pos_y))
+        self.image.paste(ohlc_image,(0, pos_y))
         pos_y += ohlc_h
         if self.width > 450 and self.height > self.width:
-            fs_low = self.drawer.calc_font_size(
-                self.width,
-                self.height - pos_y,
+            xy_end = (0, pos_y)
+            w_low, h_low, fs_low = self.image.draw_text(
                 line_str[6],
-                self.config.fonts.font_buttom,
+                (self.width - 1, self.height - 1),
+                end=xy_end,
+                font_name=self.config.fonts.font_buttom,
                 anchor="rs",
             )
-            w_low, h_low = self.drawer.draw_text(
-                self.width - 1,
-                self.height - 1,
-                fs_low,
-                line_str[6],
-                self.config.fonts.font_buttom,
-                anchor="rs",
-            )
-            w, h_symbolstring = self.drawer.drawText(
-                factor5_w, self.height - h_low - factor10_h, line_str[5], self.font_side
-            )
 
-            self.rebuildFonts(side_size=34, fee_size=35)
-            font_size = self.drawer.calc_font_size(
-                self.width - factor5_w * 2,
-                self.height - pos_y,
-                line_str[2],
-                self.config.fonts.font_fee,
+            xy_end = (self.width / 3, self.height + pos_y)
+            w, h_symbolstring, font_size = self.image.draw_text(
+                line_str[5],
+                (self.get_w_factor(5), self.height - h_low + self.get_h_factor(10, factor=800)),
+                end=xy_end,
+                font_name=self.config.fonts.font_side,
                 anchor="lt",
             )
-            w, h = self.drawer.draw_text(
-                factor5_w,
-                pos_y,
-                font_size,
+            xy_end = (self.width, self.height + pos_y)
+            w, h, font_size = self.image.draw_text(
                 line_str[2],
-                self.config.fonts.font_fee,
+                (self.get_w_factor(5), pos_y),
+                end=xy_end, 
+                font_name=self.config.fonts.font_fee,
                 anchor="lt",
             )
-            pos_y += h
 
-            w, h = self.drawer.drawText(factor5_w, pos_y, line_str[3], self.font_side)
             pos_y += h
-            font_size = self.drawer.calc_font_size(
-                self.width - factor5_w * 2,
-                (self.height - factor20_h) / 2,
-                line_str[4],
-                self.config.fonts.font_side,
+            xy_end = (self.width - self.get_w_factor(50), (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            w, h, font_size = self.image.draw_text(
+                line_str[3],
+                (self.get_w_factor(5), pos_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_side,
+                anchor="lt",
             )
-            w, h = self.drawer.draw_text(
-                factor5_w,
-                self.height - h_low - h_symbolstring - factor20_h,
-                font_size,
+
+            pos_y += h
+            xy = (self.get_w_factor(5), self.height
+                - h_low
+                - h_symbolstring
+                - self.get_h_factor(20, factor=800))
+                               
+            xy_end = (self.width - self.get_w_factor(5), (self.height - self.get_h_factor(20, factor=800)) / 2 + xy[1])
+            w, h, font_size = self.image.draw_text(
                 line_str[4],
-                self.config.fonts.font_side,
+                xy,
+                end=xy_end,
+                font_name=self.config.fonts.font_side,
             )
+
             pos_y += h
 
     def draw_all(self, mode):
@@ -863,53 +724,59 @@ class Ticker:
         blocks = math.ceil(mempool["vsize"] / 1e6)
         count = mempool["count"]
         if mode == "newblock":
-            pos_y = 0
-            w, h = self.drawer.drawText(
-                5,
-                pos_y,
+            xy = (5, 3)
+            w, h, font_size = self.image.draw_text(
                 '%s - %s - %s'
                 % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 ),
-                self.font_top,
+                xy,
+                font_name=self.config.fonts.font_side,
+                font_size=self.config.fonts.font_side_size,
+                anchor="lt",
             )
-            pos_y += h
+            xy = (xy[0], xy[1]+h)
             fees_string = self.get_fees_string(mempool)
-            w, h = self.drawer.drawText(5, pos_y, fees_string, self.font_fee)
-            pos_y += h
-            w, h = self.drawer.drawText(
-                5, pos_y, '%d blks %d txs' % (blocks, count), self.font_side
+            w, h, font_size = self.image.draw_text(
+                fees_string,
+                xy,
+                font_name=self.config.fonts.font_fee,
+                font_size=self.config.fonts.font_fee_size,
+                anchor="lt",
             )
-            pos_y += h
-            w, h = self.drawer.drawText(
-                5,
-                pos_y,
+            xy = (xy[0], xy[1] + h)
+            w, h, fontsize = self.image.draw_text(
+                '%d blks %d txs' % (blocks, count),
+                xy,
+                font_name=self.config.fonts.font_side,
+                font_size=self.config.fonts.font_side_size,
+                anchor="lt",
+            )
+            xy = (xy[0], xy[1] + h)
+            w, h, font_size = self.image.draw_text(
                 '%d blk %.1f%% %s'
                 % (
                     self.get_remaining_blocks(),
                     (retarget_mult * 100 - 100),
                     retarget_date.strftime("%d.%b%H:%M"),
                 ),
-                self.font_side,
+                xy,
+                font_name=self.config.fonts.font_side,
+                font_size=self.config.fonts.font_side_size,
+                anchor="lt",
             )
-            pos_y += h
-            font_size = self.drawer.calc_font_size(
-                self.width,
-                self.height - pos_y,
+            xy = (xy[0], xy[1] + h)
+            xy_end = (xy[0], self.height - xy[1])
+            w, h, font_size = self.image.draw_text(
                 self.get_current_block_height(),
-                self.config.fonts.font_buttom,
+                (self.width - 1, self.height - 1),
+                end=xy_end,
+                fond_name=self.config.fonts.font_buttom,
                 anchor="rs",
             )
-            self.drawer.draw_text(
-                self.width - 1,
-                self.height - 1,
-                font_size,
-                self.get_current_block_height(),
-                self.config.fonts.font_buttom,
-                anchor="rs",
-            )
+
         else:
 
             if mode == "fiat":
@@ -948,7 +815,7 @@ class Ticker:
                 line_str[2] = '$%.0f' % current_price["usd"]
                 line_str[3] = self.get_current_price("sat_per_usd")
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
-                line_str[5] = ""
+                # line_str[5] = ""
                 line_str[7] = self.get_current_block_height()
             elif mode == "satfiat":
                 if not self.config.main.show_block_time:
@@ -1037,26 +904,37 @@ class Ticker:
         count = mempool["count"]
         current_price = self.price.price
         if mode == "newblock":
-            pos_y = 0
-            w, h = self.drawer.drawText(
-                5,
-                pos_y,
+            xy = (5, 0)
+            w, h, font_size = self.image.draw_text(
                 '%s - %s - %s'
                 % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 ),
-                self.font_top,
+                xy,
+                font_name=self.config.fonts.font_top,
+                font_size=self.config.fonts.font_top_size,
+                anchor="lt",
             )
-            pos_y += h
+            xy = (xy[0], xy[1] + h)
             fees_string = self.get_fees_string(mempool)
-            w, h = self.drawer.drawText(5, pos_y, fees_string, self.font_fee)
-            pos_y += h
-            w, h = self.drawer.drawText(
-                5, pos_y, '%d blks %d txs' % (blocks, count), self.font_side
+            w, h, font_size = self.image.draw_text(
+                fees_string,
+                xy,
+                font_name=self.config.fonts.font_fee,
+                font_size=self.config.fonts.font_fee_size,
+                anchor="lt",
             )
-            pos_y += h
+            xy = (xy[0], xy[1] + h)
+            w, h, font_size = self.image.draw_text(
+                '%d blks %d txs' % (blocks, count),
+                xy,
+                font_name=self.config.fonts.font_side,
+                font_size=self.config.fonts.font_side_size,
+                anchor="lt",
+            )
+            xy = (xy[0], xy[1] + h) 
             diff_string = self.get_next_difficulty_string(
                 self.get_remaining_blocks(),
                 retarget_mult,
@@ -1065,23 +943,23 @@ class Ticker:
                 retarget_date=retarget_date,
                 show_clock=False,
             )
-            w, h = self.drawer.drawText(5, 67, diff_string, self.font_side)
-            pos_y += h
-            fee_size = self.drawer.calc_font_size(
-                self.width,
-                self.height - pos_y,
-                self.get_current_block_height(),
-                self.config.fonts.font_buttom,
-                anchor="rs",
+            w, h, font_size = self.image.draw_text(
+                diff_string,
+                (5,67),
+                font_name=self.config.fonts.font_side,
+                font_size=self.config.fonts.font_side_size,
+                anchor="lt",
             )
-            self.drawer.draw_text(
-                self.width - 1,
-                self.height - 1,
-                fee_size,
+            xy_end = (self.width, self.height-xy[1] - h) 
+            xy = (xy[0], self.height)
+            w, h, font_size = self.image.draw_text(
                 self.get_current_block_height(),
-                self.config.fonts.font_buttom,
-                anchor="rs",
+                xy,
+                end=xy_end,
+                font_name=self.config.fonts.font_buttom,
+                anchor="ls",
             )
+
         else:
             if mode == "fiat":
                 if not self.config.main.show_block_time:
@@ -1377,7 +1255,7 @@ class Ticker:
 
     def draw_big_two_rows(self, mode):
         current_price = self.price.price
-        pricenowstring = self.price.getPriceNow()
+        pricenowstring = self.price.get_price_now()
         line_str = ['', '', '']
         if mode == "fiat":
             price_parts = pricenowstring.split(",")
@@ -1425,58 +1303,34 @@ class Ticker:
             )
             line_str[2] = price_parts[1]
 
-        factor5_w = int(5 / 264 * self.width)
-        factor3_h = int(3 / 176 * self.height)
-        factor10_h = int(10 / 176 * self.height)
-        factor15_h = int(15 / 176 * self.height)
-
-        pos_y = factor3_h
+        pos_y = self.get_h_factor(3)
         if line_str[0] != "":
-            font_size = self.drawer.calc_font_size(
-                self.width - factor5_w,
-                (self.height - factor10_h),
+            xy_end = (self.width - self.get_w_factor(5), (self.height - self.get_h_factor(10)))
+            w, h, font_size = self.image.draw_text(
                 line_str[0] + " ",
-                self.config.fonts.font_console,
+                (self.get_w_factor(5), pos_y),
+                end=xy_end,
+                font_name=self.config.fonts.font_console,
                 anchor="lt",
             )
-            w, h = self.drawer.draw_text(
-                factor5_w,
-                pos_y,
-                font_size,
-                line_str[0] + " ",
-                self.config.fonts.font_console,
-                anchor="lt",
-            )
+
             pos_y += h
-        font_size = self.drawer.calc_font_size(
-            self.width - factor5_w,
-            self.height - pos_y - factor15_h,
+        xy_end = (self.width - self.get_w_factor(5), (self.height - pos_y - self.get_h_factor(15)))
+        w, h, font_size = self.image.draw_text(
             line_str[1],
-            self.config.fonts.font_fee,
+            (self.get_w_factor(5), pos_y),
+            end=xy_end,
+            font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[1],
-            self.config.fonts.font_fee,
-            anchor="lt",
-        )
+
         pos_y += h
-        font_size = self.drawer.calc_font_size(
-            self.width - 1,
-            (self.height - pos_y - factor15_h),
+        xy_end= (self.width - 1, (self.height - pos_y - self.get_h_factor(15)))
+        w, h, font_size = self.image.draw_text(
             line_str[2],
-            self.config.fonts.font_big,
-            anchor="rs",
-        )
-        self.drawer.draw_text(
-            self.width - 1,
-            self.height - 1,
-            font_size,
-            line_str[2],
-            self.config.fonts.font_big,
+            (self.width - 1, self.height - 1),
+            end=xy_end,
+            font_name=self.config.fonts.font_big,
             anchor="rs",
         )
 
@@ -1498,44 +1352,23 @@ class Ticker:
             line_str[0] = self.get_current_price("usd")
             line_str[1] = 'Market price of bitcoin'
 
-        factor5_w = int(5 / 264 * self.width)
-        factor10_w = int(10 / 264 * self.width)
-        factor20_w = int(20 / 264 * self.width)
-        factor30_w = int(30 / 264 * self.width)
-        factor40_w = int(40 / 264 * self.width)
-        factor15_h = int(15 / 176 * self.height)
-        factor50_h = int(50 / 176 * self.height)
-
-        pos_y = factor30_w
-        font_size = self.drawer.calc_font_size(
-            self.width - factor10_w,
-            factor50_h,
+        pos_y = self.get_w_factor(30)
+        xy = (self.get_w_factor(5), self.height - self.get_h_factor(15))
+        xy_end = (self.width - self.get_w_factor(10), self.get_h_factor(50))
+        w, h, font_size = self.image.draw_text(
             line_str[1],
-            self.config.fonts.font_fee,
-            start_font_size=10,
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_fee,
             anchor="lb",
         )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            self.height - factor15_h,
-            font_size,
-            line_str[1],
-            self.config.fonts.font_fee,
-            anchor="lb",
-        )
-        font_size = self.drawer.calc_font_size(
-            self.width - factor40_w,
-            (self.height - pos_y - h - factor15_h),
+        xy = (self.width - self.get_w_factor(20), pos_y)
+        xy_end = (self.get_w_factor(20), self.height - h - self.get_h_factor(15))
+        w, h, font_size = self.image.draw_text(
             line_str[0],
-            self.config.fonts.font_big,
-            anchor="rt",
-        )
-        self.drawer.draw_text(
-            self.width - factor20_w,
-            pos_y,
-            font_size,
-            line_str[0],
-            self.config.fonts.font_big,
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_fee,
             anchor="rt",
         )
 
@@ -1573,7 +1406,7 @@ class Ticker:
                     self.get_last_block_time2(),
                 )
 
-            line_str[1] = ""
+            # line_str[1] = ""
             line_str[2] = self.get_current_block_height()
         elif mode == "satfiat":
             if not self.config.main.show_block_time:
@@ -1626,59 +1459,40 @@ class Ticker:
 
         line_str[1] = self.get_fee_string(mempool)
 
-        factor5_w = int(5 / 264 * self.width)
-        factor3_h = int(3 / 176 * self.height)
-        factor15_h = int(15 / 176 * self.height)
-        factor50_h = int(50 / 176 * self.height)
+        xy = (self.get_w_factor(5), self.get_h_factor(3))
+        w, h, font_size = self.image.draw_text(
+            line_str[0],
+            xy,
+            end=(self.width,
+            (self.height - self.get_h_factor(47))),
+            font_name=self.config.fonts.font_fee,
+            anchor="lt",
+        )
 
-        pos_y = factor3_h
-        font_size = self.drawer.calc_font_size(
-            self.width - factor5_w,
-            self.height - factor50_h,
-            line_str[0],
-            self.config.fonts.font_fee,
-            anchor="lt",
-        )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
-            line_str[0],
-            self.config.fonts.font_fee,
-            anchor="lt",
-        )
-        pos_y += h
-        # font_size = self.drawer.calc_font_size(
-        #    self.width - factor5_w,
-        #    self.height - pos_y - factor15_h,
+        xy = (xy[0], xy[1] + h)
+        # font_size = self.drawer.calculate_font_size(
+        #    self.width - self.get_w_factor(5),
+        #    self.height - pos_y - self.get_h_factor(15),
         #    line_str[1],
         #    self.config.fonts.font_fee,
         #    anchor="lt",
         # )
-        w, h = self.drawer.draw_text(
-            factor5_w,
-            pos_y,
-            font_size,
+        w, h, font_size = self.image.draw_text(
             line_str[1],
-            self.config.fonts.font_fee,
+            xy, font_size=font_size,
+            font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
-        pos_y += h
-        font_size = self.drawer.calc_font_size(
-            self.width - 1,
-            (self.height - pos_y - factor15_h),
+        
+        xy = (xy[0], xy[1] + h)
+        w, h, font_size = self.image.draw_text(
             line_str[2],
-            self.config.fonts.font_big,
-            anchor="rs",
-        )
-        self.drawer.draw_text(
-            self.width - 1,
-            self.height - 1,
-            font_size,
-            line_str[2],
-            self.config.fonts.font_big,
+            (self.width - 1,
+            self.height - 1),
+            end=(xy[0], xy[1]-self.get_h_factor(15)),
+            font_name=self.config.fonts.font_big,
             anchor="rs",
         )
 
     def get_image(self):
-        return self.drawer.image
+        return self.image.image_handler.image

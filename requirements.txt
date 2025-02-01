@@ -1,10 +1,11 @@
 requests
 babel
-pycoingecko
 pymempool>=0.1.2
+btcpriceticker
 Pillow
 matplotlib
 numpy
 pydantic
 mplfinance
 pandas
+piltext

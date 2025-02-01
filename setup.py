@@ -9,6 +9,7 @@ requires = [
     "babel",
     "pycoingecko>=3.1.0",
     "pymempool>=0.1.2",
+    "btcpriceticker",
     "Pillow",
     "matplotlib",
     "numpy",

@@ -7,4 +7,5 @@ __all__ = [
     "ticker",
     "drawer",
     "utils",
+    "epd",
 ]
