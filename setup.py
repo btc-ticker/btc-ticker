@@ -25,7 +25,7 @@ if __name__ == "__main__":
         description="BTC ticker",
         url="http://www.github.com/btc-ticker/btc-ticker",
         keywords=["btc", "ticker"],
-        packages=["btcticker", "btcticker.fonts", "btcticker.fonts.googlefonts"],
+        packages=["btcticker", "btcticker.fonts"],
         classifiers=[
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
