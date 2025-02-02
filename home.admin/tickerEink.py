@@ -202,7 +202,7 @@ def main(config, config_file):
 
     def fullupdate(mode, days, layout, inverted, refresh=True):
         try:
-            ticker.setDaysAgo(days)
+            ticker.set_days_ago(days)
             if refresh:
                 ticker.refresh()
             ticker.drawer.inverted = inverted

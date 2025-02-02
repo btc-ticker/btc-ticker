@@ -27,8 +27,8 @@ class Ticker:
             fontdir, default_font_size=20, default_font_name="Roboto-Medium"
         )
         self.image = ImageDrawer(width, height, self.font_manager)
-
-        # config.main.orientation, config.main.inverted
+        self.inverted = config.main.inverted
+        self.orientation = config.main.orientation
 
     def set_days_ago(self, days_ago):
         self.price.set_days_ago(days_ago)
@@ -230,8 +230,8 @@ class Ticker:
 
         self.image.finalize(
             mirror=mirror,
-            orientation=self.config.main.orientation,
-            inverted=self.config.main.inverted,
+            orientation=self.orientation,
+            inverted=self.inverted,
         )
 
     #   Send the image to the screen
