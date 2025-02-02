@@ -49,20 +49,28 @@ mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
 # mode_list = []
 for mode in config.main.mode_list.split(","):
     mode_list.append(mode.replace('"', "").replace(" ", ""))
-ticker_ind = 0 #config.main.start_mode_ind
-mode_shifting = True #config.main.mode_shifting
+ticker_ind = 0  # config.main.start_mode_ind
+mode_shifting = True  # config.main.mode_shifting
 
 days_list = []
 for d in config.main.days_list.split(","):
-    days_list.append(int(d.replace('"', '').replace(" ", "")))
+    days_list.append(int(d.replace('"', "").replace(" ", "")))
 days_ind = config.main.start_days_ind
 days_shifting = config.main.days_shifting
 
-layout_list = ["all","fiat","fiatheight","big_one_row","one_number","mempool","ohlc"]
+layout_list = [
+    "all",
+    "fiat",
+    "fiatheight",
+    "big_one_row",
+    "one_number",
+    "mempool",
+    "ohlc",
+]
 for layout in config.main.layout_list.split(","):
     layout_list.append(layout.replace('"', "").replace(" ", ""))
-layout_ind = 5 #config.main.start_layout_ind
-layout_shifting = False #config.main.layout_shifting
+layout_ind = 5  # config.main.start_layout_ind
+layout_shifting = False  # config.main.layout_shifting
 
 ticker.set_days_ago(days_list[days_ind])
 ticker.refresh()
@@ -77,7 +85,7 @@ col = [[image_elem]]
 layout = [[sg.Column(col)]]
 
 window = sg.Window(
-    'BTC Ticker',
+    "BTC Ticker",
     layout,
     return_keyboard_events=True,
     location=(0, 0),
@@ -103,8 +111,10 @@ while True:
                 days_ind += 1
                 if days_ind >= len(days_list) or not days_shifting:
                     days_ind = 0
-                    
-        print(f"Running loop with mode: {mode_list[ticker_ind]} layout: {layout_list[layout_ind]}")
+
+        print(
+            f"Running loop with mode: {mode_list[ticker_ind]} layout: {layout_list[layout_ind]}"
+        )
         ticker.set_days_ago(days_list[days_ind])
         ticker.refresh()
         ticker.build(

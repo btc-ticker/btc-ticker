@@ -4,13 +4,12 @@ import time
 from datetime import datetime
 
 from babel import numbers
+from btcpriceticker.price import Price
+from piltext import FontManager, ImageDrawer
 
 from btcticker.chart import makeCandle, makeSpark
 from btcticker.config import Config
 from btcticker.mempool import Mempool
-from btcpriceticker.price import Price
-
-from piltext import ImageDrawer, FontManager, TextGrid
 
 
 class Ticker:
@@ -23,12 +22,13 @@ class Ticker:
         self.price = Price(fiat=self.fiat, days_ago=1, enable_ohlc=True)
         self.mempool.request_timeout = 20
 
-        fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts')
-        self.font_manager = FontManager(fontdir, default_font_size=20, default_font_name="Roboto-Medium")
+        fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts")
+        self.font_manager = FontManager(
+            fontdir, default_font_size=20, default_font_name="Roboto-Medium"
+        )
         self.image = ImageDrawer(width, height, self.font_manager)
 
         # config.main.orientation, config.main.inverted
-
 
     def set_days_ago(self, days_ago):
         self.price.set_days_ago(days_ago)
@@ -75,20 +75,20 @@ class Ticker:
         t_sec = meanTimeDiff % 60
 
         if show_clock:
-            return '%d blk %.1f %% | %s -%d min' % (
+            return "%d blk %.1f %% | %s -%d min" % (
                 remaining_blocks,
                 (retarget_mult * 100 - 100),
                 self.get_last_block_time(date_and_time=False),
                 int(last_block_sec_ago / 60),
             )
         elif retarget_date is not None:
-            return '%d blk %.2f%% %s' % (
+            return "%d blk %.2f%% %s" % (
                 remaining_blocks,
                 (retarget_mult * 100 - 100),
                 retarget_date.strftime("%d.%b %H:%M"),
             )
         else:
-            return '%d blk %.0f %% %d:%d' % (
+            return "%d blk %.0f %% %d:%d" % (
                 remaining_blocks,
                 (retarget_mult * 100 - 100),
                 t_min,
@@ -96,7 +96,7 @@ class Ticker:
             )
 
     def get_fees_string(self, mempool):
-        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
+        fee_str = "%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f"
         best_fee_str = "low: %.1f med: %.1f high: %.1f"
         minFee = mempool["minFee"]
         bestFees = mempool["bestFees"]
@@ -118,7 +118,7 @@ class Ticker:
             )
 
     def get_fee_string(self, mempool):
-        fee_str = '%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f'
+        fee_str = "%.1f-%.1f-%.1f-%.1f-%.1f-%.1f-%.1f"
         best_fee_str = "Fees: L %.1f M %.1f H %.1f"
         minFee = mempool["minFee"]
         bestFees = mempool["bestFees"]
@@ -206,7 +206,6 @@ class Ticker:
         self.image.initialize()
 
     def build(self, mode="fiat", layout="all", mirror=True):
-
         mempool = self.mempool.getData()
 
         if mempool["height"] < 0:
@@ -229,12 +228,15 @@ class Ticker:
         else:
             self.draw_all(mode)
 
-        self.image.finalize(mirror=mirror, orientation=self.config.main.orientation, inverted=self.config.main.inverted)
+        self.image.finalize(
+            mirror=mirror,
+            orientation=self.config.main.orientation,
+            inverted=self.config.main.inverted,
+        )
 
     #   Send the image to the screen
 
     def show(self):
-
         self.image.show()
 
     def get_current_price(self, symbol, with_symbol=False, shorten=True):
@@ -252,21 +254,21 @@ class Ticker:
             else:
                 price_str = format(int(current_price["usd"]), "")
         elif symbol == "moscow_time_usd":
-            price_str = '%.0f' % (current_price["sat_usd"])
+            price_str = "%.0f" % (current_price["sat_usd"])
         elif symbol == "sat_per_fiat":
             if with_symbol and shorten:
-                price_str = '/{}{:.0f}'.format(symbolstring, current_price["sat_fiat"])
+                price_str = "/{}{:.0f}".format(symbolstring, current_price["sat_fiat"])
             elif with_symbol and not shorten:
-                price_str = '{:.0f} sat/{}'.format(
+                price_str = "{:.0f} sat/{}".format(
                     current_price["sat_fiat"], symbolstring
                 )
             else:
-                price_str = '%.0f' % (current_price["sat_fiat"])
+                price_str = "%.0f" % (current_price["sat_fiat"])
         elif symbol == "sat_per_usd":
             if shorten:
                 price_str = "%.0f /$" % (current_price["sat_usd"])
             else:
-                price_str = '%.0f sat/$' % (current_price["sat_usd"])
+                price_str = "%.0f sat/$" % (current_price["sat_usd"])
 
         return price_str
 
@@ -319,7 +321,7 @@ class Ticker:
         last_timestamp = mempool["last_block"]["timestamp"]
         last_block_time = datetime.fromtimestamp(last_timestamp)
         last_block_sec_ago = (datetime.now() - last_block_time).seconds
-        return f'{int(last_block_sec_ago / 60)}:{last_block_sec_ago % 60} min'
+        return f"{int(last_block_sec_ago / 60)}:{last_block_sec_ago % 60} min"
 
     def get_current_time(self):
         return str(time.strftime("%H:%M"))
@@ -329,57 +331,90 @@ class Ticker:
         last_timestamp = mempool["last_block"]["timestamp"]
         last_block_time = datetime.fromtimestamp(last_timestamp)
         last_block_sec_ago = (datetime.now() - last_block_time).seconds
-        return '%s (%d:%d min ago)' % (
+        return "%s (%d:%d min ago)" % (
             self.get_last_block_time(),
             int(last_block_sec_ago / 60),
             last_block_sec_ago % 60,
         )
 
     def draw_4_lines(self, line_str):
-        xy = (self.get_w_factor(5),  self.get_h_factor(3))
+        xy = (self.get_w_factor(5), self.get_h_factor(3))
         xy_end = (self.width, (self.height - self.get_h_factor(15)) / 3)
-        w, h, font_size = self.image.draw_text(line_str[0], xy, end=xy_end, font_name=self.config.fonts.font_console, anchor="lt")
+        w, h, font_size = self.image.draw_text(
+            line_str[0],
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_console,
+            anchor="lt",
+        )
 
         xy = (xy[0], xy[1] + int(h * 0.85))
         xy_end = (self.width, (self.height) / 5 + xy[1])
-        w, h, font_size = self.image.draw_text(line_str[1], xy, end=xy_end, font_name=self.config.fonts.font_side, anchor="lt")
+        w, h, font_size = self.image.draw_text(
+            line_str[1],
+            xy,
+            end=xy_end,
+            font_name=self.config.fonts.font_side,
+            anchor="lt",
+        )
 
         xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(line_str[2], xy, font_size=font_size, font_name=self.config.fonts.font_side, anchor="lt")
+        w, h, font_size = self.image.draw_text(
+            line_str[2],
+            xy,
+            font_size=font_size,
+            font_name=self.config.fonts.font_side,
+            anchor="lt",
+        )
         start = (self.width - 1, self.height - 1)
         xy_end = (xy[0], xy[1])
-        w, h, font_size = self.image.draw_text(line_str[3], start, end=xy_end, font_name=self.config.fonts.font_big, anchor="rs")
+        w, h, font_size = self.image.draw_text(
+            line_str[3],
+            start,
+            end=xy_end,
+            font_name=self.config.fonts.font_big,
+            anchor="rs",
+        )
 
     def draw_5_lines(self, line_str):
         xy = (self.get_w_factor(5), self.get_h_factor(3))
-        xy_end = (self.width,  (self.height) / 4)
+        xy_end = (self.width, (self.height) / 4)
         w, h, font_size = self.image.draw_text(
-            line_str[0], xy,
+            line_str[0],
+            xy,
             end=xy_end,
             font_name=self.config.fonts.font_console,
             anchor="lt",
         )
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
-            line_str[1], xy,
-            end=(self.width - 2 * self.get_w_factor(5) + xy[0], (self.height) / 8 - self.get_h_factor(3) + xy[1]),
+            line_str[1],
+            xy,
+            end=(
+                self.width - 2 * self.get_w_factor(5) + xy[0],
+                (self.height) / 8 - self.get_h_factor(3) + xy[1],
+            ),
             font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
 
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
-            line_str[2], xy, fontsize=font_size,
+            line_str[2],
+            xy,
+            fontsize=font_size,
             font_name=self.config.fonts.font_side,
             anchor="lt",
         )
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
-            line_str[3],xy, fontsize=font_size,
+            line_str[3],
+            xy,
+            fontsize=font_size,
             font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        
+
         xy = (xy[0], xy[1] + h)
         xy_end = (xy[0], xy[1])
         w, h, font_size = self.image.draw_text(
@@ -393,10 +428,12 @@ class Ticker:
     def draw_7_lines_with_image(self, line_str, mode):
         pricestack = self.price.timeseries_stack
         pricechange = self.price.get_price_change()
-        xy = ( self.get_w_factor(5), self.get_h_factor(3))
+        xy = (self.get_w_factor(5), self.get_h_factor(3))
         height_div = 9
-        xy_end = (self.width - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div + self.get_h_factor(3) + xy[1])
+        xy_end = (
+            self.width - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div + self.get_h_factor(3) + xy[1],
+        )
         w, h, font_size = self.image.draw_text(
             line_str[0],
             xy,
@@ -405,8 +442,10 @@ class Ticker:
             anchor="lt",
         )
         xy = (xy[0], xy[1] + h)
-        xy_end=(self.width - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div + xy[1])
+        xy_end = (
+            self.width - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div + xy[1],
+        )
         w, h, font_size = self.image.draw_text(
             line_str[1],
             xy,
@@ -416,11 +455,14 @@ class Ticker:
         )
         xy = (xy[0], xy[1] + h)
         image_y = xy[1]
-        xy_end = (self.width / 2 - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div - self.get_h_factor(3) + xy[1])
-            
+        xy_end = (
+            self.width / 2 - self.get_w_factor(10) + xy[0],
+            (self.height) / height_div - self.get_h_factor(3) + xy[1],
+        )
+
         w, h, font_size = self.image.draw_text(
-            line_str[2], xy,
+            line_str[2],
+            xy,
             end=xy_end,
             font_name=self.config.fonts.font_side,
             anchor="lt",
@@ -428,7 +470,8 @@ class Ticker:
 
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
-            line_str[3], xy,
+            line_str[3],
+            xy,
             font_size=font_size,
             font_name=self.config.fonts.font_side,
             anchor="lt",
@@ -436,7 +479,8 @@ class Ticker:
 
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
-            line_str[4], xy,
+            line_str[4],
+            xy,
             font_size=font_size,
             font_name=self.config.fonts.font_side,
             anchor="lt",
@@ -452,7 +496,7 @@ class Ticker:
             font_name=self.config.fonts.font_side,
             anchor="lt",
         )
-        
+
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
             line_str[6],
@@ -486,7 +530,7 @@ class Ticker:
             )
 
     def draw_ohlc(self, mode):
-        line_str = ['', '', '', '', '', '', '']
+        line_str = ["", "", "", "", "", "", ""]
         current_price = self.price.price
         pricechange = self.price.get_price_change()
         mempool = self.mempool.getData()
@@ -510,7 +554,7 @@ class Ticker:
             line_str[4] = (
                 "$"
                 + format(int(current_price["usd"]), "")
-                + ' - %.0f /%s - %.0f /$'
+                + " - %.0f /%s - %.0f /$"
                 % (
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
@@ -531,7 +575,7 @@ class Ticker:
             line_str[4] = (
                 "$"
                 + format(int(current_price["usd"]), "")
-                + ' - %.0f /%s - %.0f /$'
+                + " - %.0f /%s - %.0f /$"
                 % (
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
@@ -548,7 +592,7 @@ class Ticker:
                 + self.get_current_price("fiat")
                 + " - $"
                 + format(int(current_price["usd"]), "")
-                + ' - %.0f /$' % (current_price["sat_usd"])
+                + " - %.0f /$" % (current_price["sat_usd"])
             )
             line_str[5] = (
                 "/%s" % self.get_symbol()
@@ -566,7 +610,7 @@ class Ticker:
                 + self.get_current_price("fiat")
                 + " - $"
                 + format(int(current_price["usd"]), "")
-                + f' - {self.get_sat_per_fiat():.0f} /{self.get_symbol()}'
+                + f" - {self.get_sat_per_fiat():.0f} /{self.get_symbol()}"
             )
             line_str[5] = "/$" + "  " + str(self.price.days_ago) + "d : " + pricechange
             line_str[6] = "%.0f" % current_price["sat_usd"]
@@ -576,7 +620,7 @@ class Ticker:
             line_str[4] = (
                 self.get_symbol()
                 + self.get_current_price("fiat")
-                + ' - %.0f /%s - %.0f /$'
+                + " - %.0f /%s - %.0f /$"
                 % (
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
@@ -601,7 +645,10 @@ class Ticker:
         pos_y = self.get_h_factor(3)
 
         if self.width > 450 and self.height > self.width:
-            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            xy_end = (
+                self.width,
+                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[0],
                 (0, pos_y),
@@ -611,7 +658,10 @@ class Ticker:
             )
 
             pos_y += h - self.get_h_factor(10, factor=800)
-            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            xy_end = (
+                self.width,
+                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[1],
                 (self.get_w_factor(5), pos_y),
@@ -622,7 +672,10 @@ class Ticker:
 
             pos_y += h
         else:
-            xy_end = (self.width, (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            xy_end = (
+                self.width,
+                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[0],
                 (0, pos_y),
@@ -647,7 +700,7 @@ class Ticker:
                 x_axis=False,
             )
         ohlc_w, ohlc_h = ohlc_image.size
-        self.image.paste(ohlc_image,(0, pos_y))
+        self.image.paste(ohlc_image, (0, pos_y))
         pos_y += ohlc_h
         if self.width > 450 and self.height > self.width:
             xy_end = (0, pos_y)
@@ -662,7 +715,10 @@ class Ticker:
             xy_end = (self.width / 3, self.height + pos_y)
             w, h_symbolstring, font_size = self.image.draw_text(
                 line_str[5],
-                (self.get_w_factor(5), self.height - h_low + self.get_h_factor(10, factor=800)),
+                (
+                    self.get_w_factor(5),
+                    self.height - h_low + self.get_h_factor(10, factor=800),
+                ),
                 end=xy_end,
                 font_name=self.config.fonts.font_side,
                 anchor="lt",
@@ -671,13 +727,16 @@ class Ticker:
             w, h, font_size = self.image.draw_text(
                 line_str[2],
                 (self.get_w_factor(5), pos_y),
-                end=xy_end, 
+                end=xy_end,
                 font_name=self.config.fonts.font_fee,
                 anchor="lt",
             )
 
             pos_y += h
-            xy_end = (self.width - self.get_w_factor(50), (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y)
+            xy_end = (
+                self.width - self.get_w_factor(50),
+                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[3],
                 (self.get_w_factor(5), pos_y),
@@ -687,12 +746,18 @@ class Ticker:
             )
 
             pos_y += h
-            xy = (self.get_w_factor(5), self.height
+            xy = (
+                self.get_w_factor(5),
+                self.height
                 - h_low
                 - h_symbolstring
-                - self.get_h_factor(20, factor=800))
-                               
-            xy_end = (self.width - self.get_w_factor(5), (self.height - self.get_h_factor(20, factor=800)) / 2 + xy[1])
+                - self.get_h_factor(20, factor=800),
+            )
+
+            xy_end = (
+                self.width - self.get_w_factor(5),
+                (self.height - self.get_h_factor(20, factor=800)) / 2 + xy[1],
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[4],
                 xy,
@@ -703,7 +768,7 @@ class Ticker:
             pos_y += h
 
     def draw_all(self, mode):
-        line_str = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+        line_str = [" ", " ", " ", " ", " ", " ", " ", " "]
         mempool = self.mempool.getData()
         current_price = self.price.price
         last_timestamp = mempool["last_block"]["timestamp"]
@@ -726,7 +791,7 @@ class Ticker:
         if mode == "newblock":
             xy = (5, 3)
             w, h, font_size = self.image.draw_text(
-                '%s - %s - %s'
+                "%s - %s - %s"
                 % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_minutes_between_blocks(),
@@ -737,7 +802,7 @@ class Ticker:
                 font_size=self.config.fonts.font_side_size,
                 anchor="lt",
             )
-            xy = (xy[0], xy[1]+h)
+            xy = (xy[0], xy[1] + h)
             fees_string = self.get_fees_string(mempool)
             w, h, font_size = self.image.draw_text(
                 fees_string,
@@ -748,7 +813,7 @@ class Ticker:
             )
             xy = (xy[0], xy[1] + h)
             w, h, fontsize = self.image.draw_text(
-                '%d blks %d txs' % (blocks, count),
+                "%d blks %d txs" % (blocks, count),
                 xy,
                 font_name=self.config.fonts.font_side,
                 font_size=self.config.fonts.font_side_size,
@@ -756,7 +821,7 @@ class Ticker:
             )
             xy = (xy[0], xy[1] + h)
             w, h, font_size = self.image.draw_text(
-                '%d blk %.1f%% %s'
+                "%d blk %.1f%% %s"
                 % (
                     self.get_remaining_blocks(),
                     (retarget_mult * 100 - 100),
@@ -778,22 +843,19 @@ class Ticker:
             )
 
         else:
-
             if mode == "fiat":
                 if self.config.main.show_block_time:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
                 else:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
 
-                line_str[2] = '$%.0f' % current_price["usd"]
+                line_str[2] = "$%.0f" % current_price["usd"]
                 line_str[3] = self.get_current_price("sat_per_usd")
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
                 line_str[5] = self.get_symbol() + " "
@@ -801,36 +863,34 @@ class Ticker:
                 line_str[7] = self.get_current_price("fiat")
             elif mode == "height":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
+                    line_str[0] = "{} - {} - {}".format(
                         self.get_current_price("fiat", with_symbol=True),
                         self.get_minutes_between_blocks(),
                         self.get_current_time(),
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_price("fiat", with_symbol=True),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = '$%.0f' % current_price["usd"]
+                line_str[2] = "$%.0f" % current_price["usd"]
                 line_str[3] = self.get_current_price("sat_per_usd")
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
                 # line_str[5] = ""
                 line_str[7] = self.get_current_block_height()
             elif mode == "satfiat":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = '$%.0f' % current_price["usd"]
+                line_str[2] = "$%.0f" % current_price["usd"]
                 line_str[3] = self.get_current_price("sat_per_usd")
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
                 line_str[5] = "sat"
@@ -838,13 +898,11 @@ class Ticker:
                 line_str[7] = self.get_current_price("sat_per_fiat")
             elif mode == "moscowtime":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
@@ -859,13 +917,11 @@ class Ticker:
                 line_str[7] = self.get_current_price("moscow_time_usd")
             elif mode == "usd":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
@@ -873,8 +929,8 @@ class Ticker:
                 line_str[2] = self.get_current_price("fiat", with_symbol=True)
                 line_str[3] = self.get_current_price("sat_per_usd")
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
-                line_str[5] = '$ '
-                line_str[6] = ' '
+                line_str[5] = "$ "
+                line_str[6] = " "
                 line_str[7] = format(int(current_price["usd"]), "")
 
             line_str[1] = self.get_fees_string(mempool)
@@ -882,7 +938,7 @@ class Ticker:
             self.draw_7_lines_with_image(line_str, mode)
 
     def draw_fiat(self, mode):
-        line_str = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+        line_str = [" ", " ", " ", " ", " ", " ", " ", " "]
         mempool = self.mempool.getData()
         last_timestamp = mempool["last_block"]["timestamp"]
         last_block_time = datetime.fromtimestamp(last_timestamp)
@@ -906,7 +962,7 @@ class Ticker:
         if mode == "newblock":
             xy = (5, 0)
             w, h, font_size = self.image.draw_text(
-                '%s - %s - %s'
+                "%s - %s - %s"
                 % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_minutes_between_blocks(),
@@ -928,13 +984,13 @@ class Ticker:
             )
             xy = (xy[0], xy[1] + h)
             w, h, font_size = self.image.draw_text(
-                '%d blks %d txs' % (blocks, count),
+                "%d blks %d txs" % (blocks, count),
                 xy,
                 font_name=self.config.fonts.font_side,
                 font_size=self.config.fonts.font_side_size,
                 anchor="lt",
             )
-            xy = (xy[0], xy[1] + h) 
+            xy = (xy[0], xy[1] + h)
             diff_string = self.get_next_difficulty_string(
                 self.get_remaining_blocks(),
                 retarget_mult,
@@ -945,12 +1001,12 @@ class Ticker:
             )
             w, h, font_size = self.image.draw_text(
                 diff_string,
-                (5,67),
+                (5, 67),
                 font_name=self.config.fonts.font_side,
                 font_size=self.config.fonts.font_side_size,
                 anchor="lt",
             )
-            xy_end = (self.width, self.height-xy[1] - h) 
+            xy_end = (self.width, self.height - xy[1] - h)
             xy = (xy[0], self.height)
             w, h, font_size = self.image.draw_text(
                 self.get_current_block_height(),
@@ -963,112 +1019,104 @@ class Ticker:
         else:
             if mode == "fiat":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = 'lb -%d:%d' % (
+                line_str[2] = "lb -%d:%d" % (
                     int(last_block_sec_ago / 60),
                     last_block_sec_ago % 60,
                 )
-                line_str[3] = '%d blk' % (self.get_remaining_blocks())
+                line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
                 line_str[5] = self.get_symbol()
                 line_str[6] = " "
                 line_str[7] = self.get_current_price("fiat")
             elif mode == "height":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
+                    line_str[0] = "{} - {} - {}".format(
                         self.get_current_price("fiat", with_symbol=True),
                         self.get_minutes_between_blocks(),
                         self.get_current_time(),
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_price("fiat", with_symbol=True),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = 'lb -%d:%d' % (
+                line_str[2] = "lb -%d:%d" % (
                     int(last_block_sec_ago / 60),
                     last_block_sec_ago % 60,
                 )
-                line_str[3] = '%d blk' % (self.get_remaining_blocks())
+                line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("sat_per_fiat", with_symbol=True)
                 line_str[5] = " "
                 line_str[6] = " "
                 line_str[7] = self.get_current_block_height()
             elif mode == "satfiat":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = 'lb -%d:%d' % (
+                line_str[2] = "lb -%d:%d" % (
                     int(last_block_sec_ago / 60),
                     last_block_sec_ago % 60,
                 )
-                line_str[3] = '%d blk' % (self.get_remaining_blocks())
+                line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
                 line_str[5] = "sat"
                 line_str[6] = "/%s" % self.get_symbol()
                 line_str[7] = self.get_current_price("sat_per_fiat")
             elif mode == "moscowtime":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = 'lb -%d:%d' % (
+                line_str[2] = "lb -%d:%d" % (
                     int(last_block_sec_ago / 60),
                     last_block_sec_ago % 60,
                 )
-                line_str[3] = '%d blk' % (self.get_remaining_blocks())
+                line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
                 line_str[5] = "sat"
                 line_str[6] = "/$"
                 line_str[7] = self.get_current_price("moscow_time_usd")
             elif mode == "usd":
                 if not self.config.main.show_block_time:
-                    line_str[0] = '{} - {} - {}'.format(
-                        self.get_current_block_height(),
-                        self.get_minutes_between_blocks(),
-                        self.get_current_time(),
+                    line_str[0] = (
+                        f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
                     )
                 else:
-                    line_str[0] = '%s-%s-%d min' % (
+                    line_str[0] = "%s-%s-%d min" % (
                         self.get_current_block_height(),
                         self.get_last_block_time(date_and_time=False),
                         int(last_block_sec_ago / 60),
                     )
-                line_str[2] = 'lb -%d:%d' % (
+                line_str[2] = "lb -%d:%d" % (
                     int(last_block_sec_ago / 60),
                     last_block_sec_ago % 60,
                 )
-                line_str[3] = '%d blk' % (self.get_remaining_blocks())
+                line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
-                line_str[5] = '$'
+                line_str[5] = "$"
                 line_str[6] = format(int(current_price["usd"]), "")
 
             line_str[1] = self.get_fees_string(mempool)
@@ -1076,7 +1124,7 @@ class Ticker:
             self.draw_7_lines_with_image(line_str, mode)
 
     def draw_fiat_height(self, mode):
-        line_str = ['', '', '', '', '']
+        line_str = ["", "", "", "", ""]
         current_price = self.price.price
         mempool = self.mempool.getData()
         last_timestamp = mempool["last_block"]["timestamp"]
@@ -1100,7 +1148,7 @@ class Ticker:
             if self.config.main.fiat == "usd":
                 line_str[3] = self.get_current_price("sat_per_fiat", with_symbol=True)
             else:
-                line_str[3] = '{:.0f} /{} - ${} - {:.0f} /$'.format(
+                line_str[3] = "{:.0f} /{} - ${} - {:.0f} /$".format(
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
                     format(int(current_price["usd"]), ""),
@@ -1112,7 +1160,7 @@ class Ticker:
             if self.config.main.fiat == "usd":
                 line_str[3] = self.get_current_price("sat_per_fiat", with_symbol=True)
             else:
-                line_str[3] = '{:.0f} /{} - ${} - {:.0f} /$'.format(
+                line_str[3] = "{:.0f} /{} - ${} - {:.0f} /$".format(
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
                     format(int(current_price["usd"]), ""),
@@ -1124,7 +1172,7 @@ class Ticker:
             if self.config.main.fiat == "usd":
                 line_str[3] = self.get_current_price("fiat", with_symbol=True)
             else:
-                line_str[3] = '{} - ${} - {:.0f} /$'.format(
+                line_str[3] = "{} - ${} - {:.0f} /$".format(
                     self.get_current_price("fiat", with_symbol=True),
                     format(int(current_price["usd"]), ""),
                     current_price["sat_usd"],
@@ -1135,18 +1183,18 @@ class Ticker:
             if self.config.main.fiat == "usd":
                 line_str[3] = self.get_current_price("fiat", with_symbol=True)
             else:
-                line_str[3] = '{} - ${} - {:.0f} /$'.format(
+                line_str[3] = "{} - ${} - {:.0f} /$".format(
                     self.get_current_price("fiat", with_symbol=True),
                     format(int(current_price["usd"]), ""),
                     current_price["sat_usd"],
                 )
-            line_str[4] = '/$%.0f' % (current_price["sat_usd"])
+            line_str[4] = "/$%.0f" % (current_price["sat_usd"])
         elif mode == "usd":
             line_str[0] = self.get_current_block_height()
             if self.config.main.fiat == "usd":
                 line_str[3] = self.get_current_price("sat_per_fiat", with_symbol=True)
             else:
-                line_str[3] = '{:.0f} /{} - {} - {:.0f} /$'.format(
+                line_str[3] = "{:.0f} /{} - {} - {:.0f} /$".format(
                     self.get_sat_per_fiat(),
                     self.get_symbol(),
                     self.get_current_price("fiat", with_symbol=True),
@@ -1183,10 +1231,10 @@ class Ticker:
             ] * 60 * remaining_blocks + (last_timestamp - last_retarget_timestamp)
             retarget_mult = 14 * 24 * 60 * 60 / difficulty_epoch_duration
         meanTimeDiff = mempool["minutes_between_blocks"] * 60
-        line_str = ['', '', '', '']
+        line_str = ["", "", "", ""]
         if mode == "fiat":
             line_str[0] = self.get_current_price("fiat")
-            line_str[2] = '%s - %.0f /%s - lb -%d:%d' % (
+            line_str[2] = "%s - %.0f /%s - lb -%d:%d" % (
                 self.get_current_block_height(),
                 self.get_sat_per_fiat(),
                 self.get_symbol(),
@@ -1196,7 +1244,7 @@ class Ticker:
 
         elif mode == "height" or mode == "newblock":
             line_str[0] = self.get_current_block_height()
-            line_str[2] = '%s - %.0f /%s - lb -%d:%d' % (
+            line_str[2] = "%s - %.0f /%s - lb -%d:%d" % (
                 self.get_current_price("fiat", with_symbol=True),
                 self.get_sat_per_fiat(),
                 self.get_symbol(),
@@ -1206,7 +1254,7 @@ class Ticker:
 
         elif mode == "satfiat":
             line_str[0] = self.get_current_price("sat_per_fiat", with_symbol=True)
-            line_str[2] = '%s - %s - lb -%d:%d' % (
+            line_str[2] = "%s - %s - lb -%d:%d" % (
                 self.get_current_price("fiat", with_symbol=True),
                 self.get_current_block_height(),
                 int(last_block_sec_ago / 60),
@@ -1215,7 +1263,7 @@ class Ticker:
 
         elif mode == "moscowtime":
             line_str[0] = self.get_current_price("sat_per_usd", shorten=True)
-            line_str[2] = '%s - %s - lb -%d:%d' % (
+            line_str[2] = "%s - %s - lb -%d:%d" % (
                 self.get_current_price("fiat", with_symbol=True),
                 self.get_current_block_height(),
                 int(last_block_sec_ago / 60),
@@ -1224,7 +1272,7 @@ class Ticker:
 
         elif mode == "usd":
             line_str[0] = self.get_current_price("usd")
-            line_str[2] = '%s - %s - lb -%d:%d' % (
+            line_str[2] = "%s - %s - lb -%d:%d" % (
                 self.get_current_price("fiat", with_symbol=True),
                 self.get_current_block_height(),
                 int(last_block_sec_ago / 60),
@@ -1256,56 +1304,49 @@ class Ticker:
     def draw_big_two_rows(self, mode):
         current_price = self.price.price
         pricenowstring = self.price.get_price_now()
-        line_str = ['', '', '']
+        line_str = ["", "", ""]
         if mode == "fiat":
             price_parts = pricenowstring.split(",")
 
             line_str[0] = self.get_symbol() + price_parts[0]
-            line_str[1] = '{} - {} - {}'.format(
-                self.get_current_block_height(),
-                self.get_minutes_between_blocks(),
-                self.get_current_time(),
+            line_str[1] = (
+                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
             )
             line_str[2] = price_parts[1]
         elif mode == "height" or mode == "newblock":
             price_parts = pricenowstring.split(",")
             line_str[0] = self.get_current_block_height()[:3]
-            line_str[1] = '{} - {} - {}'.format(
-                self.get_symbol() + pricenowstring,
-                self.get_minutes_between_blocks(),
-                self.get_current_time(),
+            line_str[1] = (
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
             )
             line_str[2] = self.get_current_block_height()[3:]
         elif mode == "satfiat":
             line_str[0] = "sat/%s" % self.get_symbol()
-            line_str[1] = '{} - {} - {}'.format(
-                self.get_symbol() + pricenowstring,
-                self.get_minutes_between_blocks(),
-                self.get_current_time(),
+            line_str[1] = (
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
             )
             line_str[2] = self.get_current_price("sat_per_fiat")
         elif mode == "moscowtime":
             line_str[0] = "sat/$"
-            line_str[1] = '{} - {} - {}'.format(
-                self.get_symbol() + pricenowstring,
-                self.get_minutes_between_blocks(),
-                self.get_current_time(),
+            line_str[1] = (
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
             )
             line_str[2] = self.get_current_price("moscow_time_usd")
         elif mode == "usd":
             price_parts = format(int(current_price["usd"]), ",").split(",")
 
             line_str[0] = "$" + price_parts[0]
-            line_str[1] = '{} - {} - {}'.format(
-                self.get_current_block_height(),
-                self.get_minutes_between_blocks(),
-                self.get_current_time(),
+            line_str[1] = (
+                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
             )
             line_str[2] = price_parts[1]
 
         pos_y = self.get_h_factor(3)
         if line_str[0] != "":
-            xy_end = (self.width - self.get_w_factor(5), (self.height - self.get_h_factor(10)))
+            xy_end = (
+                self.width - self.get_w_factor(5),
+                (self.height - self.get_h_factor(10)),
+            )
             w, h, font_size = self.image.draw_text(
                 line_str[0] + " ",
                 (self.get_w_factor(5), pos_y),
@@ -1315,7 +1356,10 @@ class Ticker:
             )
 
             pos_y += h
-        xy_end = (self.width - self.get_w_factor(5), (self.height - pos_y - self.get_h_factor(15)))
+        xy_end = (
+            self.width - self.get_w_factor(5),
+            (self.height - pos_y - self.get_h_factor(15)),
+        )
         w, h, font_size = self.image.draw_text(
             line_str[1],
             (self.get_w_factor(5), pos_y),
@@ -1325,7 +1369,7 @@ class Ticker:
         )
 
         pos_y += h
-        xy_end= (self.width - 1, (self.height - pos_y - self.get_h_factor(15)))
+        xy_end = (self.width - 1, (self.height - pos_y - self.get_h_factor(15)))
         w, h, font_size = self.image.draw_text(
             line_str[2],
             (self.width - 1, self.height - 1),
@@ -1335,22 +1379,22 @@ class Ticker:
         )
 
     def draw_one_number(self, mode):
-        line_str = ['', '']
+        line_str = ["", ""]
         if mode == "fiat":
             line_str[0] = self.get_current_price("fiat", with_symbol=True)
-            line_str[1] = 'Market price of bitcoin'
+            line_str[1] = "Market price of bitcoin"
         elif mode == "height" or mode == "newblock":
             line_str[0] = self.get_current_block_height()
-            line_str[1] = 'Number of blocks in the blockchain'
+            line_str[1] = "Number of blocks in the blockchain"
         elif mode == "satfiat":
             line_str[0] = self.get_current_price("sat_per_fiat", with_symbol=True)
-            line_str[1] = 'Value of one %s in sats' % self.get_symbol()
+            line_str[1] = "Value of one %s in sats" % self.get_symbol()
         elif mode == "moscowtime":
-            line_str[1] = 'moscow time'
+            line_str[1] = "moscow time"
             line_str[0] = self.get_current_price("moscow_time_usd")
         elif mode == "usd":
             line_str[0] = self.get_current_price("usd")
-            line_str[1] = 'Market price of bitcoin'
+            line_str[1] = "Market price of bitcoin"
 
         pos_y = self.get_w_factor(30)
         xy = (self.get_w_factor(5), self.height - self.get_h_factor(15))
@@ -1373,34 +1417,32 @@ class Ticker:
         )
 
     def draw_big_one_row(self, mode):
-        line_str = ['', '', '']
+        line_str = ["", "", ""]
         mempool = self.mempool.getData()
         if mode == "fiat":
             if not self.config.main.show_block_time:
-                line_str[0] = '%s - %d - %s - %s' % (
+                line_str[0] = "%s - %d - %s - %s" % (
                     self.get_current_block_height(),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 )
             else:
-                line_str[0] = '{} - {} - {}'.format(
-                    self.get_current_block_height(),
-                    self.get_last_block_time(),
-                    self.get_last_block_time2(),
+                line_str[0] = (
+                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
                 )
             line_str[1] = self.get_symbol()
             line_str[2] = self.get_current_price("fiat")
         elif mode == "height" or mode == "newblock":
             if not self.config.main.show_block_time:
-                line_str[0] = '%s - %d - %s - %s' % (
+                line_str[0] = "%s - %d - %s - %s" % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 )
             else:
-                line_str[0] = '{} - {} - {}'.format(
+                line_str[0] = "{} - {} - {}".format(
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_last_block_time(),
                     self.get_last_block_time2(),
@@ -1410,49 +1452,43 @@ class Ticker:
             line_str[2] = self.get_current_block_height()
         elif mode == "satfiat":
             if not self.config.main.show_block_time:
-                line_str[0] = '%s - %d - %s - %s' % (
+                line_str[0] = "%s - %d - %s - %s" % (
                     self.get_current_block_height(),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 )
             else:
-                line_str[0] = '{} - {} - {}'.format(
-                    self.get_current_block_height(),
-                    self.get_last_block_time(),
-                    self.get_last_block_time2(),
+                line_str[0] = (
+                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
                 )
             line_str[1] = "/%s" % self.get_symbol()
             line_str[2] = self.get_current_price("sat_per_fiat")
         elif mode == "moscowtime":
             if not self.config.main.show_block_time:
-                line_str[0] = '%s - %d - %s - %s' % (
+                line_str[0] = "%s - %d - %s - %s" % (
                     self.get_current_block_height(),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 )
             else:
-                line_str[0] = '{} - {} - {}'.format(
-                    self.get_current_block_height(),
-                    self.get_last_block_time(),
-                    self.get_last_block_time2(),
+                line_str[0] = (
+                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
                 )
             line_str[1] = "/$"
             line_str[2] = self.get_current_price("moscow_time_usd")
         elif mode == "usd":
             if not self.config.main.show_block_time:
-                line_str[0] = '%s - %d - %s - %s' % (
+                line_str[0] = "%s - %d - %s - %s" % (
                     self.get_current_block_height(),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
                 )
             else:
-                line_str[0] = '{} - {} - {}'.format(
-                    self.get_current_block_height(),
-                    self.get_last_block_time(),
-                    self.get_last_block_time2(),
+                line_str[0] = (
+                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
                 )
             line_str[1] = "$"
             line_str[2] = self.get_current_price("usd")
@@ -1463,8 +1499,7 @@ class Ticker:
         w, h, font_size = self.image.draw_text(
             line_str[0],
             xy,
-            end=(self.width,
-            (self.height - self.get_h_factor(47))),
+            end=(self.width, (self.height - self.get_h_factor(47))),
             font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
@@ -1479,17 +1514,17 @@ class Ticker:
         # )
         w, h, font_size = self.image.draw_text(
             line_str[1],
-            xy, font_size=font_size,
+            xy,
+            font_size=font_size,
             font_name=self.config.fonts.font_fee,
             anchor="lt",
         )
-        
+
         xy = (xy[0], xy[1] + h)
         w, h, font_size = self.image.draw_text(
             line_str[2],
-            (self.width - 1,
-            self.height - 1),
-            end=(xy[0], xy[1]-self.get_h_factor(15)),
+            (self.width - 1, self.height - 1),
+            end=(xy[0], xy[1] - self.get_h_factor(15)),
             font_name=self.config.fonts.font_big,
             anchor="rs",
         )

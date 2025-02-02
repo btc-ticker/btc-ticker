@@ -1,7 +1,7 @@
+from TP_lib import epd2in9_V2 as TP_epd2in9_V2
 from TP_lib import epd2in13_V2 as TP_epd2in13_V2
 from TP_lib import epd2in13_V3 as TP_epd2in13_V3
 from TP_lib import epd2in13_V4 as TP_epd2in13_V4
-from TP_lib import epd2in9_V2 as TP_epd2in9_V2
 from waveshare_epd import (
     epd1in02,
     epd1in54,
@@ -175,6 +175,10 @@ def get_epd(epd_type):
         FullUpdate = True
     elif epd_type == "2in7_4gray":
         epd = epd2in7.EPD()
+        Use4Gray = True
+        Init4Gray = True
+    elif epd_type == "2in7_V2_4gray":
+        epd = epd2in7_V2.EPD()
         Use4Gray = True
         Init4Gray = True
     elif epd_type == "3in7_4gray":

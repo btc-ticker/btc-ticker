@@ -21,11 +21,10 @@ class Mempool:
         self.refresh()
 
     def refresh(self):
-
         current_time = time.time()
         if (
-            'timestamp' in self.data
-            and current_time - self.data['timestamp'] < self.min_refresh_time
+            "timestamp" in self.data
+            and current_time - self.data["timestamp"] < self.min_refresh_time
         ):
             return
         self.data = {}

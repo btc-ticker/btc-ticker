@@ -20,7 +20,7 @@ from btcticker.epd import get_epd
 from btcticker.ticker import Ticker
 
 temp_dir = tempfile.TemporaryDirectory()
-os.environ['MPLCONFIGDIR'] = temp_dir.name
+os.environ["MPLCONFIGDIR"] = temp_dir.name
 
 shutting_down = False
 
@@ -48,10 +48,10 @@ def get_ip():
     s.settimeout(0)
     try:
         # doesn't even have to be reachable
-        s.connect(('10.255.255.255', 1))
+        s.connect(("10.255.255.255", 1))
         IP = s.getsockname()[0]
     except Exception:
-        IP = '127.0.0.1'
+        IP = "127.0.0.1"
     finally:
         s.close()
     return IP
@@ -88,7 +88,7 @@ def draw_image(epd_type, image=None):
     else:
         epd.init()
     if image is None:
-        image = Image.new('L', (epd.height, epd.width), 255)
+        image = Image.new("L", (epd.height, epd.width), 255)
     logging.info("draw")
     if Use4Gray:
         epd.display_4Gray(epd.getbuffer_4Gray(image))
@@ -144,7 +144,6 @@ def setup_GPIO():
 
 
 def main(config, config_file):
-
     global epd_type
     epd_type = config.main.epd_type
 
@@ -156,7 +155,7 @@ def main(config, config_file):
     else:
         ticker = Ticker(config, w, h)
 
-    height = ticker.mempool.getData()['height']
+    height = ticker.mempool.getData()["height"]
     # lifetime of 2.7 panel is 5 years and 1000000 refresh
     if config.main.show_block_height:
         # 5*365*(24*60/3.6 + 144) / 1000000
@@ -191,7 +190,7 @@ def main(config, config_file):
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
-        days_list.append(int(d.replace('"', '').replace(" ", "")))
+        days_list.append(int(d.replace('"', "").replace(" ", "")))
 
     days_ind = config.main.start_days_ind
     days_shifting = config.main.days_shifting
@@ -240,7 +239,6 @@ def main(config, config_file):
         notifier.notify("READY=1")
         offline_counter = 0
         while True:
-
             if shutting_down:
                 logging.info("Ticker is shutting down.....")
                 showmessage(
@@ -251,30 +249,30 @@ def main(config, config_file):
             notifier.notify("WATCHDOG=1")
 
             if GPIO.input(BUTTON_GPIO_1) == GPIO.LOW:
-                logging.info('Key1 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key1 after %.2f s" % (time.time() - lastcoinfetch))
                 last_mode_ind += 1
                 if last_mode_ind >= len(mode_list):
                     last_mode_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_2) == GPIO.LOW:
-                logging.info('Key2 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key2 after %.2f s" % (time.time() - lastcoinfetch))
                 days_ind += 1
                 if days_ind >= len(days_list):
                     days_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_3) == GPIO.LOW:
-                logging.info('Key3 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key3 after %.2f s" % (time.time() - lastcoinfetch))
                 last_layout_ind += 1
                 if last_layout_ind >= len(layout_list):
                     last_layout_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_4) == GPIO.LOW:
-                logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key4 after %.2f s" % (time.time() - lastcoinfetch))
                 inverted = not inverted
                 display_update = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
                 try:
-                    new_height = ticker.mempool.getData()['height']
+                    new_height = ticker.mempool.getData()["height"]
                 except Exception as e:
                     logging.warning(e)
                 if new_height > height and not display_update:
@@ -367,7 +365,7 @@ def main(config, config_file):
                 time.sleep(0.05)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.ini")
     args = parser.parse_args()

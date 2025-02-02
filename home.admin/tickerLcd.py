@@ -19,7 +19,7 @@ from btcticker.ticker import Ticker
 
 shutting_down = False
 temp_dir = tempfile.TemporaryDirectory()
-os.environ['MPLCONFIGDIR'] = temp_dir.name
+os.environ["MPLCONFIGDIR"] = temp_dir.name
 
 BUTTON_GPIO_1 = 5
 BUTTON_GPIO_2 = 6
@@ -47,7 +47,7 @@ def get_display_size(epd_type):
 def draw_image(epd_type, image=None):
     #   A visual cue that the wheels have fallen off
     if image is None:
-        image = Image.new('L', (480, 320), 255)
+        image = Image.new("L", (480, 320), 255)
     image.save(temp_dir.name + "/ticker.png", "PNG")
     os.system(
         "/home/admin/config.scripts/ticker.display.sh image "
@@ -101,7 +101,6 @@ def setup_GPIO():
 
 
 def main(config, config_file):
-
     global epd_type
     epd_type = config.main.epd_type
 
@@ -147,7 +146,7 @@ def main(config, config_file):
     # days_list = [1, 7, 30]
     days_list = []
     for d in config.main.days_list.split(","):
-        days_list.append(int(d.replace('"', '').replace(" ", "")))
+        days_list.append(int(d.replace('"', "").replace(" ", "")))
 
     days_ind = config.main.start_days_ind
     days_shifting = config.main.days_shifting
@@ -196,7 +195,6 @@ def main(config, config_file):
         notifier.notify("READY=1")
 
         while True:
-
             if shutting_down:
                 logging.info("Ticker is shutting down.....")
                 showmessage(
@@ -207,25 +205,25 @@ def main(config, config_file):
             notifier.notify("WATCHDOG=1")
 
             if GPIO.input(BUTTON_GPIO_1) == GPIO.LOW:
-                logging.info('Key1 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key1 after %.2f s" % (time.time() - lastcoinfetch))
                 last_mode_ind += 1
                 if last_mode_ind >= len(mode_list):
                     last_mode_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_2) == GPIO.LOW:
-                logging.info('Key2 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key2 after %.2f s" % (time.time() - lastcoinfetch))
                 days_ind += 1
                 if days_ind >= len(days_list):
                     days_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_3) == GPIO.LOW:
-                logging.info('Key3 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key3 after %.2f s" % (time.time() - lastcoinfetch))
                 last_layout_ind += 1
                 if last_layout_ind >= len(layout_list):
                     last_layout_ind = 0
                 display_update = True
             elif GPIO.input(BUTTON_GPIO_4) == GPIO.LOW:
-                logging.info('Key4 after %.2f s' % (time.time() - lastcoinfetch))
+                logging.info("Key4 after %.2f s" % (time.time() - lastcoinfetch))
                 inverted = not inverted
                 display_update = True
             if (time.time() - lastheightfetch > 30) and config.main.show_block_height:
@@ -309,7 +307,7 @@ def main(config, config_file):
                 time.sleep(0.05)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.ini")
     args = parser.parse_args()
