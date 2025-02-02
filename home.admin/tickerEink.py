@@ -100,7 +100,7 @@ def draw_image(epd_type, image=None):
 
 
 def showmessage(epd_type, ticker, message, mirror, inverted):
-    ticker.drawer.inverted = inverted
+    ticker.inverted = inverted
     ticker.build_message(message, mirror=mirror)
     draw_image(epd_type, ticker.get_image())
     return time.time()
@@ -205,7 +205,7 @@ def main(config, config_file):
             ticker.set_days_ago(days)
             if refresh:
                 ticker.refresh()
-            ticker.drawer.inverted = inverted
+            ticker.inverted = inverted
             ticker.build(mode=mode, layout=layout, mirror=mirror)
             draw_image(epd_type, ticker.get_image())
             lastgrab = time.time()
