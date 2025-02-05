@@ -121,6 +121,7 @@ def get_epd(epd_type):
     elif epd_type == "3in7":
         from waveshare_epd import epd3in7
 
+        Use4Gray = True
         epd = epd3in7.EPD()
     elif epd_type == "4in01f":
         from waveshare_epd import epd4in01f
@@ -224,12 +225,6 @@ def get_epd(epd_type):
         from waveshare_epd import epd2in7
 
         epd = epd2in7.EPD()
-        Use4Gray = True
-        Init4Gray = True
-    elif epd_type == "2in7_V2_4gray":
-        from waveshare_epd import epd2in7_V2
-
-        epd = epd2in7_V2.EPD()
         Use4Gray = True
         Init4Gray = True
     elif epd_type == "3in7_4gray":
