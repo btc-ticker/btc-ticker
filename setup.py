@@ -7,7 +7,7 @@ tests_require = ["pytest"]
 requires = [
     "requests",
     "babel",
-    "pymempool>=0.1.2",
+    "pymempool>=0.1.5",
     "btcpriceticker",
     "piltext",
     "Pillow",

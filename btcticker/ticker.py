@@ -731,7 +731,6 @@ class Ticker:
                 font_name=self.config.fonts.font_fee,
                 anchor="lt",
             )
-
             pos_y += h
             xy_end = (
                 self.width - self.get_w_factor(50),
