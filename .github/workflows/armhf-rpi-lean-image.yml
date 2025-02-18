@@ -31,9 +31,9 @@ jobs:
 
       - name: Run the build script
         run: |
-          echo "Using the variables: --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}" --image_size 18G
+          echo "Using the variables: --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}"
           cd ci/armhf_rpi
-          bash packer.build.armhf-rpi.sh --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}} --image_size 18G
+          bash packer.build.armhf-rpi.sh --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}
 
       - name: Compute checksum of the raw image
         run: |
