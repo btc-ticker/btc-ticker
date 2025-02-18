@@ -8,7 +8,7 @@ jobs:
   armhf-rpi-image-build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set values
         id: set_values
@@ -31,9 +31,9 @@ jobs:
 
       - name: Run the build script
         run: |
-          echo "Using the variables: --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}"
+          echo "Using the variables: --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}" --image_size 18G
           cd ci/armhf_rpi
-          bash packer.build.armhf-rpi.sh --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}}
+          bash packer.build.armhf-rpi.sh --pack lean --github_user ${{steps.set_values.outputs.github_user}} --branch ${{env.BRANCH_NAME}} --image_size 18G
 
       - name: Compute checksum of the raw image
         run: |
@@ -51,7 +51,7 @@ jobs:
           sha256sum btcticker-armhf-rpi-lean.img.gz > btcticker-armhf-rpi-lean.img.gz.sha256
 
       - name: Upload the image and checksums
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: btcticker-armhf-rpi-image-${{ env.BUILD_DATE }}-${{ env.BUILD_VERSION }}
           path: |
