@@ -68,6 +68,7 @@ cp ../build.armhf-rpi.pkr.hcl ./
 cp ../build.btcticker.sh ./
 
 echo -e "\n# Build the image"
+command="packer init build.armhf-rpi.pkr.hcl"
 command="packer build ${vars} build.armhf-rpi.pkr.hcl"
 echo "# Running: $command"
 $command || exit 1
