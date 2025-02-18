@@ -1,4 +1,3 @@
-
 #!/bin/bash -e
 
 echo -e "\n# Install dependencies with apt"
@@ -32,7 +31,7 @@ echo -e "\n# Install Packer..."
 if ! packer version 2>/dev/null; then
   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
   sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-  sudo apt-get update -y && sudo apt-get install packer -y || exit 1
+  sudo apt-get update -y && sudo apt-get install packer=1.10.0-1 -y || exit 1
 else
   echo "# Packer is installed"
 fi
@@ -68,7 +67,6 @@ cp ../build.armhf-rpi.pkr.hcl ./
 cp ../build.btcticker.sh ./
 
 echo -e "\n# Build the image"
-command="packer init build.armhf-rpi.pkr.hcl"
 command="packer build ${vars} build.armhf-rpi.pkr.hcl"
 echo "# Running: $command"
 $command || exit 1

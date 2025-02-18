@@ -3,6 +3,7 @@ variable "github_user" { default = "btc-ticker" }
 variable "branch" { default = "main" }
 variable "image_link" { default = "https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2024-10-28/2024-10-22-raspios-bullseye-armhf.img.xz" }
 variable "image_checksum" { default = "db2e27d790038318ae62c0e57534a8eba08e7a6b3737597248f8af875c54528f" }
+variable "image_size" { default = "24G" }
 
 source "arm" "btcticker-armhf-rpi" {
   file_checksum_type    = "sha256"
@@ -29,7 +30,7 @@ source "arm" "btcticker-armhf-rpi" {
     type         = "83"
   }
   image_path                   = "btcticker-armhf-rpi-${var.pack}.img"
-  image_size                   = "12G"
+  image_size                   = var.image_size
   image_type                   = "dos"
   qemu_binary_destination_path = "/usr/bin/qemu-arm-static"
   qemu_binary_source_path      = "/usr/bin/qemu-arm-static"
@@ -47,6 +48,7 @@ build {
       "apt-get install -y sudo wget",
       "apt-get -y autoremove",
       "apt-get -y clean",
+      "touch /boot/ssh",
     ]
   }
 
@@ -64,6 +66,12 @@ build {
       "echo '# delete the SSH keys (will be recreated on the first boot)'",
       "rm -f /etc/ssh/ssh_host_*",
       "echo 'OK'",
+    ]
+  }
+
+  provisioner "shell" {
+    inline = [
+      "if [ \"${var.pack}\" = \"base\" ]; then echo 'Adding stop file to /boot/'; touch /boot/stop; fi"
     ]
   }
 }

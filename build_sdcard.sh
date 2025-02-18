@@ -18,7 +18,7 @@ nocolor="\033[0m"
 red="\033[31m"
 
 ## usage as a function to be called whenever there is a huge mistake on the options
-usage(){
+usage() {
   printf %s"${me} [--option <argument>]
 
 Options:
@@ -64,22 +64,25 @@ if [ "$1" = "-EXPORT" ] || [ "$1" = "EXPORT" ]; then
 fi
 
 ## default user message
-error_msg(){ printf %s"${red}${me}: ${1}${nocolor}\n"; exit 1; }
+error_msg() {
+  printf %s"${red}${me}: ${1}${nocolor}\n"
+  exit 1
+}
 
 ## assign_value variable_name "${opt}"
 ## it strips the dashes and assign the clean value to the variable
 ## assign_value status --on IS status=on
 ## variable_name is the name you want it to have
 ## $opt being options with single or double dashes that don't require arguments
-assign_value(){
+assign_value() {
   case "${2}" in
-    --*) value="${2#--}";;
-    -*) value="${2#-}";;
-    *) value="${2}"
+  --*) value="${2#--}" ;;
+  -*) value="${2#-}" ;;
+  *) value="${2}" ;;
   esac
   case "${value}" in
-    0) value="false";;
-    1) value="true";;
+  0) value="false" ;;
+  1) value="true" ;;
   esac
   ## Escaping quotes is needed because else if will fail if the argument is quoted
   # shellcheck disable=SC2140
@@ -92,9 +95,9 @@ assign_value(){
 ## $opt being options with single or double dashes
 ## $arg is requiring and argument, else it fails
 ## assign_value "${1}" "${3}" means it is assining the argument ($3) to the variable_name ($1)
-get_arg(){
+get_arg() {
   case "${3}" in
-    ""|-*) error_msg "Option '${2}' requires an argument.";;
+  "" | -*) error_msg "Option '${2}' requires an argument." ;;
   esac
   assign_value "${1}" "${3}"
 }
@@ -109,27 +112,39 @@ get_arg(){
 ## 3. if the option does not start with dash and does not require argument, assign to command manually.
 while :; do
   case "${1}" in
-    -*=*) opt="${1%=*}"; arg="${1#*=}"; shift_n=1;;
-    -*) opt="${1}"; arg="${2}"; shift_n=2;;
-    *) opt="${1}"; arg="${2}"; shift_n=1;;
+  -*=*)
+    opt="${1%=*}"
+    arg="${1#*=}"
+    shift_n=1
+    ;;
+  -*)
+    opt="${1}"
+    arg="${2}"
+    shift_n=2
+    ;;
+  *)
+    opt="${1}"
+    arg="${2}"
+    shift_n=1
+    ;;
   esac
   case "${opt}" in
-    -i|-i=*|--interaction|--interaction=*) get_arg interaction "${opt}" "${arg}";;
-    -f|-f=*|--fatpack|--fatpack=*) get_arg fatpack "${opt}" "${arg}";;
-    -u|-u=*|--github-user|--github-user=*) get_arg github_user "${opt}" "${arg}";;
-    -b|-b=*|--branch|--branch=*) get_arg branch "${opt}" "${arg}";;
-    -d|-d=*|--display|--display=*) get_arg display "${opt}" "${arg}";;
-    -t|-t=*|--tweak-boot-drive|--tweak-boot-drive=*) get_arg tweak_boot_drive "${opt}" "${arg}";;
-    -w|-w=*|--wifi-region|--wifi-region=*) get_arg wifi_region "${opt}" "${arg}";;
-    "") break;;
-    *) error_msg "Invalid option: ${opt}";;
+  -i | -i=* | --interaction | --interaction=*) get_arg interaction "${opt}" "${arg}" ;;
+  -f | -f=* | --fatpack | --fatpack=*) get_arg fatpack "${opt}" "${arg}" ;;
+  -u | -u=* | --github-user | --github-user=*) get_arg github_user "${opt}" "${arg}" ;;
+  -b | -b=* | --branch | --branch=*) get_arg branch "${opt}" "${arg}" ;;
+  -d | -d=* | --display | --display=*) get_arg display "${opt}" "${arg}" ;;
+  -t | -t=* | --tweak-boot-drive | --tweak-boot-drive=*) get_arg tweak_boot_drive "${opt}" "${arg}" ;;
+  -w | -w=* | --wifi-region | --wifi-region=*) get_arg wifi_region "${opt}" "${arg}" ;;
+  "") break ;;
+  *) error_msg "Invalid option: ${opt}" ;;
   esac
   shift "${shift_n}"
 done
 
 ## if there is a limited option, check if the value of variable is within this range
 ## $ range_argument variable_name possible_value_1 possible_value_2
-range_argument(){
+range_argument() {
   name="${1}"
   eval var='$'"${1}"
   shift
@@ -217,13 +232,11 @@ range_argument tweak_boot_drive "0" "1" "false" "true"
 # If any valid wifi country code Wifi will be activated with that country code by default
 : "${wifi_region:=DE}"
 
-
 echo ""
 echo "*****************************************"
-echo "* BTCTICKER SD CARD IMAGE SETUP v0.6.0  *"
+echo "* BTCTICKER SD CARD IMAGE SETUP v0.7.0  *"
 echo "*****************************************"
 echo "For details on optional parameters - see build script source code:"
-
 
 # output
 for key in interaction fatpack github_user branch display tweak_boot_drive wifi_region; do
@@ -235,13 +248,19 @@ done
 # ---------------------------------------
 cpu="$(uname -m)" && echo "cpu=${cpu}"
 case "${cpu}" in
-  aarch64|x86_64|armv7l|armv6l);;
-  *) echo -e "# FAIL #\nCan only build on aarch64 or x86_64 not on: cpu=${cpu}"; exit 1;;
+aarch64 | x86_64 | armv7l | armv6l) ;;
+*)
+  echo -e "# FAIL #\nCan only build on aarch64 or x86_64 not on: cpu=${cpu}"
+  exit 1
+  ;;
 esac
 architecture="$(dpkg --print-architecture 2>/dev/null)" && echo "architecture=${architecture}"
 case "${architecture}" in
-  arm*|amd64|armv7l|armv6l);;
-  *) echo -e "# FAIL #\nCan only build on arm* or amd64 not on: architecture=${cpu}"; exit 1;;
+arm* | amd64 | armv7l | armv6l) ;;
+*)
+  echo -e "# FAIL #\nCan only build on arm* or amd64 not on: architecture=${cpu}"
+  exit 1
+  ;;
 esac
 
 # AUTO-DETECTION: OPERATINGSYSTEM
@@ -309,14 +328,13 @@ if [ "${cpu}" = "aarch64" ] && { [ "${baseimage}" = "raspios_arm64" ] || [ "${ba
   fi
 fi
 
-
 # remove some (big) packages that are not needed
 
 apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
 apt remove --purge -y thonny libqt5* realvnc-vnc-server libgstreamer*
 if [ "${display}" == "eink" ]; then
   apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
-  apt remove -y --purge raspberrypi-ui-mods  gtk* hicolor-icon-theme*
+  apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
 else
   apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
   apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
@@ -378,8 +396,8 @@ if ! compgen -u pi; then
 fi
 
 # special prepare when Raspbian
-if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${baseimage}" = "raspios_arm64" ]||\
-   [ "${baseimage}" = "debian_rpi64" ]; then
+if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ "${baseimage}" = "raspios_arm64" ] ||
+  [ "${baseimage}" = "debian_rpi64" ]; then
   apt install -y raspi-config
   # do memory split (16MB)
   raspi-config nonint do_memory_split 16
@@ -435,7 +453,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_armhf" ]||[ "${b
 fi
 
 # special prepare when Nvidia Jetson Nano
-if [ $(uname -a | grep -c 'tegra') -gt 0 ] ; then
+if [ $(uname -a | grep -c 'tegra') -gt 0 ]; then
   echo "Nvidia --> disable GUI on boot"
   systemctl set-default multi-user.target
 fi
@@ -451,71 +469,70 @@ echo "pi:btcticker" | chpasswd
 sed -i "s/^#SystemMaxUse=.*/SystemMaxUse=250M/g" /etc/systemd/journald.conf
 sed -i "s/^#SystemMaxFileSize=.*/SystemMaxFileSize=50M/g" /etc/systemd/journald.conf
 
-
 # change log rotates
-echo "/var/log/syslog" >> ./rsyslog
-echo "{" >> ./rsyslog
-echo "	rotate 7" >> ./rsyslog
-echo "	daily" >> ./rsyslog
-echo "	missingok" >> ./rsyslog
-echo "	notifempty" >> ./rsyslog
-echo "	delaycompress" >> ./rsyslog
-echo "	compress" >> ./rsyslog
-echo "	postrotate" >> ./rsyslog
-echo "		invoke-rc.d rsyslog rotate > /dev/null" >> ./rsyslog
-echo "	endscript" >> ./rsyslog
-echo "}" >> ./rsyslog
-echo "" >> ./rsyslog
-echo "/var/log/mail.info" >> ./rsyslog
-echo "/var/log/mail.warn" >> ./rsyslog
-echo "/var/log/mail.err" >> ./rsyslog
-echo "/var/log/mail.log" >> ./rsyslog
-echo "/var/log/daemon.log" >> ./rsyslog
-echo "{" >> ./rsyslog
-echo "        rotate 4" >> ./rsyslog
-echo "        size=100M" >> ./rsyslog
-echo "        missingok" >> ./rsyslog
-echo "        notifempty" >> ./rsyslog
-echo "        compress" >> ./rsyslog
-echo "        delaycompress" >> ./rsyslog
-echo "        sharedscripts" >> ./rsyslog
-echo "        postrotate" >> ./rsyslog
-echo "                invoke-rc.d rsyslog rotate > /dev/null" >> ./rsyslog
-echo "        endscript" >> ./rsyslog
-echo "}" >> ./rsyslog
-echo "" >> ./rsyslog
-echo "/var/log/kern.log" >> ./rsyslog
-echo "/var/log/auth.log" >> ./rsyslog
-echo "{" >> ./rsyslog
-echo "        rotate 4" >> ./rsyslog
-echo "        size=100M" >> ./rsyslog
-echo "        missingok" >> ./rsyslog
-echo "        notifempty" >> ./rsyslog
-echo "        compress" >> ./rsyslog
-echo "        delaycompress" >> ./rsyslog
-echo "        sharedscripts" >> ./rsyslog
-echo "        postrotate" >> ./rsyslog
-echo "                invoke-rc.d rsyslog rotate > /dev/null" >> ./rsyslog
-echo "        endscript" >> ./rsyslog
-echo "}" >> ./rsyslog
-echo "" >> ./rsyslog
-echo "/var/log/user.log" >> ./rsyslog
-echo "/var/log/lpr.log" >> ./rsyslog
-echo "/var/log/cron.log" >> ./rsyslog
-echo "/var/log/debug" >> ./rsyslog
-echo "/var/log/messages" >> ./rsyslog
-echo "{" >> ./rsyslog
-echo "	rotate 4" >> ./rsyslog
-echo "	weekly" >> ./rsyslog
-echo "	missingok" >> ./rsyslog
-echo "	notifempty" >> ./rsyslog
-echo "	compress" >> ./rsyslog
-echo "	delaycompress" >> ./rsyslog
-echo "	sharedscripts" >> ./rsyslog
-echo "	postrotate" >> ./rsyslog
-echo "		invoke-rc.d rsyslog rotate > /dev/null" >> ./rsyslog
-echo "	endscript" >> ./rsyslog
-echo "}" >> ./rsyslog
+echo "/var/log/syslog" >>./rsyslog
+echo "{" >>./rsyslog
+echo "	rotate 7" >>./rsyslog
+echo "	daily" >>./rsyslog
+echo "	missingok" >>./rsyslog
+echo "	notifempty" >>./rsyslog
+echo "	delaycompress" >>./rsyslog
+echo "	compress" >>./rsyslog
+echo "	postrotate" >>./rsyslog
+echo "		invoke-rc.d rsyslog rotate > /dev/null" >>./rsyslog
+echo "	endscript" >>./rsyslog
+echo "}" >>./rsyslog
+echo "" >>./rsyslog
+echo "/var/log/mail.info" >>./rsyslog
+echo "/var/log/mail.warn" >>./rsyslog
+echo "/var/log/mail.err" >>./rsyslog
+echo "/var/log/mail.log" >>./rsyslog
+echo "/var/log/daemon.log" >>./rsyslog
+echo "{" >>./rsyslog
+echo "        rotate 4" >>./rsyslog
+echo "        size=100M" >>./rsyslog
+echo "        missingok" >>./rsyslog
+echo "        notifempty" >>./rsyslog
+echo "        compress" >>./rsyslog
+echo "        delaycompress" >>./rsyslog
+echo "        sharedscripts" >>./rsyslog
+echo "        postrotate" >>./rsyslog
+echo "                invoke-rc.d rsyslog rotate > /dev/null" >>./rsyslog
+echo "        endscript" >>./rsyslog
+echo "}" >>./rsyslog
+echo "" >>./rsyslog
+echo "/var/log/kern.log" >>./rsyslog
+echo "/var/log/auth.log" >>./rsyslog
+echo "{" >>./rsyslog
+echo "        rotate 4" >>./rsyslog
+echo "        size=100M" >>./rsyslog
+echo "        missingok" >>./rsyslog
+echo "        notifempty" >>./rsyslog
+echo "        compress" >>./rsyslog
+echo "        delaycompress" >>./rsyslog
+echo "        sharedscripts" >>./rsyslog
+echo "        postrotate" >>./rsyslog
+echo "                invoke-rc.d rsyslog rotate > /dev/null" >>./rsyslog
+echo "        endscript" >>./rsyslog
+echo "}" >>./rsyslog
+echo "" >>./rsyslog
+echo "/var/log/user.log" >>./rsyslog
+echo "/var/log/lpr.log" >>./rsyslog
+echo "/var/log/cron.log" >>./rsyslog
+echo "/var/log/debug" >>./rsyslog
+echo "/var/log/messages" >>./rsyslog
+echo "{" >>./rsyslog
+echo "	rotate 4" >>./rsyslog
+echo "	weekly" >>./rsyslog
+echo "	missingok" >>./rsyslog
+echo "	notifempty" >>./rsyslog
+echo "	compress" >>./rsyslog
+echo "	delaycompress" >>./rsyslog
+echo "	sharedscripts" >>./rsyslog
+echo "	postrotate" >>./rsyslog
+echo "		invoke-rc.d rsyslog rotate > /dev/null" >>./rsyslog
+echo "	endscript" >>./rsyslog
+echo "}" >>./rsyslog
 mv ./rsyslog /etc/logrotate.d/rsyslog
 chown root:root /etc/logrotate.d/rsyslog
 service rsyslog restart
@@ -593,7 +610,6 @@ sudo -H python3 -m pip install --upgrade pip
 sudo -H python3 -m pip install setuptools
 sudo -H python3 -m pip install mplfinance==0.12.10b0
 
-
 # sudo -H python3 -m pip install flask-bootstrap
 # sudo -H python3 -m pip install wtforms
 # sudo -H python3 -m pip install gunicorn
@@ -612,7 +628,6 @@ make
 # make check
 make install
 cd ..
-
 
 echo -e "\n*** ADDING MAIN USER admin ***"
 # using the default password 'btcticker'
@@ -638,7 +653,6 @@ usermod -a -G gpio admin
 usermod -a -G spi admin
 usermod -a -G i2c admin
 
-
 echo -e "\n*** SHELL SCRIPTS AND ASSETS ***"
 
 # copy btc-ticker repo from github
@@ -657,7 +671,6 @@ sudo -u admin chmod +x /home/admin/config.scripts/*.sh
 cd /home/admin/btc-ticker/
 sudo -H python3 setup.py install
 cd /home/admin/
-
 
 rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
@@ -679,7 +692,6 @@ bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
 echo ""
 echo "*** BTCTICKER EXTRAS ***"
 
-
 # optimization for torrent download
 bash -c "echo 'net.core.rmem_max = 4194304' >> /etc/sysctl.conf"
 bash -c "echo 'net.core.wmem_max = 1048576' >> /etc/sysctl.conf"
@@ -697,7 +709,6 @@ if [ ${keyBindingsDone} -eq 0 ]; then
 else
   echo "key-bindings already in $homeFile"
 fi
-
 
 echo -e "\n*** SWAP FILE ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#moving-the-swap-file
@@ -720,15 +731,13 @@ sed --in-place -i "23s/.*/session required pam_limits.so/" /etc/pam.d/common-ses
 sed --in-place -i "25s/.*/session required pam_limits.so/" /etc/pam.d/common-session-noninteractive
 bash -c "echo '# end of pam-auth-update config' >> /etc/pam.d/common-session-noninteractive"
 
-
-
 # *** CACHE DISK IN RAM ***
 echo -e "\nActivating CACHE RAM DISK ... "
 /home/admin/config.scripts/ticker.cache.sh on
 
 # *** Bluetooth & other configs ***
-if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
-   [ "${baseimage}" = "debian_rpi64" ]; then
+if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ] ||
+  [ "${baseimage}" = "debian_rpi64" ]; then
 
   echo ""
   echo "*** DISABLE BLUETOOTH ***"
@@ -739,8 +748,8 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
 
   if [ ${disableBTDone} -eq 0 ]; then
     # disable bluetooth module
-    echo "" >> $configFile
-    echo "# Raspiblitz" >> $configFile
+    echo "" >>$configFile
+    echo "# Raspiblitz" >>$configFile
     echo 'dtoverlay=pi3-disable-bt' | tee -a $configFile
     echo 'dtoverlay=disable-bt' | tee -a $configFile
   else
@@ -769,7 +778,7 @@ if [ "${baseimage}" = "raspbian" ]||[ "${baseimage}" = "raspios_arm64"  ]||\
   #enable i2c
   sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/config.txt
   #enable SPI
-   sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
+  sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
 fi
 
 timedatectl set-timezone Europe/Berlin
@@ -811,7 +820,6 @@ echo "IMPORTANT IF WANT TO MAKE A RELEASE IMAGE FROM THIS BUILD:"
 echo "1. login fresh --> user:admin password:btcticker"
 echo "2. run --> ./XXprepareRelease.sh"
 echo ""
-
 
 # (do last - because might trigger reboot)
 if [ "${display}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
