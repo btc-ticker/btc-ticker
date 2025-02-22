@@ -5,7 +5,7 @@ from datetime import datetime
 
 from babel import numbers
 from btcpriceticker.price import Price
-from piltext import FontManager, ImageDrawer
+from piltext import FontManager, ImageDrawer, TextGrid
 
 from btcticker.chart import makeCandle, makeSpark
 from btcticker.config import Config
@@ -13,13 +13,19 @@ from btcticker.mempool import Mempool
 
 
 class Ticker:
-    def __init__(self, config: Config, width, height):
+    def __init__(self, config: Config, width, height, days_ago=1):
         self.config = config
         self.height = height
         self.width = width
         self.fiat = config.main.fiat
         self.mempool = Mempool(api_url=config.main.mempool_api_url)
-        self.price = Price(fiat=self.fiat, days_ago=1, enable_ohlc=True)
+        self.price = Price(
+            fiat=self.fiat,
+            service=config.main.price_service,
+            interval=config.main.interval,
+            days_ago=days_ago,
+            enable_ohlc=config.main.enable_ohlc,
+        )
         self.mempool.request_timeout = 20
 
         fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts")
@@ -29,6 +35,56 @@ class Ticker:
         self.image = ImageDrawer(width, height, self.font_manager)
         self.inverted = config.main.inverted
         self.orientation = config.main.orientation
+
+    def get_line_str(self, sym):
+        mempool = self.mempool.getData()
+        symbolstring = numbers.get_currency_symbol(self.fiat.upper(), locale="en")
+        current_price = self.price.price
+        if sym == "empty":
+            return ""
+        if sym == "_current_block_height_":
+            return str(mempool["height"])
+        if sym == "_sat_per_fiat_with_symbol_":
+            return "/{}{:.0f}".format(symbolstring, current_price["sat_fiat"])
+        if sym == "_moscow_time_usd_":
+            return "{:.0f}".format(current_price["sat_usd"])
+        if sym == "_current_price_usd_":
+            return format(int(current_price["usd"]), "")
+        if sym == "_current_price_fiat_symbol_":
+            pricenowstring = self.price.get_price_now()
+            price_str = pricenowstring.replace(",", "")
+            return symbolstring + price_str
+        if sym == "_minutes_between_blocks_":
+            return self.get_minutes_between_blocks()
+        if sym == "_current_time_":
+            return self.get_current_time()
+        if sym == "_current_price_fiat_symbol_left_part_":
+            pricenowstring = self.price.get_price_now()
+            price_parts = pricenowstring.split(",")
+            return self.get_symbol() + price_parts[0]
+        if sym == "_current_price_fiat_symbol_right_part_":
+            pricenowstring = self.price.get_price_now()
+            price_parts = pricenowstring.split(",")
+            return price_parts[1]
+        return sym
+
+    def generate_line_str(self, lines, mode):
+        line_str = []
+        line = ""
+        for sym, value in lines[mode]:
+            if sym == "n":
+                line_str.append(line)
+                line = ""
+            elif sym == "t":
+                if value != "":
+                    line += value
+                else:
+                    line += " "
+            elif sym == "s":
+                line += self.get_line_str(value)
+        if line != "":
+            line_str.append(line)
+        return line_str
 
     def set_days_ago(self, days_ago):
         self.price.set_days_ago(days_ago)
@@ -254,7 +310,7 @@ class Ticker:
             else:
                 price_str = format(int(current_price["usd"]), "")
         elif symbol == "moscow_time_usd":
-            price_str = "%.0f" % (current_price["sat_usd"])
+            price_str = "{:.0f}".format(current_price["sat_usd"])
         elif symbol == "sat_per_fiat":
             if with_symbol and shorten:
                 price_str = "/{}{:.0f}".format(symbolstring, current_price["sat_fiat"])
@@ -263,24 +319,23 @@ class Ticker:
                     current_price["sat_fiat"], symbolstring
                 )
             else:
-                price_str = "%.0f" % (current_price["sat_fiat"])
+                price_str = "{:.0f}".format(current_price["sat_fiat"])
         elif symbol == "sat_per_usd":
             if shorten:
-                price_str = "%.0f /$" % (current_price["sat_usd"])
+                price_str = "{:.0f} /$".format(current_price["sat_usd"])
             else:
-                price_str = "%.0f sat/$" % (current_price["sat_usd"])
+                price_str = "{:.0f} sat/$".format(current_price["sat_usd"])
 
         return price_str
 
-    def get_price_change(self, with_symbol=True):
+    def price_change_string(self, prefix_symbol: str | bool):
         pricechange = self.price.get_price_change()
-        symbolstring = numbers.get_currency_symbol(self.fiat.upper(), locale="en")
-        if with_symbol:
-            return " "
-        return "   " + str(self.price.days_ago) + "d : " + pricechange
-
-        return symbolstring + "  " + str(self.price.days_ago) + "d : " + pricechange
-        return "$" + "  " + str(self.price.days_ago) + "d : " + pricechange
+        if prefix_symbol:
+            return (
+                prefix_symbol + "   " + str(self.price.days_ago) + "d : " + pricechange
+            )
+        else:
+            return str(self.price.days_ago) + "day : " + pricechange
 
     def get_symbol(self):
         symbolstring = numbers.get_currency_symbol(self.fiat.upper(), locale="en")
@@ -305,7 +360,7 @@ class Ticker:
         meanTimeDiff = mempool["minutes_between_blocks"] * 60
         t_min = meanTimeDiff // 60
         t_sec = meanTimeDiff % 60
-        return f"{t_min}:{t_sec}"
+        return f"{int(t_min)}:{int(t_sec)}"
 
     def get_last_block_time(self, date_and_time=True):
         mempool = self.mempool.getData()
@@ -337,202 +392,9 @@ class Ticker:
             last_block_sec_ago % 60,
         )
 
-    def draw_4_lines(self, line_str):
-        xy = (self.get_w_factor(5), self.get_h_factor(3))
-        xy_end = (self.width, (self.height - self.get_h_factor(15)) / 3)
-        w, h, font_size = self.image.draw_text(
-            line_str[0],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_console,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + int(h * 0.85))
-        xy_end = (self.width, (self.height) / 5 + xy[1])
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[2],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-        start = (self.width - 1, self.height - 1)
-        xy_end = (xy[0], xy[1])
-        w, h, font_size = self.image.draw_text(
-            line_str[3],
-            start,
-            end=xy_end,
-            font_name=self.config.fonts.font_big,
-            anchor="rs",
-        )
-
-    def draw_5_lines(self, line_str):
-        xy = (self.get_w_factor(5), self.get_h_factor(3))
-        xy_end = (self.width, (self.height) / 4)
-        w, h, font_size = self.image.draw_text(
-            line_str[0],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_console,
-            anchor="lt",
-        )
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            xy,
-            end=(
-                self.width - 2 * self.get_w_factor(5) + xy[0],
-                (self.height) / 8 - self.get_h_factor(3) + xy[1],
-            ),
-            font_name=self.config.fonts.font_fee,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[2],
-            xy,
-            fontsize=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[3],
-            xy,
-            fontsize=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        xy_end = (xy[0], xy[1])
-        w, h, font_size = self.image.draw_text(
-            line_str[4],
-            (self.width - 1, self.height - 1),
-            end=xy_end,
-            font_name=self.config.fonts.font_buttom,
-            anchor="rs",
-        )
-
-    def draw_7_lines_with_image(self, line_str, mode):
-        pricestack = self.price.timeseries_stack
-        pricechange = self.price.get_price_change()
-        xy = (self.get_w_factor(5), self.get_h_factor(3))
-        height_div = 9
-        xy_end = (
-            self.width - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div + self.get_h_factor(3) + xy[1],
-        )
-        w, h, font_size = self.image.draw_text(
-            line_str[0],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_top,
-            anchor="lt",
-        )
-        xy = (xy[0], xy[1] + h)
-        xy_end = (
-            self.width - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div + xy[1],
-        )
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_fee,
-            anchor="lt",
-        )
-        xy = (xy[0], xy[1] + h)
-        image_y = xy[1]
-        xy_end = (
-            self.width / 2 - self.get_w_factor(10) + xy[0],
-            (self.height) / height_div - self.get_h_factor(3) + xy[1],
-        )
-
-        w, h, font_size = self.image.draw_text(
-            line_str[2],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[3],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[4],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        image_text_y = xy[1] + h - self.get_h_factor(1)
-        xy = (xy[0], xy[1] + h)
-        font_size_image = font_size
-        w, h, font_size = self.image.draw_text(
-            line_str[5],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[6],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_side,
-            anchor="lt",
-        )
-        xy_end = (xy[0], self.height - xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[7],
-            (self.width - 1, self.height - 1),
-            end=xy_end,
-            font_name=self.config.fonts.font_buttom,
-            anchor="rs",
-        )
-
-        spark_image = makeSpark(
-            pricestack, figsize_pixel=(self.get_w_factor(170), self.get_h_factor(51))
-        )
-        w, h = spark_image.size
-        self.image.paste(spark_image, (self.get_w_factor(100), image_y))
-        if mode != "satfiat":
-            xy_end = (self.width, image_text_y - self.get_h_factor(20))
-            self.image.draw_text(
-                str(self.price.days_ago) + "day : " + pricechange,
-                (self.get_w_factor(130), image_text_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_fee,
-                anchor="lt",
-            )
-
-    def draw_ohlc(self, mode):
+    def generate_ohlc(self, mode):
         line_str = ["", "", "", "", "", "", ""]
         current_price = self.price.price
-        pricechange = self.price.get_price_change()
         mempool = self.mempool.getData()
         last_timestamp = mempool["last_block"]["timestamp"]
         last_height = mempool["last_block"]["height"]
@@ -561,13 +423,7 @@ class Ticker:
                     current_price["sat_usd"],
                 )
             )
-            line_str[5] = (
-                self.get_symbol()
-                + "  "
-                + str(self.price.days_ago)
-                + "d : "
-                + pricechange
-            )
+            line_str[5] = self.price_change_string(self.get_symbol())
             line_str[6] = self.get_current_price("fiat")
         elif mode == "height" or mode == "newblock":
             line_str[0] = self.get_current_price("fiat", with_symbol=True)
@@ -582,7 +438,7 @@ class Ticker:
                     current_price["sat_usd"],
                 )
             )
-            line_str[5] = "   " + str(self.price.days_ago) + "d : " + pricechange
+            line_str[5] = self.price_change_string("")
             line_str[6] = self.get_current_block_height()
         elif mode == "satfiat":
             line_str[0] = self.get_current_block_height()
@@ -594,13 +450,7 @@ class Ticker:
                 + format(int(current_price["usd"]), "")
                 + " - %.0f /$" % (current_price["sat_usd"])
             )
-            line_str[5] = (
-                "/%s" % self.get_symbol()
-                + "  "
-                + str(self.price.days_ago)
-                + "d : "
-                + pricechange
-            )
+            line_str[5] = self.price_change_string("/%s" % self.get_symbol())
             line_str[6] = self.get_current_price("sat_per_fiat")
         elif mode == "moscowtime":
             line_str[0] = self.get_current_block_height()
@@ -612,7 +462,7 @@ class Ticker:
                 + format(int(current_price["usd"]), "")
                 + f" - {self.get_sat_per_fiat():.0f} /{self.get_symbol()}"
             )
-            line_str[5] = "/$" + "  " + str(self.price.days_ago) + "d : " + pricechange
+            line_str[5] = self.price_change_string("/$")
             line_str[6] = "%.0f" % current_price["sat_usd"]
         elif mode == "usd":
             line_str[0] = self.get_current_block_height()
@@ -627,7 +477,7 @@ class Ticker:
                     current_price["sat_usd"],
                 )
             )
-            line_str[5] = "$" + "  " + str(self.price.days_ago) + "d : " + pricechange
+            line_str[5] = self.price_change_string("$")
             line_str[6] = format(int(current_price["usd"]), "")
 
         line_str[2] = self.get_fee_string(mempool)
@@ -639,134 +489,60 @@ class Ticker:
             retarget_date=retarget_date,
             show_clock=False,
         )
+        return line_str
+
+    def draw_ohlc(self, mode):
+        line_str = self.generate_ohlc(mode)
         w = 6
         dpi = int(480 / w)
 
-        pos_y = self.get_h_factor(3)
-
         if self.width > 450 and self.height > self.width:
-            xy_end = (
-                self.width,
-                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[0],
-                (0, pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_console,
-                anchor="lt",
-            )
-
-            pos_y += h - self.get_h_factor(10, factor=800)
-            xy_end = (
-                self.width,
-                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[1],
-                (self.get_w_factor(5), pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_side,
-                anchor="lt",
-            )
-
-            pos_y += h
-        else:
-            xy_end = (
-                self.width,
-                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[0],
-                (0, pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_console,
-                anchor="lt",
-            )
-
-            pos_y += h - self.get_h_factor(10, factor=800)
-        if self.width > 450 and self.height > self.width:
+            grid = TextGrid(35, 6, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (2, 5))
+            grid.merge((3, 0), (4, 5))
+            grid.merge((5, 0), (20, 5))
+            grid.merge((21, 0), (22, 5))
+            grid.merge((23, 0), (24, 5))
+            grid.merge((25, 0), (26, 5))
+            grid.merge((27, 0), (28, 5))
+            grid.merge((29, 0), (34, 5))
+            start_img, end_img = grid.get_grid((5, 0), convert_to_pixel=True)
             ohlc_image = makeCandle(
                 self.price.ohlc,
-                figsize_pixel=(self.width, self.height * 0.45),
+                figsize_pixel=(end_img[0] - start_img[0], end_img[1] - start_img[1]),
                 dpi=dpi,
                 x_axis=False,
             )
-        else:
-            ohlc_image = makeCandle(
-                self.price.ohlc,
-                figsize_pixel=(self.width, self.height - pos_y),
-                dpi=dpi,
-                x_axis=False,
-            )
-        ohlc_w, ohlc_h = ohlc_image.size
-        self.image.paste(ohlc_image, (0, pos_y))
-        pos_y += ohlc_h
-        if self.width > 450 and self.height > self.width:
-            xy_end = (0, pos_y)
-            w_low, h_low, fs_low = self.image.draw_text(
+
+            grid.set_text((0, 0), line_str[0], font_name=self.config.fonts.font_console)
+            grid.set_text((3, 0), line_str[1], font_name=self.config.fonts.font_side)
+            grid.paste_image((5, 0), ohlc_image, anchor="rs")
+            grid.set_text((21, 0), line_str[2], font_name=self.config.fonts.font_fee)
+            grid.set_text((23, 0), line_str[3], font_name=self.config.fonts.font_side)
+            grid.set_text((25, 0), line_str[4], font_name=self.config.fonts.font_side)
+            grid.set_text((27, 0), line_str[5], font_name=self.config.fonts.font_side)
+            grid.set_text(
+                (29, 0),
                 line_str[6],
-                (self.width - 1, self.height - 1),
-                end=xy_end,
                 font_name=self.config.fonts.font_buttom,
                 anchor="rs",
             )
-
-            xy_end = (self.width / 3, self.height + pos_y)
-            w, h_symbolstring, font_size = self.image.draw_text(
-                line_str[5],
-                (
-                    self.get_w_factor(5),
-                    self.height - h_low + self.get_h_factor(10, factor=800),
-                ),
-                end=xy_end,
-                font_name=self.config.fonts.font_side,
-                anchor="lt",
-            )
-            xy_end = (self.width, self.height + pos_y)
-            w, h, font_size = self.image.draw_text(
-                line_str[2],
-                (self.get_w_factor(5), pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_fee,
-                anchor="lt",
-            )
-            pos_y += h
-            xy_end = (
-                self.width - self.get_w_factor(50),
-                (self.height - self.get_h_factor(20, factor=800)) / 2 + pos_y,
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[3],
-                (self.get_w_factor(5), pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_side,
-                anchor="lt",
+        else:
+            grid = TextGrid(21, 6, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (4, 5))
+            grid.merge((5, 0), (20, 5))
+            start_img, end_img = grid.get_grid((5, 0), convert_to_pixel=True)
+            ohlc_image = makeCandle(
+                self.price.ohlc,
+                figsize_pixel=(end_img[0] - start_img[0], end_img[1] - start_img[1]),
+                dpi=dpi,
+                x_axis=False,
             )
 
-            pos_y += h
-            xy = (
-                self.get_w_factor(5),
-                self.height
-                - h_low
-                - h_symbolstring
-                - self.get_h_factor(20, factor=800),
-            )
+            grid.set_text((0, 0), line_str[0], font_name=self.config.fonts.font_console)
+            grid.paste_image((5, 0), ohlc_image, anchor="rs")
 
-            xy_end = (
-                self.width - self.get_w_factor(5),
-                (self.height - self.get_h_factor(20, factor=800)) / 2 + xy[1],
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[4],
-                xy,
-                end=xy_end,
-                font_name=self.config.fonts.font_side,
-            )
-
-            pos_y += h
-
-    def draw_all(self, mode):
+    def generate_all(self, mode):
         line_str = [" ", " ", " ", " ", " ", " ", " ", " "]
         mempool = self.mempool.getData()
         current_price = self.price.price
@@ -788,58 +564,19 @@ class Ticker:
         blocks = math.ceil(mempool["vsize"] / 1e6)
         count = mempool["count"]
         if mode == "newblock":
-            xy = (5, 3)
-            w, h, font_size = self.image.draw_text(
-                "%s - %s - %s"
-                % (
-                    self.get_current_price("fiat", with_symbol=True),
-                    self.get_minutes_between_blocks(),
-                    self.get_current_time(),
-                ),
-                xy,
-                font_name=self.config.fonts.font_side,
-                font_size=self.config.fonts.font_side_size,
-                anchor="lt",
+            line_str[0] = "%s - %s - %s" % (
+                self.get_current_price("fiat", with_symbol=True),
+                self.get_minutes_between_blocks(),
+                self.get_current_time(),
             )
-            xy = (xy[0], xy[1] + h)
-            fees_string = self.get_fees_string(mempool)
-            w, h, font_size = self.image.draw_text(
-                fees_string,
-                xy,
-                font_name=self.config.fonts.font_fee,
-                font_size=self.config.fonts.font_fee_size,
-                anchor="lt",
+            line_str[1] = self.get_fees_string(mempool)
+            line_str[2] = "%d blks %d txs" % (blocks, count)
+            line_str[3] = "%d blk %.1f%% %s" % (
+                self.get_remaining_blocks(),
+                (retarget_mult * 100 - 100),
+                retarget_date.strftime("%d.%b%H:%M"),
             )
-            xy = (xy[0], xy[1] + h)
-            w, h, fontsize = self.image.draw_text(
-                "%d blks %d txs" % (blocks, count),
-                xy,
-                font_name=self.config.fonts.font_side,
-                font_size=self.config.fonts.font_side_size,
-                anchor="lt",
-            )
-            xy = (xy[0], xy[1] + h)
-            w, h, font_size = self.image.draw_text(
-                "%d blk %.1f%% %s"
-                % (
-                    self.get_remaining_blocks(),
-                    (retarget_mult * 100 - 100),
-                    retarget_date.strftime("%d.%b%H:%M"),
-                ),
-                xy,
-                font_name=self.config.fonts.font_side,
-                font_size=self.config.fonts.font_side_size,
-                anchor="lt",
-            )
-            xy = (xy[0], xy[1] + h)
-            xy_end = (xy[0], self.height - xy[1])
-            w, h, font_size = self.image.draw_text(
-                self.get_current_block_height(),
-                (self.width - 1, self.height - 1),
-                end=xy_end,
-                fond_name=self.config.fonts.font_buttom,
-                anchor="rs",
-            )
+            line_str[4] = self.get_current_block_height()
 
         else:
             if mode == "fiat":
@@ -911,8 +648,8 @@ class Ticker:
                     "sat_per_fiat", with_symbol=True, shorten=False
                 )
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
-                line_str[5] = "sat"
-                line_str[6] = "/$ "
+                line_str[5] = "sat/$"
+                line_str[6] = " "
                 line_str[7] = self.get_current_price("moscow_time_usd")
             elif mode == "usd":
                 if not self.config.main.show_block_time:
@@ -934,9 +671,59 @@ class Ticker:
 
             line_str[1] = self.get_fees_string(mempool)
 
-            self.draw_7_lines_with_image(line_str, mode)
+            line_str[6] = self.price_change_string(False)
+        return line_str
 
-    def draw_fiat(self, mode):
+    def draw_all(self, mode):
+        line_str = self.generate_all(mode)
+        pricestack = self.price.get_timeseries_list()
+        if mode == "newblock":
+            grid = TextGrid(8, 4, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (1, 3))
+            grid.merge((2, 0), (2, 3))
+            grid.merge((3, 0), (3, 3))
+            grid.merge((4, 0), (4, 3))
+            grid.merge((5, 0), (7, 3))
+            grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+            grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
+            grid.set_text(2, line_str[2], font_name=self.config.fonts.font_side)
+            grid.set_text(3, line_str[3], font_name=self.config.fonts.font_side)
+            grid.set_text(
+                4, line_str[4], font_name=self.config.fonts.font_buttom, anchor="rs"
+            )
+        else:
+            grid = TextGrid(21, 6, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (2, 5))
+            grid.merge((3, 0), (4, 5))
+            grid.merge((5, 2), (10, 5))
+            grid.merge((5, 0), (6, 1))
+            grid.merge((7, 0), (8, 1))
+            grid.merge((9, 0), (10, 1))
+            grid.merge((11, 0), (12, 1))
+            grid.merge((11, 3), (12, 5))
+            grid.merge((13, 0), (20, 5))
+            start_img, end_img = grid.get_grid((5, 2), convert_to_pixel=True)
+            spark_image = makeSpark(
+                pricestack,
+                figsize_pixel=(end_img[0] - start_img[0], end_img[1] - start_img[1]),
+            )
+
+            grid.set_text((0, 0), line_str[0], font_name=self.config.fonts.font_top)
+            grid.set_text((3, 0), line_str[1], font_name=self.config.fonts.font_fee)
+            grid.paste_image((5, 2), spark_image, anchor="rs")
+            grid.set_text((5, 0), line_str[2], font_name=self.config.fonts.font_side)
+            grid.set_text((7, 0), line_str[3], font_name=self.config.fonts.font_side)
+            grid.set_text((9, 0), line_str[4], font_name=self.config.fonts.font_side)
+            grid.set_text((11, 0), line_str[5], font_name=self.config.fonts.font_side)
+            grid.set_text((11, 3), line_str[6], font_name=self.config.fonts.font_fee)
+            grid.set_text(
+                (13, 0),
+                line_str[7],
+                font_name=self.config.fonts.font_buttom,
+                anchor="rs",
+            )
+
+    def generate_fiat(self, mode):
         line_str = [" ", " ", " ", " ", " ", " ", " ", " "]
         mempool = self.mempool.getData()
         last_timestamp = mempool["last_block"]["timestamp"]
@@ -959,38 +746,14 @@ class Ticker:
         count = mempool["count"]
         current_price = self.price.price
         if mode == "newblock":
-            xy = (5, 0)
-            w, h, font_size = self.image.draw_text(
-                "%s - %s - %s"
-                % (
-                    self.get_current_price("fiat", with_symbol=True),
-                    self.get_minutes_between_blocks(),
-                    self.get_current_time(),
-                ),
-                xy,
-                font_name=self.config.fonts.font_top,
-                font_size=self.config.fonts.font_top_size,
-                anchor="lt",
+            line_str[0] = "%s - %s - %s" % (
+                self.get_current_price("fiat", with_symbol=True),
+                self.get_minutes_between_blocks(),
+                self.get_current_time(),
             )
-            xy = (xy[0], xy[1] + h)
-            fees_string = self.get_fees_string(mempool)
-            w, h, font_size = self.image.draw_text(
-                fees_string,
-                xy,
-                font_name=self.config.fonts.font_fee,
-                font_size=self.config.fonts.font_fee_size,
-                anchor="lt",
-            )
-            xy = (xy[0], xy[1] + h)
-            w, h, font_size = self.image.draw_text(
-                "%d blks %d txs" % (blocks, count),
-                xy,
-                font_name=self.config.fonts.font_side,
-                font_size=self.config.fonts.font_side_size,
-                anchor="lt",
-            )
-            xy = (xy[0], xy[1] + h)
-            diff_string = self.get_next_difficulty_string(
+            line_str[1] = self.get_fees_string(mempool)
+            line_str[2] = "%d blks %d txs" % (blocks, count)
+            line_str[3] = self.get_next_difficulty_string(
                 self.get_remaining_blocks(),
                 retarget_mult,
                 meanTimeDiff,
@@ -998,22 +761,7 @@ class Ticker:
                 retarget_date=retarget_date,
                 show_clock=False,
             )
-            w, h, font_size = self.image.draw_text(
-                diff_string,
-                (5, 67),
-                font_name=self.config.fonts.font_side,
-                font_size=self.config.fonts.font_side_size,
-                anchor="lt",
-            )
-            xy_end = (self.width, self.height - xy[1] - h)
-            xy = (xy[0], self.height)
-            w, h, font_size = self.image.draw_text(
-                self.get_current_block_height(),
-                xy,
-                end=xy_end,
-                font_name=self.config.fonts.font_buttom,
-                anchor="ls",
-            )
+            line_str[4] = self.get_current_block_height()
 
         else:
             if mode == "fiat":
@@ -1075,8 +823,8 @@ class Ticker:
                 )
                 line_str[3] = "%d blk" % (self.get_remaining_blocks())
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
-                line_str[5] = "sat"
-                line_str[6] = "/%s" % self.get_symbol()
+                line_str[5] = "sat/%s" % self.get_symbol()
+                line_str[6] = " "
                 line_str[7] = self.get_current_price("sat_per_fiat")
             elif mode == "moscowtime":
                 if not self.config.main.show_block_time:
@@ -1117,12 +865,63 @@ class Ticker:
                 line_str[4] = self.get_current_price("fiat", with_symbol=True)
                 line_str[5] = "$"
                 line_str[6] = format(int(current_price["usd"]), "")
+                line_str[7] = self.get_current_price("usd")
 
             line_str[1] = self.get_fees_string(mempool)
 
-            self.draw_7_lines_with_image(line_str, mode)
+            line_str[6] = self.price_change_string(False)
+        return line_str
 
-    def draw_fiat_height(self, mode):
+    def draw_fiat(self, mode):
+        pricestack = self.price.get_timeseries_list()
+        line_str = self.generate_fiat(mode)
+        if mode == "newblock":
+            grid = TextGrid(8, 4, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (1, 3))
+            grid.merge((2, 0), (2, 3))
+            grid.merge((3, 0), (3, 3))
+            grid.merge((4, 0), (4, 3))
+            grid.merge((5, 0), (7, 3))
+            grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+            grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
+            grid.set_text(2, line_str[2], font_name=self.config.fonts.font_side)
+            grid.set_text(3, line_str[3], font_name=self.config.fonts.font_side)
+            grid.set_text(
+                4, line_str[4], font_name=self.config.fonts.font_buttom, anchor="rs"
+            )
+        else:
+            grid = TextGrid(22, 6, self.image, margin_x=1, margin_y=1)
+            grid.merge((0, 0), (2, 5))
+            grid.merge((3, 0), (4, 5))
+            grid.merge((5, 2), (10, 5))
+            grid.merge((5, 0), (6, 1))
+            grid.merge((7, 0), (8, 1))
+            grid.merge((9, 0), (10, 1))
+            grid.merge((11, 0), (12, 1))
+            grid.merge((11, 3), (12, 5))
+            grid.merge((13, 0), (21, 5))
+            start_img, end_img = grid.get_grid((5, 2), convert_to_pixel=True)
+            spark_image = makeSpark(
+                pricestack,
+                figsize_pixel=(end_img[0] - start_img[0], end_img[1] - start_img[1]),
+            )
+
+            grid.set_text((0, 0), line_str[0], font_name=self.config.fonts.font_top)
+            grid.set_text((3, 0), line_str[1], font_name=self.config.fonts.font_fee)
+            grid.paste_image((5, 2), spark_image, anchor="rs")
+            grid.set_text((5, 0), line_str[2], font_name=self.config.fonts.font_side)
+            grid.set_text((7, 0), line_str[3], font_name=self.config.fonts.font_side)
+            grid.set_text((9, 0), line_str[4], font_name=self.config.fonts.font_side)
+            grid.set_text((11, 0), line_str[5], font_name=self.config.fonts.font_side)
+            grid.set_text((11, 3), line_str[6], font_name=self.config.fonts.font_fee)
+            grid.set_text(
+                (13, 0),
+                line_str[7],
+                font_name=self.config.fonts.font_buttom,
+                anchor="rs",
+            )
+
+    def generate_fiat_height(self, mode):
         line_str = ["", "", "", "", ""]
         current_price = self.price.price
         mempool = self.mempool.getData()
@@ -1210,10 +1009,25 @@ class Ticker:
             last_block_time=last_block_time,
             last_block_sec_ago=last_block_sec_ago,
         )
+        return line_str
 
-        self.draw_5_lines(line_str)
+    def draw_fiat_height(self, mode):
+        line_str = self.generate_fiat_height(mode)
+        grid = TextGrid(8, 4, self.image, margin_x=1, margin_y=1)
+        grid.merge((0, 0), (1, 3))
+        grid.merge((2, 0), (2, 3))
+        grid.merge((3, 0), (3, 3))
+        grid.merge((4, 0), (4, 3))
+        grid.merge((5, 0), (7, 3))
+        grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+        grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
+        grid.set_text(2, line_str[2], font_name=self.config.fonts.font_side)
+        grid.set_text(3, line_str[3], font_name=self.config.fonts.font_side)
+        grid.set_text(
+            4, line_str[4], font_name=self.config.fonts.font_buttom, anchor="rs"
+        )
 
-    def draw_mempool(self, mode):
+    def generate_mempool(self, mode):
         mempool = self.mempool.getData()
 
         last_timestamp = mempool["last_block"]["timestamp"]
@@ -1297,236 +1111,260 @@ class Ticker:
                 mempool["bestFees"]["halfHourFee"],
                 mempool["bestFees"]["fastestFee"],
             )
+        return line_str
 
-        self.draw_4_lines(line_str)
+    def draw_mempool(self, mode):
+        line_str = self.generate_mempool(mode)
+        grid = TextGrid(7, 4, self.image, margin_x=1, margin_y=1)
+        grid.merge((0, 0), (1, 3))
+        grid.merge((2, 0), (2, 3))
+        grid.merge((3, 0), (3, 3))
+        grid.merge((4, 0), (6, 3))
+        grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+        grid.set_text(1, line_str[1], font_name=self.config.fonts.font_side)
+        grid.set_text(2, line_str[2], font_name=self.config.fonts.font_side)
+        grid.set_text(3, line_str[3], font_name=self.config.fonts.font_big, anchor="rs")
 
-    def draw_big_two_rows(self, mode):
+    def generate_big_two_rows(self, mode):
         current_price = self.price.price
         pricenowstring = self.price.get_price_now()
-        line_str = ["", "", ""]
-        if mode == "fiat":
-            price_parts = pricenowstring.split(",")
+        price_parts = pricenowstring.split(",")
+        lines = {}
+        price_parts = pricenowstring.split(",")
+        price_parts_usd = format(int(current_price["usd"]), ",").split(",")
+        lines["fiat"] = [
+            ("t", self.get_symbol() + price_parts[0]),
+            ("n", ""),
+            (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}",
+            ),
+            ("n", ""),
+            ("t", price_parts[1]),
+        ]
+        lines["height"] = [
+            ("t", self.get_current_block_height()[:3]),
+            ("n", ""),
+            (
+                "t",
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}",
+            ),
+            ("n", ""),
+            ("t", self.get_current_block_height()[3:]),
+        ]
+        lines["newblock"] = lines["height"]
+        lines["satfiat"] = [
+            ("t", f"sat/{self.get_symbol()}"),
+            ("n", ""),
+            (
+                "t",
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}",
+            ),
+            ("n", ""),
+            ("t", self.get_current_price("sat_per_fiat")),
+        ]
+        lines["moscowtime"] = [
+            ("t", "sat/$"),
+            ("n", ""),
+            (
+                "t",
+                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}",
+            ),
+            ("n", ""),
+            ("t", self.get_current_price("moscow_time_usd")),
+        ]
+        lines["usd"] = [
+            ("t", "$" + price_parts_usd[0]),
+            ("n", ""),
+            (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}",
+            ),
+            ("n", ""),
+            ("t", price_parts[1]),
+        ]
 
-            line_str[0] = self.get_symbol() + price_parts[0]
-            line_str[1] = (
-                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
-            )
-            line_str[2] = price_parts[1]
-        elif mode == "height" or mode == "newblock":
-            price_parts = pricenowstring.split(",")
-            line_str[0] = self.get_current_block_height()[:3]
-            line_str[1] = (
-                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
-            )
-            line_str[2] = self.get_current_block_height()[3:]
-        elif mode == "satfiat":
-            line_str[0] = "sat/%s" % self.get_symbol()
-            line_str[1] = (
-                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
-            )
-            line_str[2] = self.get_current_price("sat_per_fiat")
-        elif mode == "moscowtime":
-            line_str[0] = "sat/$"
-            line_str[1] = (
-                f"{self.get_symbol() + pricenowstring} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
-            )
-            line_str[2] = self.get_current_price("moscow_time_usd")
-        elif mode == "usd":
-            price_parts = format(int(current_price["usd"]), ",").split(",")
+        return self.generate_line_str(lines, mode)
 
-            line_str[0] = "$" + price_parts[0]
-            line_str[1] = (
-                f"{self.get_current_block_height()} - {self.get_minutes_between_blocks()} - {self.get_current_time()}"
-            )
-            line_str[2] = price_parts[1]
-
-        pos_y = self.get_h_factor(3)
-        if line_str[0] != "":
-            xy_end = (
-                self.width - self.get_w_factor(5),
-                (self.height - self.get_h_factor(10)),
-            )
-            w, h, font_size = self.image.draw_text(
-                line_str[0] + " ",
-                (self.get_w_factor(5), pos_y),
-                end=xy_end,
-                font_name=self.config.fonts.font_console,
-                anchor="lt",
-            )
-
-            pos_y += h
-        xy_end = (
-            self.width - self.get_w_factor(5),
-            (self.height - pos_y - self.get_h_factor(15)),
+    def draw_big_two_rows(self, mode):
+        line_str = self.generate_big_two_rows(mode)
+        grid = TextGrid(9, 4, self.image, margin_x=1, margin_y=1)
+        grid.merge((0, 0), (3, 3))
+        grid.merge((4, 0), (4, 3))
+        grid.merge((5, 0), (8, 3))
+        grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+        grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
+        grid.set_text(
+            2, line_str[2], font_name=self.config.fonts.font_console, anchor="rs"
         )
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            (self.get_w_factor(5), pos_y),
-            end=xy_end,
-            font_name=self.config.fonts.font_fee,
-            anchor="lt",
-        )
 
-        pos_y += h
-        xy_end = (self.width - 1, (self.height - pos_y - self.get_h_factor(15)))
-        w, h, font_size = self.image.draw_text(
-            line_str[2],
-            (self.width - 1, self.height - 1),
-            end=xy_end,
-            font_name=self.config.fonts.font_big,
-            anchor="rs",
-        )
+    def generate_one_number(self, mode):
+        lines = {}
+        lines["fiat"] = [
+            ("s", "_current_price_fiat_symbol_"),
+            ("n", ""),
+            ("t", "Market price of bitcoin"),
+        ]
+        lines["height"] = [
+            ("s", "_current_block_height_"),
+            ("n", ""),
+            ("t", "Number of blocks in the blockchain"),
+        ]
+        lines["newblock"] = [
+            ("s", "_current_block_height_"),
+            ("n", ""),
+            ("t", "Number of blocks in the blockchain"),
+        ]
+        lines["satfiat"] = [
+            ("s", "_sat_per_fiat_with_symbol_"),
+            ("n", ""),
+            ("t", f"Value of one {self.get_symbol()} in sats"),
+        ]
+        lines["moscowtime"] = [
+            ("s", "_moscow_time_usd_"),
+            ("n", ""),
+            ("t", "moscow time"),
+        ]
+        lines["usd"] = [
+            ("s", "_current_price_usd_"),
+            ("n", ""),
+            ("t", "Market price of bitcoin"),
+        ]
+        return self.generate_line_str(lines, mode)
 
     def draw_one_number(self, mode):
-        line_str = ["", ""]
-        if mode == "fiat":
-            line_str[0] = self.get_current_price("fiat", with_symbol=True)
-            line_str[1] = "Market price of bitcoin"
-        elif mode == "height" or mode == "newblock":
-            line_str[0] = self.get_current_block_height()
-            line_str[1] = "Number of blocks in the blockchain"
-        elif mode == "satfiat":
-            line_str[0] = self.get_current_price("sat_per_fiat", with_symbol=True)
-            line_str[1] = "Value of one %s in sats" % self.get_symbol()
-        elif mode == "moscowtime":
-            line_str[1] = "moscow time"
-            line_str[0] = self.get_current_price("moscow_time_usd")
-        elif mode == "usd":
-            line_str[0] = self.get_current_price("usd")
-            line_str[1] = "Market price of bitcoin"
+        line_str = self.generate_one_number(mode)
+        grid = TextGrid(8, 4, self.image, margin_x=10, margin_y=10)
+        grid.merge((2, 0), (4, 3))
+        grid.merge((5, 0), (7, 3))
+        grid.set_text(0, line_str[0], font_name=self.config.fonts.font_fee)
+        grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
 
-        pos_y = self.get_w_factor(30)
-        xy = (self.get_w_factor(5), self.height - self.get_h_factor(15))
-        xy_end = (self.width - self.get_w_factor(10), self.get_h_factor(50))
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_fee,
-            anchor="lb",
-        )
-        xy = (self.width - self.get_w_factor(20), pos_y)
-        xy_end = (self.get_w_factor(20), self.height - h - self.get_h_factor(15))
-        w, h, font_size = self.image.draw_text(
-            line_str[0],
-            xy,
-            end=xy_end,
-            font_name=self.config.fonts.font_fee,
-            anchor="rt",
-        )
-
-    def draw_big_one_row(self, mode):
-        line_str = ["", "", ""]
+    def generate_big_one_row(self, mode):
         mempool = self.mempool.getData()
-        if mode == "fiat":
-            if not self.config.main.show_block_time:
-                line_str[0] = "%s - %d - %s - %s" % (
+        lines = {}
+
+        lines["fiat"] = [
+            (
+                "t",
+                "%s - %d - %s - %s"  # noqa: UP031
+                % (
                     self.get_current_block_height(),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
-                )
-            else:
-                line_str[0] = (
-                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
-                )
-            line_str[1] = self.get_symbol()
-            line_str[2] = self.get_current_price("fiat")
-        elif mode == "height" or mode == "newblock":
-            if not self.config.main.show_block_time:
-                line_str[0] = "%s - %d - %s - %s" % (
+                ),
+            ),
+            ("n", ""),
+            ("t", self.get_symbol() + " " + self.get_fee_string(mempool)),
+            ("n", ""),
+            ("t", self.get_current_price("fiat")),
+        ]
+        lines["height"] = [
+            (
+                "t",
+                "%s - %d - %s - %s"
+                % (
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_remaining_blocks(),
                     self.get_minutes_between_blocks(),
                     self.get_current_time(),
-                )
-            else:
-                line_str[0] = "{} - {} - {}".format(
+                ),
+            ),
+            ("n", ""),
+            ("t", self.get_fee_string(mempool)),
+            ("n", ""),
+            ("t", self.get_current_block_height()),
+        ]
+        lines["satfiat"] = [
+            (
+                "t",
+                "%s - %d - %s - %s"
+                % (
+                    self.get_current_block_height(),
+                    self.get_remaining_blocks(),
+                    self.get_minutes_between_blocks(),
+                    self.get_current_time(),
+                ),
+            ),
+            ("n", ""),
+            ("t", "/%s" % self.get_symbol() + " " + self.get_fee_string(mempool)),
+            ("n", ""),
+            ("t", self.get_current_price("sat_per_fiat")),
+        ]
+        lines["moscowtime"] = [
+            (
+                "t",
+                "%s - %d - %s - %s"
+                % (
+                    self.get_current_block_height(),
+                    self.get_remaining_blocks(),
+                    self.get_minutes_between_blocks(),
+                    self.get_current_time(),
+                ),
+            ),
+            ("n", ""),
+            ("t", "/$ " + self.get_fee_string(mempool)),
+            ("n", ""),
+            ("t", self.get_current_price("sat_per_fiat")),
+        ]
+        lines["usd"] = [
+            (
+                "t",
+                "%s - %d - %s - %s"
+                % (
+                    self.get_current_block_height(),
+                    self.get_remaining_blocks(),
+                    self.get_minutes_between_blocks(),
+                    self.get_current_time(),
+                ),
+            ),
+            ("n", ""),
+            ("t", "$ " + self.get_fee_string(mempool)),
+            ("n", ""),
+            ("t", self.get_current_price("usd")),
+        ]
+
+        # line_str[1] = self.get_fee_string(mempool)
+
+        if self.config.main.show_block_time:
+            lines["fiat"][0] = (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+            )
+            lines["height"][0] = (
+                "t",
+                "{} - {} - {}".format(
                     self.get_current_price("fiat", with_symbol=True),
                     self.get_last_block_time(),
                     self.get_last_block_time2(),
-                )
+                ),
+            )
+            lines["satfiat"][0] = (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+            )
+            lines["moscowtime"][0] = (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+            )
+            lines["usd"][0] = (
+                "t",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+            )
 
-            # line_str[1] = ""
-            line_str[2] = self.get_current_block_height()
-        elif mode == "satfiat":
-            if not self.config.main.show_block_time:
-                line_str[0] = "%s - %d - %s - %s" % (
-                    self.get_current_block_height(),
-                    self.get_remaining_blocks(),
-                    self.get_minutes_between_blocks(),
-                    self.get_current_time(),
-                )
-            else:
-                line_str[0] = (
-                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
-                )
-            line_str[1] = "/%s" % self.get_symbol()
-            line_str[2] = self.get_current_price("sat_per_fiat")
-        elif mode == "moscowtime":
-            if not self.config.main.show_block_time:
-                line_str[0] = "%s - %d - %s - %s" % (
-                    self.get_current_block_height(),
-                    self.get_remaining_blocks(),
-                    self.get_minutes_between_blocks(),
-                    self.get_current_time(),
-                )
-            else:
-                line_str[0] = (
-                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
-                )
-            line_str[1] = "/$"
-            line_str[2] = self.get_current_price("moscow_time_usd")
-        elif mode == "usd":
-            if not self.config.main.show_block_time:
-                line_str[0] = "%s - %d - %s - %s" % (
-                    self.get_current_block_height(),
-                    self.get_remaining_blocks(),
-                    self.get_minutes_between_blocks(),
-                    self.get_current_time(),
-                )
-            else:
-                line_str[0] = (
-                    f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}"
-                )
-            line_str[1] = "$"
-            line_str[2] = self.get_current_price("usd")
+        lines["newblock"] = lines["height"]
+        return self.generate_line_str(lines, mode)
 
-        line_str[1] = self.get_fee_string(mempool)
-
-        xy = (self.get_w_factor(5), self.get_h_factor(3))
-        w, h, font_size = self.image.draw_text(
-            line_str[0],
-            xy,
-            end=(self.width, (self.height - self.get_h_factor(47))),
-            font_name=self.config.fonts.font_fee,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        # font_size = self.drawer.calculate_font_size(
-        #    self.width - self.get_w_factor(5),
-        #    self.height - pos_y - self.get_h_factor(15),
-        #    line_str[1],
-        #    self.config.fonts.font_fee,
-        #    anchor="lt",
-        # )
-        w, h, font_size = self.image.draw_text(
-            line_str[1],
-            xy,
-            font_size=font_size,
-            font_name=self.config.fonts.font_fee,
-            anchor="lt",
-        )
-
-        xy = (xy[0], xy[1] + h)
-        w, h, font_size = self.image.draw_text(
-            line_str[2],
-            (self.width - 1, self.height - 1),
-            end=(xy[0], xy[1] - self.get_h_factor(15)),
-            font_name=self.config.fonts.font_big,
-            anchor="rs",
-        )
+    def draw_big_one_row(self, mode):
+        line_str = self.generate_big_one_row(mode)
+        grid = TextGrid(9, 4, self.image, margin_x=1, margin_y=1)
+        grid.merge((0, 0), (0, 3))
+        grid.merge((1, 0), (1, 3))
+        grid.merge((2, 0), (8, 3))
+        grid.set_text(0, line_str[0], font_name=self.config.fonts.font_console)
+        grid.set_text(1, line_str[1], font_name=self.config.fonts.font_fee)
+        grid.set_text(2, line_str[2], font_name=self.config.fonts.font_big, anchor="rs")
 
     def get_image(self):
         return self.image.image_handler.image

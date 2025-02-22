@@ -1,11 +1,11 @@
 requests
 babel
 pymempool>=0.1.5
-btcpriceticker
+btcpriceticker==0.2.0
 Pillow
 matplotlib
 numpy
 pydantic
 mplfinance
 pandas
-piltext
+piltext==0.2.3

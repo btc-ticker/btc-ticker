@@ -20,6 +20,9 @@ class MainConfig(BaseModel):
     layout_shifting: bool = False
     loglevel: str = "WARNING"
     orientation: int = 0
+    interval: str = "1h"
+    price_service: str = "coingecko"
+    enable_ohlc: bool = True
     inverted: bool = False
     show_block_height: bool = False
     update_on_new_block: bool = True

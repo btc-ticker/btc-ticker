@@ -34,8 +34,12 @@ def get_img_data(img):
 
 
 config = Config("home.admin/config.ini")
-
+config.main.epd_type = "7in5_V2"
 h, w = get_display_size(epd_type=config.main.epd_type)
+config.main.enable_ohlc = True
+config.main.price_service = "coingecko"
+config.main.interval = "1h"
+config.main.orientation = 90
 
 if config.main.orientation == 90:
     ticker = Ticker(config, h, w)
@@ -43,9 +47,8 @@ elif config.main.orientation == 270:
     ticker = Ticker(config, h, w)
 else:
     ticker = Ticker(config, w, h)
-ticker.orientation = 0
 
-mode_list = ["fiat", "height", "satfiat", "usd", "newblock"]
+mode_list = ["fiat", "height", "satfiat", "usd", "newblock", "moscowtime"]
 # mode_list = []
 for mode in config.main.mode_list.split(","):
     mode_list.append(mode.replace('"', "").replace(" ", ""))
@@ -63,14 +66,15 @@ layout_list = [
     "fiat",
     "fiatheight",
     "big_one_row",
+    "big_two_rows",
     "one_number",
     "mempool",
     "ohlc",
 ]
 for layout in config.main.layout_list.split(","):
     layout_list.append(layout.replace('"', "").replace(" ", ""))
-layout_ind = 5  # config.main.start_layout_ind
-layout_shifting = False  # config.main.layout_shifting
+layout_ind = 0  # config.main.start_layout_ind
+layout_shifting = True  # config.main.layout_shifting
 
 ticker.set_days_ago(days_list[days_ind])
 ticker.refresh()
