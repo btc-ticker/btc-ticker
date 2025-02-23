@@ -328,7 +328,7 @@ class Ticker:
 
         return price_str
 
-    def price_change_string(self, prefix_symbol: str | bool):
+    def price_change_string(self, prefix_symbol):
         pricechange = self.price.get_price_change()
         if prefix_symbol:
             return (
