@@ -567,6 +567,8 @@ apt install -y python3-pydantic python3-rpi.gpio python3-spidev python3-sdnotify
 # make sure /usr/bin/pip exists (and calls pip3 in Debian Buster)
 update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
+
+apt install -y libopenblas-dev
 # rsync is needed to copy from HDD
 apt install -y rsync
 # install ifconfig
@@ -613,6 +615,8 @@ sudo -H python3 -m pip install mplfinance==0.12.10b0
 # sudo -H python3 -m pip install flask-bootstrap
 # sudo -H python3 -m pip install wtforms
 # sudo -H python3 -m pip install gunicorn
+
+sudo -H python3 -m pip install sdnotify
 
 # *** fail2ban ***
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
