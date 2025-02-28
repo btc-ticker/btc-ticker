@@ -8,7 +8,7 @@ requires = [
     "requests",
     "babel",
     "pymempool>=0.1.5",
-    "btcpriceticker==0.2.1",
+    "btcpriceticker==0.2.2",
     "piltext==0.2.3",
     "Pillow",
     "matplotlib",
