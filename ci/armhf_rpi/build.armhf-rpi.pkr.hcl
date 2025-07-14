@@ -1,8 +1,8 @@
 variable "pack" { default = "lean" }
 variable "github_user" { default = "btc-ticker" }
 variable "branch" { default = "main" }
-variable "image_link" { default = "https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2024-10-28/2024-10-22-raspios-bullseye-armhf.img.xz" }
-variable "image_checksum" { default = "db2e27d790038318ae62c0e57534a8eba08e7a6b3737597248f8af875c54528f" }
+variable "image_link" { default = "https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2025-05-07/2025-05-06-raspios-bullseye-armhf.img.xz" }
+variable "image_checksum" { default = "1e9e1e3beaae46bd9ae999b63ad221b43163f37e31189bf9a36d258dcb96f85c" }
 variable "image_size" { default = "24G" }
 
 source "arm" "btcticker-armhf-rpi" {
