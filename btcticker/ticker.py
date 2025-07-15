@@ -26,7 +26,6 @@ class Ticker:
             days_ago=days_ago,
             enable_ohlc=config.main.enable_ohlc,
         )
-        self.mempool.request_timeout = 20
 
         fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts")
         self.font_manager = FontManager(
@@ -1330,7 +1329,8 @@ class Ticker:
         if self.config.main.show_block_time:
             lines["fiat"][0] = (
                 "t",
-                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - "
+                f"{self.get_last_block_time2()}",
             )
             lines["height"][0] = (
                 "t",
@@ -1342,15 +1342,18 @@ class Ticker:
             )
             lines["satfiat"][0] = (
                 "t",
-                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - "
+                f"{self.get_last_block_time2()}",
             )
             lines["moscowtime"][0] = (
                 "t",
-                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} - "
+                f"{self.get_last_block_time2()}",
             )
             lines["usd"][0] = (
                 "t",
-                f"{self.get_current_block_height()} - {self.get_last_block_time()} - {self.get_last_block_time2()}",
+                f"{self.get_current_block_height()} - {self.get_last_block_time()} "
+                f"- {self.get_last_block_time2()}",
             )
 
         lines["newblock"] = lines["height"]

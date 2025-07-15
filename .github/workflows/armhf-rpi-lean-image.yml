@@ -1,8 +1,11 @@
 name: armhf-rpi-lean-image-build
 
 on:
+  workflow_dispatch:
   push:
+    branches: ['main']
   pull_request:
+    branches: ['main']
 
 jobs:
   armhf-rpi-image-build:
@@ -16,14 +19,15 @@ jobs:
           echo "BUILD_DATE=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
           echo "BUILD_VERSION=$(git describe --always --tags)" >> $GITHUB_ENV
           if [ -z "$GITHUB_HEAD_REF" ]; then
-            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+            # echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+            echo "BRANCH_NAME=$(echo 'main')" >> $GITHUB_ENV
           else
             echo "BRANCH_NAME=${GITHUB_HEAD_REF}" >> $GITHUB_ENV
           fi
           if [[ "${{github.event_name}}" == "pull_request" ]]; then
-            echo "::set-output name=github_user::${{github.event.pull_request.head.repo.owner.login}}"
+            echo "GITHUB_USER=${{github.event.pull_request.head.repo.owner.login}}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=github_user::$(echo ${{github.repository}} | cut -d'/' -f1)"
+            echo "GITHUB_USER=$(echo ${{github.repository}} | cut -d'/' -f1)" >> $GITHUB_OUTPUT
           fi
 
       - name: Display the build name

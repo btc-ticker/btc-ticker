@@ -1,12 +1,9 @@
 import io
 import logging
-import time
 
-import PySimpleGUI as sg
 import typer
 from rich.console import Console
 from rich.table import Table
-from typing_extensions import Annotated
 
 from btcticker.config import Config
 from btcticker.ticker import Ticker

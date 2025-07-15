@@ -100,7 +100,7 @@ def setup_GPIO():
     GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
-def main(config, config_file):
+def main(config, config_file):  # noqa: C901
     global epd_type
     epd_type = config.main.epd_type
 

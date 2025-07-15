@@ -19,6 +19,8 @@ def get_display_size(epd_type="2in7_4gray"):
         return 176, 264
     elif epd_type == "2in9_V2":
         return 128, 296
+    elif epd_type == "3in7":
+        return 280, 480
     elif epd_type == "7in5_V2":
         return 480, 800
     else:
@@ -35,11 +37,14 @@ def get_img_data(img):
 
 config = Config("home.admin/config.ini")
 config.main.epd_type = "7in5_V2"
+config.main.epd_type = "3in7"
 h, w = get_display_size(epd_type=config.main.epd_type)
 config.main.enable_ohlc = True
+config.main.enable_ohlc = False
 config.main.price_service = "coingecko"
 config.main.interval = "1h"
 config.main.orientation = 90
+config.main.orientation = 0
 
 if config.main.orientation == 90:
     ticker = Ticker(config, h, w)
@@ -117,7 +122,8 @@ while True:
                     days_ind = 0
 
         print(
-            f"Running loop with mode: {mode_list[ticker_ind]} layout: {layout_list[layout_ind]}"
+            f"Running loop with mode: {mode_list[ticker_ind]}"
+            f"layout: {layout_list[layout_ind]}"
         )
         ticker.set_days_ago(days_list[days_ind])
         ticker.refresh()

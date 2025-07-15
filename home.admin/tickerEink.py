@@ -16,8 +16,9 @@ import sdnotify
 from PIL import Image
 
 from btcticker.config import Config
-from btcticker.epd import get_epd
 from btcticker.ticker import Ticker
+
+from .ticker_epd import get_epd
 
 temp_dir = tempfile.TemporaryDirectory()
 os.environ["MPLCONFIGDIR"] = temp_dir.name
@@ -143,7 +144,7 @@ def setup_GPIO():
     GPIO.setup(BUTTON_GPIO_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
-def main(config, config_file):
+def main(config, config_file):  # noqa: C901
     global epd_type
     epd_type = config.main.epd_type
 
@@ -223,8 +224,8 @@ def main(config, config_file):
 
     if True:
         logging.info(
-            "BTC ticker %s: set display size to %d x %d"
-            % (epd_type, ticker.width, ticker.height)
+            f"BTC ticker {epd_type}: set display "
+            f"size to {ticker.width} x {ticker.height}"
         )
         signal.signal(signal.SIGINT, signal_handler)
 
@@ -301,7 +302,7 @@ def main(config, config_file):
                         epd_type,
                         ticker,
                         "Internet is not available!\nWill retry in 3 minutes.\n"
-                        "Check your wpa_supplicant.conf\nIp:%s" % str(local_ip),
+                        f"Check your wpa_supplicant.conf\nIp:{local_ip}",
                         mirror,
                         inverted,
                     )

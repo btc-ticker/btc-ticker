@@ -47,7 +47,8 @@ for h, w, o in size_list:
     for layout in layout_list:
         for mode in mode_list:
             print(
-                f"Creating image for h: {h}, w: {w}, o: {o} with mode: {mode} layout: {layout}"
+                f"Creating image for h: {h}, w: {w}, "
+                f"o: {o} with mode: {mode} layout: {layout}"
             )
             ticker.build(mirror=False, mode=mode, layout=layout)
             ticker.get_image().save(

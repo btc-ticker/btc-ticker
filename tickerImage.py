@@ -1,20 +1,27 @@
 import io
 import logging
-import time
 from io import BytesIO
 
-import PySimpleGUI as sg
 import typer
-from libsixel import (SIXEL_BUILTIN_G1, SIXEL_BUILTIN_G8, SIXEL_PIXELFORMAT_G1,
-                      SIXEL_PIXELFORMAT_G8, SIXEL_PIXELFORMAT_PAL8,
-                      SIXEL_PIXELFORMAT_RGB888, SIXEL_PIXELFORMAT_RGBA8888,
-                      sixel_dither_get, sixel_dither_initialize,
-                      sixel_dither_new, sixel_dither_set_palette,
-                      sixel_dither_set_pixelformat, sixel_dither_unref,
-                      sixel_encode, sixel_output_new, sixel_output_unref)
+from libsixel import (
+    SIXEL_BUILTIN_G1,
+    SIXEL_BUILTIN_G8,
+    SIXEL_PIXELFORMAT_G1,
+    SIXEL_PIXELFORMAT_G8,
+    SIXEL_PIXELFORMAT_PAL8,
+    SIXEL_PIXELFORMAT_RGB888,
+    SIXEL_PIXELFORMAT_RGBA8888,
+    sixel_dither_get,
+    sixel_dither_initialize,
+    sixel_dither_new,
+    sixel_dither_set_palette,
+    sixel_dither_set_pixelformat,
+    sixel_dither_unref,
+    sixel_encode,
+    sixel_output_new,
+    sixel_output_unref,
+)
 from rich.console import Console
-from rich.table import Table
-from typing_extensions import Annotated
 
 from btcticker.config import Config
 from btcticker.ticker import Ticker
@@ -90,7 +97,8 @@ def main(
 
     s = BytesIO()
     print(
-        f"Creating image for h: {h}, w: {w}, o: {ticker.orientation} with mode: {mode} layout: {layout}"
+        f"Creating image for h: {h}, w: {w}, o: {ticker.orientation} "
+        f"with mode: {mode} layout: {layout}"
     )
     ticker.build(mirror=False, mode=mode, layout=layout)
     image = ticker.get_image()

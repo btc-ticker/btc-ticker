@@ -1,4 +1,4 @@
-def get_epd(epd_type):
+def get_epd(epd_type):  # noqa: C901
     epd = None
     mirror = False
     width_first = True

@@ -4,5 +4,4 @@ __all__ = [
     "mempool",
     "ticker",
     "utils",
-    "epd",
 ]
