@@ -19,8 +19,7 @@ jobs:
           echo "BUILD_DATE=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
           echo "BUILD_VERSION=$(git describe --always --tags)" >> $GITHUB_ENV
           if [ -z "$GITHUB_HEAD_REF" ]; then
-            # echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-            echo "BRANCH_NAME=$(echo 'main')" >> $GITHUB_ENV
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
           else
             echo "BRANCH_NAME=${GITHUB_HEAD_REF}" >> $GITHUB_ENV
           fi
