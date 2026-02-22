@@ -322,10 +322,10 @@ if [ "${cpu}" = "aarch64" ] && { [ "${baseimage}" = "raspios_arm64" ] || [ "${ba
   export LC_ALL=C
   export LANGUAGE=en_US.UTF-8
   export LANG=en_US.UTF-8
-  if [ ! -f /etc/apt/sources.list.d/raspi.list ]; then
-    echo "# Add the archive.raspberrypi.org/debian/ to the sources.list"
-    echo "deb http://archive.raspberrypi.org/debian/ bullseye main" | tee /etc/apt/sources.list.d/raspi.list
-  fi
+  #if [ ! -f /etc/apt/sources.list.d/raspi.list ]; then
+  #  echo "# Add the archive.raspberrypi.org/debian/ to the sources.list"
+  #  echo "deb http://archive.raspberrypi.org/debian/ bullseye main" | tee /etc/apt/sources.list.d/raspi.list
+  #fi
 fi
 
 # remove some (big) packages that are not needed
