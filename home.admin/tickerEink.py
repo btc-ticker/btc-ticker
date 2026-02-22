@@ -18,7 +18,7 @@ from PIL import Image
 from btcticker.config import Config
 from btcticker.ticker import Ticker
 
-from .ticker_epd import get_epd
+from ticker_epd import get_epd
 
 temp_dir = tempfile.TemporaryDirectory()
 os.environ["MPLCONFIGDIR"] = temp_dir.name
