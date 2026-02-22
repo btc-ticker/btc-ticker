@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 tickerEink.py
+/home/admin/.venv/bin/python3 tickerEink.py
