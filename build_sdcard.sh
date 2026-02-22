@@ -710,6 +710,10 @@ sudo -u admin /home/admin/.venv/bin/python3 -m pip uninstall -y Jetson.GPIO
 # add /sbin to path for all
 bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
 
+
+cd /home/admin/btc-ticker/
+sudo -u admin /home/admin/.venv/bin/pip install .
+
 echo ""
 echo "*** BTCTICKER EXTRAS ***"
 
