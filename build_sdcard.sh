@@ -644,7 +644,7 @@ usermod -a -G i2c admin
 echo -e "\n*** Python DEFAULT libs & dependencies ***"
 
 # for setup shell scripts
-apt -y install dialog bc python3-dialog  python3-rpi.gpio python3-pydantic swig
+apt -y install dialog bc python3-dialog  python3-rpi.gpio python3-pydantic swig liblgpio1 liblgpio-dev python3-lgpio
 
 # libs (for global python scripts)
 sudo -u admin python3 -m venv /home/admin/.venv
