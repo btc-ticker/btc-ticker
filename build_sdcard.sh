@@ -657,7 +657,7 @@ sudo -u admin /home/admin/.venv/bin/pip install mplfinance==0.12.10b0
 # sudo -u admin /home/admin/.venv/bin/pip install wtforms
 # sudo -u admin /home/admin/.venv/bin/pip install gunicorn
 
-sudo -u admin /home/admin/.venv/bin/pip install sdnotify RPi.GPIO pydantic
+sudo -u admin /home/admin/.venv/bin/pip install sdnotify RPi.GPIO pydantic spidev gpiozero
 
 # *** fail2ban ***
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
