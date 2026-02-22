@@ -348,7 +348,21 @@ apt-get upgrade -f -y
 
 echo -e "\n*** Python DEFAULT libs & dependencies ***"
 
-if [ -f "/usr/bin/python3.11" ]; then
+if [ -f "/usr/bin/python3.13" ]; then
+  # use python 3.13 if available
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.13 1
+  # keep python backwards compatible
+  #ln -s /usr/bin/python3.13 /usr/bin/python3.9
+  #ln -s /usr/bin/python3.13 /usr/bin/python3.10
+  echo "python calls python3.13"
+elif [ -f "/usr/bin/python3.12" ]; then
+  # use python 3.12 if available
+  update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+  # keep python backwards compatible
+  #ln -s /usr/bin/python3.11 /usr/bin/python3.9
+  #ln -s /usr/bin/python3.11 /usr/bin/python3.10
+  echo "python calls python3.12"
+elif [ -f "/usr/bin/python3.11" ]; then
   # use python 3.11 if available
   update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
   # keep python backwards compatible
@@ -602,37 +616,6 @@ apt -y install tmux
 # install a command-line fuzzy finder (https://github.com/junegunn/fzf)
 apt -y install fzf
 
-echo -e "\n*** Python DEFAULT libs & dependencies ***"
-
-# for setup shell scripts
-apt -y install dialog bc python3-dialog
-
-# libs (for global python scripts)
-sudo -H python3 -m pip install --upgrade pip
-sudo -H python3 -m pip install setuptools
-sudo -H python3 -m pip install mplfinance==0.12.10b0
-
-# sudo -H python3 -m pip install flask-bootstrap
-# sudo -H python3 -m pip install wtforms
-# sudo -H python3 -m pip install gunicorn
-
-sudo -H python3 -m pip install sdnotify
-
-# *** fail2ban ***
-# based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
-echo "*** HARDENING ***"
-apt install -y --no-install-recommends python3-systemd fail2ban
-
-rm -rf /home/admin/bcm2835-1.73
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
-tar zxvf bcm2835-1.73.tar.gz
-cd bcm2835-1.73/
-./configure
-make
-# make check
-make install
-cd ..
-
 echo -e "\n*** ADDING MAIN USER admin ***"
 # using the default password 'btcticker'
 
@@ -657,6 +640,40 @@ usermod -a -G gpio admin
 usermod -a -G spi admin
 usermod -a -G i2c admin
 
+
+echo -e "\n*** Python DEFAULT libs & dependencies ***"
+
+# for setup shell scripts
+apt -y install dialog bc python3-dialog
+
+# libs (for global python scripts)
+sudo -u admin python3 -m venv /home/admin/.venv
+
+sudo -u admin /home/admin/.venv/bin/pip install --upgrade pip
+sudo -u admin /home/admin/.venv/bin/pip install setuptools
+sudo -u admin /home/admin/.venv/bin/pip install mplfinance==0.12.10b0
+
+# sudo -u admin /home/admin/.venv/bin/pip install flask-bootstrap
+# sudo -u admin /home/admin/.venv/bin/pip install wtforms
+# sudo -u admin /home/admin/.venv/bin/pip install gunicorn
+
+sudo -u admin /home/admin/.venv/bin/pip install sdnotify
+
+# *** fail2ban ***
+# based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
+echo "*** HARDENING ***"
+apt install -y --no-install-recommends python3-systemd fail2ban
+
+rm -rf /home/admin/bcm2835-1.73
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
+tar zxvf bcm2835-1.73.tar.gz
+cd bcm2835-1.73/
+./configure
+make
+# make check
+make install
+cd ..
+
 echo -e "\n*** SHELL SCRIPTS AND ASSETS ***"
 
 # copy btc-ticker repo from github
@@ -673,22 +690,22 @@ sudo -u admin cp -r /home/admin/btc-ticker/home.admin/config.scripts /home/admin
 sudo -u admin chmod +x /home/admin/config.scripts/*.sh
 
 cd /home/admin/btc-ticker/
-sudo -H python3 setup.py install
+sudo -u admin /home/admin/.venv/bin/python3 setup.py install
 cd /home/admin/
 
 rm -rf /home/admin/e-Paper/
 sudo -u admin git clone https://github.com/waveshare/e-Paper
 cd /home/admin/e-Paper/RaspberryPi_JetsonNano/python
-python3 setup.py install
+sudo -u admin /home/admin/.venv/bin/python3 setup.py install
 cd /home/admin/
 
 rm -rf /home/admin/Touch_e-Paper_HAT/
 sudo -u admin git clone https://github.com/waveshare/Touch_e-Paper_HAT
 cd /home/admin/Touch_e-Paper_HAT/python
-python3 setup.py install
+sudo -u admin /home/admin/.venv/bin/python3 setup.py install
 cd /home/admin/
 
-sudo -H python3 -m pip uninstall -y Jetson.GPIO
+sudo -u admin /home/admin/.venv/bin/python3 -m pip uninstall -y Jetson.GPIO
 
 # add /sbin to path for all
 bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
