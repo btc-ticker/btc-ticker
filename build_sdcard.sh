@@ -644,8 +644,8 @@ usermod -a -G i2c admin
 echo -e "\n*** Python DEFAULT libs & dependencies ***"
 
 # for setup shell scripts
-apt -y install dialog bc python3-dialog  python3-rpi.gpio python3-pydantic swig liblgpio1 liblgpio-dev python3-lgpio
-
+apt -y install dialog bc python3-dialog  python3-rpi.gpio python3-pydantic
+apt -y install  swig liblgpio1 liblgpio-dev python3-lgpio
 # libs (for global python scripts)
 sudo -u admin python3 -m venv /home/admin/.venv
 
@@ -656,8 +656,8 @@ sudo -u admin /home/admin/.venv/bin/pip install mplfinance==0.12.10b0
 # sudo -u admin /home/admin/.venv/bin/pip install flask-bootstrap
 # sudo -u admin /home/admin/.venv/bin/pip install wtforms
 # sudo -u admin /home/admin/.venv/bin/pip install gunicorn
-
-sudo -u admin /home/admin/.venv/bin/pip install sdnotify RPi.GPIO pydantic spidev gpiozero lgpio
+sudo -u admin /home/admin/.venv/bin/pip install sdnotify RPi.GPIO pydantic spidev gpiozero 
+sudo -u admin /home/admin/.venv/bin/pip install lgpio
 
 # *** fail2ban ***
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
@@ -831,6 +831,11 @@ systemctl enable ro_remount
 
 # Enable firewwall
 /home/admin/90finishSetup.sh
+
+
+rm -f /etc/resolv.conf
+ln -s /run/NetworkManager/resolv.conf /etc/resolv.conf
+raspi-config nonint do_spi 0
 
 # *** BTCTICKER IMAGE READY INFO ***
 echo ""
