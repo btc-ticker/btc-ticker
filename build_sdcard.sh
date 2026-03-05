@@ -837,6 +837,8 @@ rm -f /etc/resolv.conf
 ln -s /run/NetworkManager/resolv.conf /etc/resolv.conf
 raspi-config nonint do_spi 0
 
+timedatectl set-ntp 1
+
 # *** BTCTICKER IMAGE READY INFO ***
 echo ""
 echo "**********************************************"
