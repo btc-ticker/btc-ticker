@@ -415,8 +415,6 @@ fi
 if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ "${baseimage}" = "raspios_aarch64" ] ||
   [ "${baseimage}" = "debian_rpi64" ]; then
   apt install -y raspi-config
-  # do memory split (16MB)
-  raspi-config nonint do_memory_split 16
   # set to wait until network is available on boot (0 seems to yes)
   raspi-config nonint do_boot_wait 0
   # Enable SPI
@@ -448,7 +446,7 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ 
   fi
 
   # edit kernel parameters
-  kernelOptionsFile=/boot/cmdline.txt
+  kernelOptionsFile=/boot/firmware/cmdline.txt
   fsOption1="fsck.mode=force"
   fsOption2="fsck.repair=yes"
   fsOption1InFile=$(grep -c ${fsOption1} ${kernelOptionsFile})
