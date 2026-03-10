@@ -331,10 +331,10 @@ fi
 # remove some (big) packages that are not needed
 
 apt remove --purge -y libreoffice* oracle-java* chromium-browser nuscratch scratch sonic-pi plymouth python2 vlc cups vnstat
-apt remove --purge -y thonny libqt5* realvnc-vnc-server libgstreamer*
+apt remove --purge -y thonny libqt5* realvnc-vnc-server libgstreamer* cloud-init fail2ban cups* sane* bluez*
 if [ "${display}" == "eink" ]; then
   apt remove -y --purge xserver* lightdm* lxde* mesa* lx* gnome* desktop* gstreamer* pulseaudio*
-  apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
+  apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme* libwayland-*
 else
   apt remove -y --purge lightdm* vlc* lxde* lx* mesa* chromium* desktop* gnome* gstreamer* pulseaudio*
   apt remove -y --purge raspberrypi-ui-mods gtk* hicolor-icon-theme*
