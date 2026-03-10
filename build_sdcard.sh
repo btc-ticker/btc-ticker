@@ -266,9 +266,11 @@ esac
 # AUTO-DETECTION: OPERATINGSYSTEM
 # ---------------------------------------
 if [ $(cat /etc/os-release 2>/dev/null | grep -c 'Debian') -gt 0 ]; then
-  if [ -f /etc/apt/sources.list.d/raspi.list ] && [ "${cpu}" = armv7l ]; then
+  if [ -f /etc/apt/sources.list.d/raspi.sources ] && [ "${cpu}" = armv7l ]; then
     # default image for RaspberryPi
     baseimage="raspios_armhf"
+  elif [ -f /etc/apt/sources.list.d/raspi.sources ] && [ "${cpu}" = aarch64 ]; then
+    baseimage="raspios_aarch64"
   else
     # experimental: fallback for all to debian
     baseimage="debian"
@@ -314,7 +316,7 @@ HandleLidSwitchDocked=ignore" | tee /etc/systemd/logind.conf.d/nosuspend.conf
 # FIXING LOCALES
 # https://daker.me/2014/10/how-to-fix-perl-warning-setting-locale-failed-in-raspbian.html
 # https://stackoverflow.com/questions/38188762/generate-all-locales-in-a-docker-image
-if [ "${cpu}" = "aarch64" ] && { [ "${baseimage}" = "raspios_arm64" ] || [ "${baseimage}" = "raspian" ] || [ "${baseimage}" = "debian" ]; }; then
+if [ "${cpu}" = "aarch64" ] && { [ "${baseimage}" = "raspios_aarch64" ] || [ "${baseimage}" = "raspian" ] || [ "${baseimage}" = "debian" ]; }; then
   echo -e "\n*** FIXING LOCALES FOR BUILD ***"
   sed -i "s/^# en_US.UTF-8 UTF-8.*/en_US.UTF-8 UTF-8/g" /etc/locale.gen
   sed -i "s/^# en_US ISO-8859-1.*/en_US ISO-8859-1/g" /etc/locale.gen
@@ -410,7 +412,7 @@ if ! compgen -u pi; then
 fi
 
 # special prepare when Raspbian
-if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ "${baseimage}" = "raspios_arm64" ] ||
+if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ "${baseimage}" = "raspios_aarch64" ] ||
   [ "${baseimage}" = "debian_rpi64" ]; then
   apt install -y raspi-config
   # do memory split (16MB)
@@ -430,7 +432,7 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ 
 
   if [ ${max_usb_currentDone} -eq 0 ]; then
     echo | tee -a $configFile
-    echo "# Raspiblitz" | tee -a $configFile
+    echo "# btc-ticker" | tee -a $configFile
     echo "$max_usb_current" | tee -a $configFile
   else
     echo "$max_usb_current already in $configFile"
@@ -760,19 +762,19 @@ echo -e "\nActivating CACHE RAM DISK ... "
 
 # *** Bluetooth & other configs ***
 if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ] ||
-  [ "${baseimage}" = "debian_rpi64" ]; then
+  [ "${baseimage}" = "debian_aarch64" ]; then
 
   echo ""
   echo "*** DISABLE BLUETOOTH ***"
 
-  configFile="/boot/config.txt"
+  configFile="/boot/firmware/config.txt"
   disableBT="dtoverlay=disable-bt"
   disableBTDone=$(grep -c "$disableBT" $configFile)
 
   if [ ${disableBTDone} -eq 0 ]; then
     # disable bluetooth module
     echo "" >>$configFile
-    echo "# Raspiblitz" >>$configFile
+    echo "# btc-ticker" >>$configFile
     echo 'dtoverlay=pi3-disable-bt' | tee -a $configFile
     echo 'dtoverlay=disable-bt' | tee -a $configFile
   else
@@ -789,19 +791,20 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ] ||
 
   # disable audio
   echo "*** DISABLE AUDIO (snd_bcm2835) ***"
-  sed -i "s/^dtparam=audio=on/# dtparam=audio=on/g" /boot/config.txt
+  sed -i "s/^dtparam=audio=on/# dtparam=audio=on/g" /boot/firmware/config.txt
   echo
 
   # disable DRM VC4 V3D
   echo "*** DISABLE DRM VC4 V3D driver ***"
   dtoverlay=vc4-fkms-v3d
-  sed -i "s/^dtoverlay=vc4-fkms-v3d/# dtoverlay=vc4-fkms-v3d/g" /boot/config.txt
+  sed -i "s/^dtoverlay=vc4-fkms-v3d/# dtoverlay=vc4-fkms-v3d/g" /boot/firmware/config.txt
   echo
 
   #enable i2c
-  sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/config.txt
+  sed -i "s/^dtparam=i2c_arm=off/dtparam=i2c_arm=on/g" /boot/firmware/config.txt
+  sed -i "s/^# dtparam=i2c_arm=on/dtparam=i2c_arm=on/g" /boot/firmware/config.txt
   #enable SPI
-  sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/config.txt
+  sed -i "s/^dtparam=spi=off/dtparam=spi=on/g" /boot/firmware/config.txt
 fi
 
 timedatectl set-timezone Europe/Berlin
@@ -852,7 +855,7 @@ echo "2. run --> ./XXprepareRelease.sh"
 echo ""
 
 # (do last - because might trigger reboot)
-if [ "${display}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_arm64" ]; then
+if [ "${display}" != "eink" ] || [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_aarch64" ]; then
   echo "*** ADDITIONAL DISPLAY OPTIONS ***"
   echo "- calling: ticker.display.sh set-display ${display}"
   /home/admin/config.scripts/ticker.display.sh set-display ${display}
