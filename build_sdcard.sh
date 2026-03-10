@@ -659,15 +659,13 @@ sudo -u admin /home/admin/.venv/bin/pip install mplfinance==0.12.10b0
 sudo -u admin /home/admin/.venv/bin/pip install sdnotify RPi.GPIO pydantic spidev gpiozero 
 sudo -u admin /home/admin/.venv/bin/pip install lgpio
 
-# *** fail2ban ***
-# based on https://stadicus.github.io/RaspiBolt/raspibolt_21_security.html
 echo "*** HARDENING ***"
-apt install -y --no-install-recommends python3-systemd fail2ban
+apt install -y --no-install-recommends python3-systemd
 
-rm -rf /home/admin/bcm2835-1.73
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
-tar zxvf bcm2835-1.73.tar.gz
-cd bcm2835-1.73/
+rm -rf /home/admin/bcm2835-1.77
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.77.tar.gz
+tar zxvf bcm2835-1.77.tar.gz
+cd bcm2835-1.77/
 ./configure
 make
 # make check
