@@ -119,8 +119,8 @@ echo 'fs_mode=$(mount | sed -n -e "s/^\/dev\/.* on \/ .*(\(r[w|o]\).*/\1/p")
 echo "PS1='\[\033[01;32m\]\u@\h\${fs_mode:+(\$fs_mode)}\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\\$ '
 }
 
-alias ro='sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot'
-alias rw='sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot'
+alias ro='sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot/firmware'
+alias rw='sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot/firmware'
 
 PROMPT_COMMAND=set_bash_prompt
 " | sudo tee -a /etc/bash.bashrc
