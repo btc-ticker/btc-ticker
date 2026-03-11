@@ -125,5 +125,5 @@ alias rw='sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot/firmware'
 PROMPT_COMMAND=set_bash_prompt
 " | sudo tee -a /etc/bash.bashrc
 
-echo "sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot
+echo "sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot/firmware
 " | sudo tee -a /etc/bash.bash_logout
