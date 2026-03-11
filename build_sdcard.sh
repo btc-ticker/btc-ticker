@@ -424,7 +424,7 @@ if [ "${baseimage}" = "raspbian" ] || [ "${baseimage}" = "raspios_armhf" ] || [ 
   # set WIFI country so boot does not block
   [ "${wifi_region}" != "off" ] && raspi-config nonint do_wifi_country $wifi_region
 
-  configFile="/boot/config.txt"
+  configFile="/boot/firmware/config.txt"
   max_usb_current="max_usb_current=1"
   max_usb_currentDone=$(grep -c "$max_usb_current" $configFile)
 
