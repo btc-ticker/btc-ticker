@@ -2,8 +2,7 @@ import io
 import logging
 import time
 
-import PySimpleGUI as sg
-
+import FreeSimpleGUI as sg
 from btcticker.config import Config
 from btcticker.ticker import Ticker
 
@@ -41,7 +40,10 @@ config.main.epd_type = "3in7"
 h, w = get_display_size(epd_type=config.main.epd_type)
 config.main.enable_ohlc = True
 config.main.enable_ohlc = False
-config.main.price_service = "coingecko"
+config.main.price_provider = "pyccxt"
+config.main.exchange = "kraken"
+config.main.symbol = "BTC/EUR"
+config.main.usd_symbol = "BTC/USD"
 config.main.interval = "1h"
 config.main.orientation = 90
 config.main.orientation = 0

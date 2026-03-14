@@ -710,7 +710,7 @@ bash -c "echo 'PATH=\$PATH:/sbin' >> /etc/profile"
 
 
 cd /home/admin/btc-ticker/
-sudo -u admin /home/admin/.venv/bin/pip install .
+sudo -u admin /home/admin/.venv/bin/pip install -r requirements.txt
 
 echo ""
 echo "*** BTCTICKER EXTRAS ***"

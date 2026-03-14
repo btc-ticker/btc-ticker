@@ -13,8 +13,8 @@ whenever a new block arrives.
   [berrybase](https://www.berrybase.de/sensoren-module/displays/epaper-displays/2.7-264-215-176-epaper-display-hat-f-252-r-raspberry-pi),
   [welectron](https://www.welectron.com/Waveshare-13354-27inch-e-Paper-HAT?utm_campaign=id),
   [reichelt](https://www.reichelt.de/entwicklerboards-display-epaper-2-7-schwarz-weiss-debo-epa-2-7-p224220.html))
-- rasberry pi zero WH (e.g. from
-  [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/boards/raspberry-pi-zero-wh))
+- rasberry pi zero 2 WH (e.g. from
+  [berrybase](https://www.berrybase.de/raspberry-pi-zero-2-wh))
 - Power supply Micro USB 5V (e.g. from
   [berrybase](https://www.berrybase.de/raspberry-pi/raspberry-pi-computer/stromversorgung/netzteile-fuer-die-steckdose/micro-usb-netzteil/ladeadapter-5v/1a-flache-bauform-schwarz))
 - micro SD card with 16 GB or more (e.g. from
@@ -186,7 +186,7 @@ The SDcard build process is inspired by the great
 [raspiblitz](https://github.com/rootzoll/raspiblitz).
 
 - Download lastest
-  [raspios image](https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/)
+  [raspios image](https://downloads.raspberrypi.org/raspios_full_arm64/images/)
 - Write the Image to a SD card
   [Tutorial](https://www.raspberrypi.org/documentation/installation/installing-images/README.md)
 - Add a `ssh` file to the boot partition when mounted on PC
